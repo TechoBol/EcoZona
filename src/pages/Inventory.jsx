@@ -1,12 +1,11 @@
 import React from "react";
-import UserMenu from "../components//menus/UserMenu";
+import UserMenu from "../components/menus/UserMenu";
+import { ScanLine } from "lucide-react";
 
 import {
   Wrapper,
   Header,
   Title,
-  CartButton,
-  LogoutButton,
   SearchBar,
   SearchInput,
   ScanButton,
@@ -19,40 +18,25 @@ import {
   ProductFooter,
   Price,
   Stock,
-  AddButton
+  BottomActions,
+  AddProductButton,
+  AddToCartButton
 } from "../components/ui/Inventory";
 
-import { ShoppingCart, ScanLine, LogOut } from "lucide-react";
-import useAuthentication from "../hooks/useAuthentication";
-
 function Inventory() {
-  const { logOut } = useAuthentication();
-
   return (
     <Wrapper>
 
       {/* HEADER */}
       <Header>
-
-        {/* IZQUIERDA - LOGOUT */}
-        <LogoutButton onClick={logOut}>
-          <LogOut size={22} />
-        </LogoutButton>
-
-        {/* CENTRO - TITULO */}
+        <UserMenu />
         <Title>Inventario</Title>
-
-        {/* DERECHA - CARRITO */}
-        <CartButton>
-          <ShoppingCart size={22} />
-        </CartButton>
-
+        <div />
       </Header>
 
       {/* SEARCH */}
       <SearchBar>
         <SearchInput placeholder="Buscar" />
-
         <ScanButton>
           <ScanLine size={18} />
         </ScanButton>
@@ -77,10 +61,20 @@ function Inventory() {
 
       </ProductsGrid>
 
-      {/* BOTÓN AGREGAR */}
-      <AddButton>
-        Añadir Producto
-      </AddButton>
+      {/* BOTTOM ACTIONS */}
+      <BottomActions>
+
+        {/* ➕ */}
+        <AddProductButton>
+          +
+        </AddProductButton>
+
+        {/* 🟣 */}
+        <AddToCartButton>
+          Añadir al Carrito
+        </AddToCartButton>
+
+      </BottomActions>
 
     </Wrapper>
   );
