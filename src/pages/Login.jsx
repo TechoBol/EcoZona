@@ -19,6 +19,8 @@ import {
 } from "../components/ui/Login";
 
 function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const { signIn } = useAuthentication();
 
@@ -34,6 +36,8 @@ function Login() {
 
         <Field>
                 <Input placeholder="Correo" />
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               </Field>
 
         <Field>
@@ -41,6 +45,8 @@ function Login() {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="Contraseña"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                   />
                   <IconWrapper onClick={() => setShowPassword(!showPassword)}>
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -51,7 +57,7 @@ function Login() {
         <Button
           onClick={(e) => {
             e.preventDefault();
-            signIn();
+            signIn(email, password);
           }}
         >Iniciar sesión</Button>
         
