@@ -15,26 +15,29 @@ const useAuthentication = () => {
     setRegional,
   } = useLoginStore();
 
-  const [email, setUsername] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const signIn = async () => {
+  const signIn = async (email, password) => {
+    if (!email || !password) {
+      console.warn("Email o contraseña vacíos");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
       const response = await logInAuth(email, password);
 
       if (!response) {
-        setIsLoading(false);
-        return null;
+        return;
       }
 
-      // guardar datos en store (cache)
+      // Guardar datos en store
       setFullName(`${response.name} ${response.lastName}`);
       setToken(response.token);
       setRole(response.role);
-      setRegional(email.regionalOffice);
+      setRegional(response.regionalOffice);
+
       changeLogInState();
 
       successToast("Bienvenido");
@@ -60,11 +63,7 @@ const useAuthentication = () => {
   return {
     signIn,
     logOut,
-    email,
-    password,
-    setUsername,
-    setPassword,
-    isLoading
+    isLoading,
   };
 };
 
