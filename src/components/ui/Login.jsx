@@ -21,7 +21,7 @@ export const Card = styled.div`
 
 export const Logo = styled.h1`
   text-align: center;
-  color: #3D44C9;
+  color: #404594;
   font-family: var(--font-title);
 
   font-size: 45px;
@@ -73,11 +73,11 @@ export const Button = styled.button`
   height: 48px;
   margin-top: 5px;
 
-  background-color: #3D44C9;
+  background-color: #404594;
   color: #ffffff;
 
   border: none;
-  border-radius: 25px;
+  border-radius: 30px;
 
   font-size: 14px;
   font-weight: 600;
@@ -85,7 +85,7 @@ export const Button = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
 
-  &:hover {
+  &:hover { 
     opacity: 0.95;
   }
 

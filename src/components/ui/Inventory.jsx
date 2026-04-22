@@ -1,4 +1,4 @@
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
 
 /* WRAPPER */
 export const Wrapper = styled.div`
@@ -10,25 +10,28 @@ export const Wrapper = styled.div`
 /* HEADER */
 export const Header = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  padding: 0 10px;
   margin-bottom: 20px;
 `;
 
+/* TITLE */
 export const Title = styled.h1`
   font-family: var(--font-title);
   font-size: 25px;
   font-weight: 700;
   color: #000;
   text-align: center;
+  justify-self: center;
 `;
 
-/* BOTÓN PERFIL */
+/* PROFILE */
 export const ProfileButton = styled.div`
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: #3d44c9;
+  border-radius: 30px;
+  background: #404594;
 
   display: flex;
   justify-content: center;
@@ -79,7 +82,7 @@ export const Role = styled.p`
   color: gray;
 `;
 
-/* LOGOUT ITEM */
+/* LOGOUT */
 export const LogoutButton = styled.button`
   width: 100%;
   padding: 10px 12px;
@@ -100,23 +103,6 @@ export const LogoutButton = styled.button`
   }
 `;
 
-/* CARRITO (DERECHA) */
-export const CartButton = styled.div`
-  justify-self: end;
-
-  width: 40px;
-  height: 40px;
-  background: #ffffff;
-  border-radius: 10px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  color: #3d44c9;
-  cursor: pointer;
-`;
-
 /* SEARCH */
 export const SearchBar = styled.div`
   position: relative;
@@ -134,10 +120,6 @@ export const SearchInput = styled.input`
 
   font-size: 13px;
   outline: none;
-
-  &::placeholder {
-    color: rgba(0, 0, 0, 0.4);
-  }
 `;
 
 export const ScanButton = styled.div`
@@ -145,17 +127,6 @@ export const ScanButton = styled.div`
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-
-  width: 28px;
-  height: 28px;
-
-  border-radius: 8px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: rgba(0, 0, 0, 0.3);
 `;
 
 /* GRID */
@@ -170,10 +141,8 @@ export const Card = styled.div`
   background: #ffffff;
   border-radius: 20px;
   overflow: hidden;
-
   display: flex;
   flex-direction: column;
-
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
   /* 🔥 BORDE DINÁMICO */
@@ -187,14 +156,12 @@ export const Card = styled.div`
   user-select: none;
 `;
 
-/* IMAGE */
 export const ProductImage = styled.img`
   width: 100%;
   height: 120px;
   object-fit: cover;
 `;
 
-/* INFO */
 export const ProductInfo = styled.div`
   padding: 10px;
 `;
@@ -209,11 +176,9 @@ export const ProductCode = styled.p`
   color: gray;
 `;
 
-/* FOOTER */
 export const ProductFooter = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
   margin-top: 5px;
 `;
 
@@ -227,21 +192,32 @@ export const Stock = styled.span`
   font-weight: 700;
 `;
 
-/* BOTÓN AZUL (TIPO LOGIN) */
-export const AddButton = styled.button`
-  width: 100%;
-  height: 45px;
+/* BOTTOM ACTIONS */
+export const BottomActions = styled.div`
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
 
-  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
 
-  background: #3d44c9;
+/* BOTÓN + */
+export const AddProductButton = styled.button`
+  width: 52px;
+  height: 52px;
+
+  border-radius: 50%;
+
+  background: #C85F1C;
   color: #ffffff;
 
-  border: none;
-  border-radius: 25px;
+  border: 2px solid #C85F1C;
 
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 26px;
+  font-weight: bold;
 
   display: flex;
   justify-content: center;
@@ -249,11 +225,36 @@ export const AddButton = styled.button`
 
   cursor: pointer;
 
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 
-  &:hover {
-    opacity: 0.9;
+  &:active {
+    transform: scale(0.95);
   }
+`;
+
+/* BOTÓN PRINCIPAL */
+export const AddToCartButton = styled.button`
+  flex: 1;
+  height: 52px;
+
+  background: #404594;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 30px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(61, 68, 201, 0.25);
 
   &:active {
     transform: scale(0.98);

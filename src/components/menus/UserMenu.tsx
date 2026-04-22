@@ -21,14 +21,23 @@ const UserMenu = () => {
   const initial = fullName ? fullName.charAt(0).toUpperCase() : "?";
 
   return (
-    <Menu as="div" style={{ position: "relative" }}>
-      {/* 🔥 BOTÓN CORRECTO */}
-      <Menu.Button>
+    <Menu as="div" style={{ position: "relative", display: "flex", justifyContent: "flex-start" }}>
+
+      {/* BOTÓN */}
+      <Menu.Button
+        style={{
+          all: "unset",
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <ProfileButton>
           <Initial>{initial}</Initial>
         </ProfileButton>
       </Menu.Button>
 
+      {/* DROPDOWN */}
       <Transition
         as={Fragment}
         enter="transition ease-out duration-100"
@@ -38,16 +47,21 @@ const UserMenu = () => {
         leaveFrom="opacity-100 scale-100"
         leaveTo="opacity-0 scale-95"
       >
-        {/* 🔥 ESTO ES CLAVE */}
-        <Menu.Items>
+        <Menu.Items
+          style={{
+            position: "absolute",
+            top: "calc(100% + 10px)",
+            left: 0,
+            minWidth: "180px",
+            zIndex: 100,
+          }}
+        >
           <Dropdown>
-            {/* INFO */}
             <UserInfo>
               <Name>{fullName}</Name>
               <Role>{role}</Role>
             </UserInfo>
 
-            {/* LOGOUT */}
             <Menu.Item>
               {({ active }) => (
                 <LogoutButton onClick={logOut} $active={active}>
@@ -59,6 +73,7 @@ const UserMenu = () => {
           </Dropdown>
         </Menu.Items>
       </Transition>
+
     </Menu>
   );
 };

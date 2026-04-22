@@ -6,8 +6,6 @@ import {
   Wrapper,
   Header,
   Title,
-  CartButton,
-  LogoutButton,
   SearchBar,
   SearchInput,
   ScanButton,
@@ -20,10 +18,14 @@ import {
   ProductFooter,
   Price,
   Stock,
-  AddButton,
+  BottomActions,
+  AddProductButton,
+  LogoutButton,
+  AddToCartButton,
 } from "../components/ui/Inventory";
 
 import { ShoppingCart, ScanLine, LogOut } from "lucide-react";
+import UserMenu from "../components/menus/UserMenu";
 
 function Inventory() {
   const { logOut } = useAuthentication();
@@ -93,15 +95,9 @@ function Inventory() {
   return (
     <Wrapper>
       <Header>
-        <LogoutButton onClick={logOut}>
-          <LogOut size={22} />
-        </LogoutButton>
-
+        <UserMenu />
         <Title>Inventario</Title>
-
-        <CartButton onClick={() => navigate("/cart")}>
-          <ShoppingCart size={22} />
-        </CartButton>
+        <div />
       </Header>
 
       <SearchBar>
@@ -116,15 +112,11 @@ function Inventory() {
           <Card
             key={product.id}
             $selected={isSelected(product.id)}
-
             onContextMenu={(e) => e.preventDefault()}
-
             onMouseDown={() => handleMouseDown(product.id)}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-
             onClick={() => handleClick(product)}
-
             onTouchStart={() => handleMouseDown(product.id)}
             onTouchEnd={handleMouseUp}
           >
@@ -143,9 +135,18 @@ function Inventory() {
         ))}
       </ProductsGrid>
 
-      <AddButton onClick={() => console.log("🛒 CARRITO:", selectedProducts)}>
-        Ir al carrito ({selectedProducts.length})
-      </AddButton>
+      {/* BOTTOM ACTIONS */}
+      <BottomActions>
+        {/* ➕ */}
+        <AddProductButton>+</AddProductButton>
+
+        {/* 🟣 */}
+        <AddToCartButton
+          onClick={() => console.log("🛒 CARRITO:", selectedProducts)}
+        >
+          Ir al carrito ({selectedProducts.length})
+        </AddToCartButton>
+      </BottomActions>
     </Wrapper>
   );
 }
