@@ -216,3 +216,36 @@ export const Stock = styled.span`
   font-size: 16px;
   font-weight: 700;
 `;
+
+/* BOTÓN AZUL (TIPO LOGIN) */
+export const AddButton = styled.button`
+  width: 100%;
+  height: 45px;
+
+  margin-top: 15px;
+
+  background: #3D44C9;
+  color: #ffffff;
+
+  border: none;
+  border-radius: 25px;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;

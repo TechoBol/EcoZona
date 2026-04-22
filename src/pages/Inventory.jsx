@@ -18,14 +18,15 @@ import {
   ProductCode,
   ProductFooter,
   Price,
-  Stock
+  Stock,
+  AddButton
 } from "../components/ui/Inventory";
 
 import { ShoppingCart, ScanLine, LogOut } from "lucide-react";
-import useAuthentication from "../hooks/useAuthentication"; // 🔥 IMPORTAR
+import useAuthentication from "../hooks/useAuthentication";
 
 function Inventory() {
-  const { logOut } = useAuthentication(); // 🔥 USAR HOOK
+  const { logOut } = useAuthentication();
 
   return (
     <Wrapper>
@@ -75,6 +76,11 @@ function Inventory() {
         </Card>
 
       </ProductsGrid>
+
+      {/* BOTÓN AGREGAR */}
+      <AddButton>
+        Añadir Producto
+      </AddButton>
 
     </Wrapper>
   );
