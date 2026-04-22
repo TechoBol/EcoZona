@@ -37,7 +37,7 @@ export const Title = styled.h2`
 export const Subtitle = styled.p`
   text-align: center;
   font-size: 14px;
-  color: gray;
+  color: black;
   margin-bottom: 10px;
   margin-top: 20px;
 `;
