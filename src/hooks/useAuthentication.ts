@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { successToast } from "../services/toasts";
+import { successToast, errorToast } from "../services/toasts";
 import { useLoginStore } from "../components/store/loginStore";
 import { logInAuth } from "../services/AuthenticationService";
 
@@ -17,9 +17,11 @@ const useAuthentication = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const signIn = async (email:string, password:string) => {
+  /* LOGIN */
+  const signIn = async (email: string, password: string) => {
+    // VALIDACIÓN
     if (!email || !password) {
-      console.warn("Email o contraseña vacíos");
+      errorToast("Completa todos los campos");
       return;
     }
 
@@ -28,11 +30,12 @@ const useAuthentication = () => {
     try {
       const response = await logInAuth(email, password);
 
+      // SI FALLA LOGIN
       if (!response) {
         return;
       }
 
-      // Guardar datos en store
+      // GUARDAR DATOS
       setFullName(`${response.name} ${response.lastName}`);
       setToken(response.token);
       setRole(response.role);
@@ -40,22 +43,30 @@ const useAuthentication = () => {
 
       changeLogInState();
 
+      // TOAST
       successToast("Bienvenido");
 
+      // REDIRECCIÓN
       navigate("/Inventory");
+
     } catch (error) {
       console.error("Error en login:", error);
+      errorToast("Ocurrió un error inesperado");
     } finally {
       setIsLoading(false);
     }
   };
 
+  /* LOGOUT */
   const logOut = () => {
     setFullName("");
     setRole("");
     setToken("");
     setRegional("");
+
     changeLogInState();
+
+    successToast("Sesión cerrada");
 
     navigate("/login");
   };

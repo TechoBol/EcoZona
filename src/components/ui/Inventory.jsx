@@ -23,22 +23,80 @@ export const Title = styled.h1`
   text-align: center;
 `;
 
-/* LOGOUT (IZQUIERDA) */
-export const LogoutButton = styled.div`
-  justify-self: start;
-
-  width: 40px;
-  height: 40px;
+/* BOTÓN PERFIL */
+export const ProfileButton = styled.div`
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #3D44C9;
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  color: #dc2626;
   cursor: pointer;
 
   &:hover {
-    opacity: 0.8;
+    opacity: 0.9;
+  }
+`;
+
+export const Initial = styled.span`
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 14px;
+`;
+
+/* DROPDOWN */
+export const Dropdown = styled.div`
+  position: absolute;
+  right: 0;
+  margin-top: 10px;
+
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+  overflow: hidden;
+  min-width: 180px;
+  z-index: 50;
+`;
+
+/* USER INFO */
+export const UserInfo = styled.div`
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+`;
+
+export const Name = styled.p`
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+`;
+
+export const Role = styled.p`
+  font-size: 12px;
+  color: gray;
+`;
+
+/* LOGOUT ITEM */
+export const LogoutButton = styled.button`
+  width: 100%;
+  padding: 10px 12px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  background: ${({ $active }) => ($active ? "#f3f4f6" : "#ffffff")};
+  border: none;
+
+  cursor: pointer;
+  font-size: 14px;
+  color: #000;
+
+  &:hover {
+    background: #f3f4f6;
   }
 `;
 

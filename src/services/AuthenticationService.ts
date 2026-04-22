@@ -1,4 +1,4 @@
-import { errorToast } from "../services/toasts";
+import { errorToast } from "./toasts";
 
 /* 🔐 LOGIN */
 export const logInAuth = async (email: string, password: string) => {
@@ -10,10 +10,7 @@ export const logInAuth = async (email: string, password: string) => {
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          email,
-          password
-        })
+        body: JSON.stringify({ email, password })
       }
     );
 
