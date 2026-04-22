@@ -1,7 +1,7 @@
-import { errorToast } from "./toasts";
+import { errorToast } from "../services/toasts";
 
 /* 🔐 LOGIN */
-export const logInAuth = async (username: string, password: string) => {
+export const logInAuth = async (email: string, password: string) => {
   try {
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN}/authentication/signIn`,
@@ -11,7 +11,7 @@ export const logInAuth = async (username: string, password: string) => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          username,
+          email,
           password
         })
       }

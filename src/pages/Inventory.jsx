@@ -4,6 +4,7 @@ import {
   Header,
   Title,
   CartButton,
+  LogoutButton,
   SearchBar,
   SearchInput,
   ScanButton,
@@ -18,19 +19,31 @@ import {
   Stock
 } from "../components/ui/Inventory";
 
-import { ShoppingCart, ScanLine } from "lucide-react";
+import { ShoppingCart, ScanLine, LogOut } from "lucide-react";
+import useAuthentication from "../hooks/useAuthentication"; // 🔥 IMPORTAR
 
 function Inventory() {
+  const { logOut } = useAuthentication(); // 🔥 USAR HOOK
+
   return (
     <Wrapper>
-      
+
       {/* HEADER */}
       <Header>
+
+        {/* IZQUIERDA - LOGOUT */}
+        <LogoutButton onClick={logOut}>
+          <LogOut size={22} />
+        </LogoutButton>
+
+        {/* CENTRO - TITULO */}
         <Title>Inventario</Title>
 
+        {/* DERECHA - CARRITO */}
         <CartButton>
           <ShoppingCart size={22} />
         </CartButton>
+
       </Header>
 
       {/* SEARCH */}
@@ -46,7 +59,7 @@ function Inventory() {
       <ProductsGrid>
 
         <Card>
-          <ProductImage src="https://via.placeholder.com/150" /> 
+          <ProductImage src="https://via.placeholder.com/150" />
 
           <ProductInfo>
             <ProductName>Termo Stanley</ProductName>

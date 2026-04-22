@@ -9,8 +9,8 @@ export const Wrapper = styled.div`
 
 /* HEADER */
 export const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   margin-bottom: 20px;
 `;
@@ -20,9 +20,32 @@ export const Title = styled.h1`
   font-size: 25px;
   font-weight: 700;
   color: #000;
+  text-align: center;
 `;
 
+/* LOGOUT (IZQUIERDA) */
+export const LogoutButton = styled.div`
+  justify-self: start;
+
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  color: #dc2626;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+/* CARRITO (DERECHA) */
 export const CartButton = styled.div`
+  justify-self: end;
+
   width: 40px;
   height: 40px;
   background: #ffffff;
@@ -48,10 +71,15 @@ export const SearchInput = styled.input`
   padding: 0 40px 0 15px;
 
   border-radius: 12px;
-  border: 1px solid rgba(0,0,0,0.2);
+  border: 1px solid rgba(0, 0, 0, 0.2);
   background: #fff;
 
   font-size: 13px;
+  outline: none;
+
+  &::placeholder {
+    color: rgba(0, 0, 0, 0.4);
+  }
 `;
 
 export const ScanButton = styled.div`
@@ -68,7 +96,8 @@ export const ScanButton = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(0,0,0,0.2);
+
+  color: rgba(0, 0, 0, 0.3);
 `;
 
 /* GRID */
@@ -87,7 +116,7 @@ export const Card = styled.div`
   display: flex;
   flex-direction: column;
 
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 `;
 
 /* IMAGE */
