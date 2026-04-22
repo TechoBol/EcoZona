@@ -1,7 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 
 export const GlobalStyle = createGlobalStyle`
-  /* 🔤 Fuente personalizada */
   @font-face {
     font-family: "ModernMuseum";
     src: url("/src/assets/fonts/MuseoModerno1.ttf") format("truetype");
@@ -9,7 +8,6 @@ export const GlobalStyle = createGlobalStyle`
     font-style: normal;
   }
 
-  /* 🎯 Variables globales */
   :root {
     --font-main: "Inter", sans-serif;
     --font-title: "ModernMuseum", sans-serif;
@@ -19,6 +17,9 @@ export const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
   html, body, #root {

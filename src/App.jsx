@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast"; // 🔥 AÑADIDO
 import Login from "./pages/Login";
 import Inventory from "./pages/Inventory";
 import Cart from "./pages/Cart";
+import Products from "./pages/Products";
 
 function App() {
   const { isLoggedIn, role } = useLoginStore();
@@ -14,10 +15,9 @@ function App() {
     <>
       <GlobalStyle />
 
-      <Toaster /> {/* 🔥 ESTO HACE QUE FUNCIONEN LOS TOAST */}
+      <Toaster />
 
       <Routes>
-        {/* LOGIN */}
         <Route
           path="/login"
           element={
@@ -25,20 +25,19 @@ function App() {
           }
         />
 
-        {/* RUTAS SOLO SI ESTÁ LOGUEADO */}
         {isLoggedIn && (
           <>
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/cart" element={<Cart />} />
+                        <Route path="/product/:id" element={<Products />} />
+
           </>
         )}
 
-        {/* SI NO ESTÁ LOGUEADO Y TRATA DE ENTRAR A OTRA RUTA */}
         {!isLoggedIn && (
           <Route path="*" element={<Navigate to="/login" />} />
         )}
 
-        {/* SI ESTÁ LOGUEADO Y PONE CUALQUIER COSA */}
         {isLoggedIn && (
           <Route path="*" element={<Navigate to="/inventory" />} />
         )}

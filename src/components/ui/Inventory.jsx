@@ -28,7 +28,7 @@ export const ProfileButton = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: #3D44C9;
+  background: #3d44c9;
 
   display: flex;
   justify-content: center;
@@ -113,7 +113,7 @@ export const CartButton = styled.div`
   justify-content: center;
   align-items: center;
 
-  color: #3D44C9;
+  color: #3d44c9;
   cursor: pointer;
 `;
 
@@ -175,6 +175,16 @@ export const Card = styled.div`
   flex-direction: column;
 
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+
+  /* 🔥 BORDE DINÁMICO */
+  border: ${({ $selected }) =>
+    $selected ? "2px solid #22c55e" : "2px solid transparent"};
+
+  transition: all 0.2s ease;
+
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
 `;
 
 /* IMAGE */
@@ -224,7 +234,7 @@ export const AddButton = styled.button`
 
   margin-top: 15px;
 
-  background: #3D44C9;
+  background: #3d44c9;
   color: #ffffff;
 
   border: none;
