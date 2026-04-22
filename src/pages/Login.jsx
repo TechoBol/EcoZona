@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
+import useAuthentication from "../hooks/useAuthentication";
 
 // 👇 IMPORT CORRECTO
 import {
@@ -19,6 +20,8 @@ import {
 
 function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const { signIn } = useAuthentication();
+
 
   return (
     <Wrapper>
@@ -45,8 +48,13 @@ function Login() {
                 </PasswordWrapper>
               </Field>
 
-        <Button>Iniciar sesión</Button>
-
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            signIn();
+          }}
+        >Iniciar sesión</Button>
+        
       </Card>
     </Wrapper>
   );
