@@ -17,7 +17,7 @@ const useAuthentication = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const signIn = async (email, password) => {
+  const signIn = async (email:string, password:string) => {
     if (!email || !password) {
       console.warn("Email o contraseña vacíos");
       return;
