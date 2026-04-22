@@ -15,7 +15,7 @@ const useAuthentication = () => {
     setRegional,
   } = useLoginStore();
 
-  const [username, setUsername] = useState("");
+  const [email, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +23,7 @@ const useAuthentication = () => {
     setIsLoading(true);
 
     try {
-      const response = await logInAuth(username, password);
+      const response = await logInAuth(email, password);
 
       if (!response) {
         setIsLoading(false);
@@ -34,7 +34,7 @@ const useAuthentication = () => {
       setFullName(`${response.name} ${response.lastName}`);
       setToken(response.token);
       setRole(response.role);
-      setRegional(username.regionalOffice);
+      setRegional(email.regionalOffice);
       changeLogInState();
 
       successToast("Bienvenido");
@@ -60,7 +60,7 @@ const useAuthentication = () => {
   return {
     signIn,
     logOut,
-    username,
+    email,
     password,
     setUsername,
     setPassword,

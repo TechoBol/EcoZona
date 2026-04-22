@@ -30,7 +30,7 @@ function Login() {
         </Subtitle>
 
         <Field>
-                <Input placeholder="Usuario" />
+                <Input placeholder="Correo" />
               </Field>
 
         <Field>
