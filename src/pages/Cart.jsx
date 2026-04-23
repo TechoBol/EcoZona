@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Wrapper,
   Header,
@@ -28,12 +28,21 @@ import { useCartStore } from "../components/store/cartStore";
 import { useNavigate } from "react-router-dom";
 import { useLoginStore } from "../components/store/loginStore";
 import { useCart } from "../hooks/useCart";
+import { generarPDF } from "../components/pdf/generarPDF";
+import { useAmazonS3 } from "../hooks/useAmazonS3";
 
 const Cart = () => {
   const navigate = useNavigate();
 
-  const { cartItems, removeItem, increaseQty, decreaseQty, getTotal, clearCart } =
-    useCartStore();
+  const {
+    cartItems,
+    removeItem,
+    increaseQty,
+    decreaseQty,
+    getTotal,
+    clearCart,
+  } = useCartStore();
+
   const { createSale } = useCart();
   const [descuento, setDescuento] = useState("0");
 
@@ -57,21 +66,61 @@ const Cart = () => {
       return;
     }
 
-    const payload = generatePayload();
-
-    console.log("PAYLOAD CORRECTO:", payload);
+    const payload = {
+      products: cartItems.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
+      discount: Number(descuento),
+    };
 
     try {
-      const venta = await createSale(payload);
+      await createSale(payload, cartItems, subtotal, Number(descuento), total);
 
       clearCart();
       setDescuento("0");
-      navigate("/inventory");
+      navigate("/inventory", { replace: true })
     } catch (err) {
       console.error(err);
       alert("Error al procesar la venta");
     }
   };
+  const [imageUrls, setImageUrls] = useState({});
+  const { getFileUrl } = useAmazonS3();
+
+  useEffect(() => {
+    if (!cartItems.length) return;
+
+    const loadImages = async () => {
+      const urls = {};
+
+      for (const item of cartItems) {
+        if (!item.imageUrl) continue;
+        if (imageUrls[item.id]) continue;
+
+        const isS3Key = item.imageUrl.startsWith("ECOZONA/");
+
+        if (!isS3Key) {
+          urls[item.id] = null; // fallback al placeholder
+          continue;
+        }
+
+        try {
+          const url = await getFileUrl(item.imageUrl);
+          urls[item.id] = url;
+        } catch (err) {
+          console.error("Error imagen:", err);
+          urls[item.id] = null;
+        }
+      }
+
+      if (Object.keys(urls).length > 0) {
+        setImageUrls((prev) => ({ ...prev, ...urls }));
+      }
+    };
+
+    loadImages();
+  }, [cartItems]);
 
   return (
     <Wrapper>
@@ -86,13 +135,17 @@ const Cart = () => {
         <ProductList>
           {cartItems.map((item) => (
             <ProductCard key={item.id}>
-              <ProductImage src={item.image} alt={item.name} />
+              <ProductImage
+                src={imageUrls[item.id] || "https://via.placeholder.com/150"}
+                alt={item.name}
+              />
 
               <ProductInfo>
                 <ProductName>{item.name}</ProductName>
                 <ProductCode>{item.code}</ProductCode>
                 <ProductPrice style={{ color: "gray" }}>
-                  Bs {item.finalPrice}</ProductPrice>
+                  Bs {item.finalPrice}
+                </ProductPrice>
               </ProductInfo>
 
               <QuantityControls>
