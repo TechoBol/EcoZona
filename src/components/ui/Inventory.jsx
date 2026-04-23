@@ -90,16 +90,16 @@ export const LogoutButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-
-  background: ${({ $active }) => ($active ? "#f3f4f6" : "#ffffff")};
+  background: ${({ $active }) => ($active ? "#ffe5e5" : "#ffffff")};
   border: none;
-
   cursor: pointer;
   font-size: 14px;
-  color: #000;
-
+  color: #e53935;
+  svg {
+    color: #e53935;
+  }
   &:hover {
-    background: #f3f4f6;
+    background: #ffe5e5;
   }
 `;
 
@@ -182,7 +182,7 @@ export const ProductInfo = styled.div`
 `;
 
 export const ProductName = styled.p`
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
 `;
 
@@ -198,12 +198,13 @@ export const ProductFooter = styled.div`
 `;
 
 export const Price = styled.span`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
+  color: gray;
 `;
 
 export const Stock = styled.span`
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
 `;
 
