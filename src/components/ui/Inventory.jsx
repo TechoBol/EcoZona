@@ -2,7 +2,9 @@ import styled from "styled-components";
 
 /* WRAPPER */
 export const Wrapper = styled.div`
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
   padding: 20px;
 `;
@@ -42,6 +44,12 @@ export const ProfileButton = styled.div`
   &:hover {
     opacity: 0.9;
   }
+`;
+
+export const Content = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 5px 100px 5px;
 `;
 
 export const Initial = styled.span`
@@ -103,10 +111,11 @@ export const LogoutButton = styled.button`
   }
 `;
 
-/* SEARCH */
+/* SEARCH — mismo ancho que BottomActions (left/right 20px) */
 export const SearchBar = styled.div`
   position: relative;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
+  /* El Wrapper tiene padding: 20px, así que no necesitamos ajuste extra */
 `;
 
 export const SearchInput = styled.input`
@@ -120,6 +129,8 @@ export const SearchInput = styled.input`
 
   font-size: 13px;
   outline: none;
+
+  box-sizing: border-box; /* ✅ evita que se desborde */
 `;
 
 export const ScanButton = styled.div`
@@ -143,7 +154,7 @@ export const Card = styled.div`
   border-radius: 14px;
   padding: 12px;
   background: #fff;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 
   border: 2px solid
     ${(props) =>
@@ -178,34 +189,46 @@ export const ProductImage = styled.img`
 `;
 
 export const ProductInfo = styled.div`
-  padding: 10px;
+  padding: 10px 4px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 `;
 
 export const ProductName = styled.p`
-  font-size: 16px;
+  font-size: 15px;       /* ✅ bajado un poco para que respire */
   font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* ✅ corta nombres largos con "..." */
 `;
 
 export const ProductCode = styled.p`
   font-size: 12px;
   color: gray;
+  margin: 0;
 `;
 
 export const ProductFooter = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-top: 5px;
+  align-items: center;
+  margin-top: 6px;
+  gap: 4px;              /* ✅ separación mínima garantizada */
 `;
 
 export const Price = styled.span`
-  font-size: 15px;
+  font-size: 13px;       /* ✅ reducido para que no choque */
   font-weight: 500;
   color: gray;
+  white-space: nowrap;
 `;
 
 export const Stock = styled.span`
-  font-size: 15px;
+  font-size: 13px;       /* ✅ mismo tamaño que Price */
   font-weight: 700;
+  white-space: nowrap;
 `;
 
 /* BOTTOM ACTIONS */
@@ -227,10 +250,10 @@ export const AddProductButton = styled.button`
 
   border-radius: 50%;
 
-  background: #C85F1C;
+  background: #c85f1c;
   color: #ffffff;
 
-  border: 2px solid #C85F1C;
+  border: 2px solid #c85f1c;
 
   font-size: 26px;
   font-weight: bold;

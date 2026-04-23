@@ -34,7 +34,7 @@ const Cart = () => {
 
   const { cartItems, removeItem, increaseQty, decreaseQty, getTotal, clearCart } =
     useCartStore();
-  const {createSale} = useCart();
+  const { createSale } = useCart();
   const [descuento, setDescuento] = useState("0");
 
   const subtotal = getTotal();
@@ -47,7 +47,7 @@ const Cart = () => {
         productId: item.id,
         quantity: item.quantity,
       })),
-      discount: discountValue, 
+      discount: discountValue,
     };
   };
 
@@ -76,7 +76,7 @@ const Cart = () => {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
+        <BackButton onClick={() => navigate("/inventory", { replace: true })}>
           <ArrowLeft size={22} />
         </BackButton>
         <Title>Venta</Title>

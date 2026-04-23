@@ -28,6 +28,7 @@ import { ScanLine } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
+
 function Inventory() {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addToCart);
@@ -35,7 +36,6 @@ function Inventory() {
   const {
     products,
     search,
-    setSearch,
     onFilterTextBoxChanged
   } = useInventory();
 
@@ -68,18 +68,22 @@ function Inventory() {
 
   const handleClick = (product) => {
     const stock = product.inventories?.[0]?.quantity || 0;
+
     if (stock === 0) {
       setErrorProductId(product.id);
+
       setTimeout(() => {
         setErrorProductId(null);
       }, 400);
+
       return;
     }
 
     toggleSelect(product);
   };
 
-  const isSelected = (id) => selectedProducts.some((p) => p.id === id);
+  const isSelected = (id) =>
+    selectedProducts.some((p) => p.id === id);
 
   const handleGoToCart = () => {
     selectedProducts.forEach((product) => {
@@ -102,11 +106,10 @@ function Inventory() {
         if (!product.imageUrl) continue;
         if (imageUrls[product.id]) continue;
 
-        // ✅ Solo intenta S3 si parece un key válido
         const isS3Key = product.imageUrl.startsWith("ECOZONA/");
 
         if (!isS3Key) {
-          urls[product.id] = null; // fallback al placeholder
+          urls[product.id] = null;
           continue;
         }
 
@@ -146,39 +149,60 @@ function Inventory() {
         </ScanButton>
       </SearchBar>
 
-      <ProductsGrid>
-        {products.map((product) => (
-          <Card
-            key={product.id}
-            $selected={isSelected(product.id)}
-            $error={errorProductId === product.id}
-            onMouseDown={() => handleMouseDown(product.id)}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            onClick={() => handleClick(product)}
-          >
-            <ProductImage
-              src={imageUrls[product.id] || "https://via.placeholder.com/150"}
-            />
-            <ProductInfo>
-              <ProductName>{product.name}</ProductName>
-              <ProductCode>{product.code}</ProductCode>
+      {/* 🔥 CONTENEDOR CON SCROLL */}
+      <div
+        style={{
+          height: "calc(100vh - 180px)",
+          overflowY: "auto",
+          padding: "0 10px 100px 10px", // 👈 espacio lateral + abajo
+        }}
+      >
+        <ProductsGrid>
+          {products.map((product) => (
+            <Card
+              key={product.id}
+              $selected={isSelected(product.id)}
+              $error={errorProductId === product.id}
+              onMouseDown={() => handleMouseDown(product.id)}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
+              onClick={() => handleClick(product)}
+            >
+              <ProductImage
+                src={
+                  imageUrls[product.id] ||
+                  "https://via.placeholder.com/150"
+                }
+              />
 
-              <ProductFooter>
-                <Price>Bs {product.finalPrice}</Price>
-                {(() => {
-                  const stock = product.inventories?.[0]?.quantity || 0;
-                  return (
-                    <Stock style={{ color: stock === 0 ? "#e81d12" : "#333" }}>
-                      Cant: {stock}
-                    </Stock>
-                  );
-                })()}
-              </ProductFooter>
-            </ProductInfo>
-          </Card>
-        ))}
-      </ProductsGrid>
+              <ProductInfo>
+                <ProductName>{product.name}</ProductName>
+                <ProductCode>{product.code}</ProductCode>
+
+                <ProductFooter>
+                  <Price>Bs {product.finalPrice}</Price>
+
+                  {(() => {
+                    const stock =
+                      product.inventories?.[0]?.quantity || 0;
+
+                    return (
+                      <Stock
+                        style={{
+                          color:
+                            stock === 0 ? "#e81d12" : "#333",
+                        }}
+                      >
+                        Cant: {stock}
+                      </Stock>
+                    );
+                  })()}
+                </ProductFooter>
+              </ProductInfo>
+            </Card>
+          ))}
+        </ProductsGrid>
+      </div>
 
       <BottomActions>
         <AddProductButton onClick={() => navigate("/product")}>
