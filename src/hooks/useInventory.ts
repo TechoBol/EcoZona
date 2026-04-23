@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { errorToast } from "../services/toasts";
+import { getProducts } from "../services/InventoryService";
 
 interface Product {
   id: string;
@@ -16,34 +16,19 @@ const useInventory = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  /* 🔥 Obtener productos */
+  /*Cargar productos */
   const fetchProducts = async () => {
     setIsLoading(true);
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_DOMAIN}/products`
-      );
+    const data = await getProducts();
 
-      if (!response.ok) {
-        errorToast("Error al obtener productos");
-        return;
-      }
+    setProducts(data);
+    setFilteredProducts(data);
 
-      const data = await response.json();
-
-      setProducts(data);
-      setFilteredProducts(data);
-
-    } catch (error) {
-      console.error("Error:", error);
-      errorToast("Error de conexión");
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   };
 
-  /* 🔎 Filtrado por búsqueda */
+  /*Filtro de búsqueda */
   useEffect(() => {
     if (!search) {
       setFilteredProducts(products);
@@ -58,7 +43,7 @@ const useInventory = () => {
     setFilteredProducts(filtered);
   }, [search, products]);
 
-  /* 🚀 Inicial */
+  /*carga inicial */
   useEffect(() => {
     fetchProducts();
   }, []);
