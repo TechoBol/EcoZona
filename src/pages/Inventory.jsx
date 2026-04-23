@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthentication from "../hooks/useAuthentication";
+import useInventory from "../hooks/useInventory";
 
 import {
   Wrapper,
@@ -25,27 +26,20 @@ import {
 
 import { ScanLine } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
-
-// 🛒 STORE GLOBAL
 import { useCartStore } from "../components/store/cartStore";
 
 function Inventory() {
-  const { logOut } = useAuthentication();
   const navigate = useNavigate();
-
   const addToCart = useCartStore((state) => state.addToCart);
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const pressTimer = useRef(null);
-  const longPressProductId = useRef(null);
 
-  const products = [
-    { id: 1, name: "Termo Stanley", code: "123456", price: "150.00", stock: 10 },
-    { id: 2, name: "Coca Cola", code: "654321", price: "20.00", stock: 8 },
-  ];
+  const { products, search, setSearch } = useInventory();
+
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [errorProductId, setErrorProductId] = useState(null);
+
+  const pressTimer = useRef(null);
 
   const handleMouseDown = (productId) => {
-    longPressProductId.current = productId;
-
     pressTimer.current = setTimeout(() => {
       navigate(`/product/${productId}`);
     }, 700);
@@ -53,7 +47,6 @@ function Inventory() {
 
   const handleMouseUp = () => {
     clearTimeout(pressTimer.current);
-    longPressProductId.current = null;
   };
 
   const toggleSelect = (product) => {
@@ -69,6 +62,15 @@ function Inventory() {
   };
 
   const handleClick = (product) => {
+    const stock = product.inventories?.[0]?.quantity || 0;
+    if (stock === 0) {
+      setErrorProductId(product.id);
+      setTimeout(() => {
+        setErrorProductId(null);
+      }, 400);
+      return;
+    }
+
     toggleSelect(product);
   };
 
@@ -92,7 +94,11 @@ function Inventory() {
       </Header>
 
       <SearchBar>
-        <SearchInput placeholder="Buscar producto..." />
+        <SearchInput
+          placeholder="Buscar producto..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <ScanButton>
           <ScanLine size={18} />
         </ScanButton>
@@ -103,15 +109,15 @@ function Inventory() {
           <Card
             key={product.id}
             $selected={isSelected(product.id)}
-            onContextMenu={(e) => e.preventDefault()}
+            $error={errorProductId === product.id}
             onMouseDown={() => handleMouseDown(product.id)}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onClick={() => handleClick(product)}
-            onTouchStart={() => handleMouseDown(product.id)}
-            onTouchEnd={handleMouseUp}
           >
-            <ProductImage src="https://via.placeholder.com/150" />
+            <ProductImage
+              src={product.image || "https://via.placeholder.com/150"}
+            />
 
             <ProductInfo>
               <ProductName>{product.name}</ProductName>
@@ -119,7 +125,14 @@ function Inventory() {
 
               <ProductFooter>
                 <Price>Bs {product.price}</Price>
-                <Stock>Stock: {product.stock}</Stock>
+                {(() => {
+                  const stock = product.inventories?.[0]?.quantity || 0;
+                  return (
+                    <Stock style={{ color: stock === 0 ? "#e81d12" : "#333" }}>
+                      Cant: {stock}
+                    </Stock>
+                  );
+                })()}
               </ProductFooter>
             </ProductInfo>
           </Card>

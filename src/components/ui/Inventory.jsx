@@ -138,22 +138,36 @@ export const ProductsGrid = styled.div`
 
 /* CARD */
 export const Card = styled.div`
-  background: #ffffff;
-  border-radius: 20px;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  padding: 12px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 
-  /* BORDE DINÁMICO */
-  border: ${({ $selected }) =>
-    $selected ? "2px solid #22c55e" : "2px solid transparent"};
+  border: 2px solid
+    ${(props) =>
+      props.$error
+        ? "#dc655f"
+        : props.$selected
+        ? "#69d584"
+        : "transparent"};
 
   transition: all 0.2s ease;
 
-  touch-action: manipulation;
-  -webkit-user-select: none;
-  user-select: none;
+  ${(props) =>
+    props.$error &&
+    `
+    animation: shake 0.25s;
+  `}
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    50% { transform: translateX(4px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+  }
 `;
 
 export const ProductImage = styled.img`

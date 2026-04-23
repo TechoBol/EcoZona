@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLoginStore } from "../components/store/loginStore";
 import { getProducts } from "../services/InventoryService";
 
 interface Product {
@@ -11,24 +12,29 @@ interface Product {
 }
 
 const useInventory = () => {
+  const { token } = useLoginStore();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  /*Cargar productos */
+  /* 🔹 GET PRODUCTS */
   const fetchProducts = async () => {
     setIsLoading(true);
 
-    const data = await getProducts();
-
-    setProducts(data);
-    setFilteredProducts(data);
-
-    setIsLoading(false);
+    try {
+      const data = await getProducts(token);
+      setProducts(data);
+      setFilteredProducts(data);
+    } catch (error) {
+      console.error("Error al obtener productos:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  /*Filtro de búsqueda */
+  /* 🔍 FILTRO */
   useEffect(() => {
     if (!search) {
       setFilteredProducts(products);
@@ -43,7 +49,7 @@ const useInventory = () => {
     setFilteredProducts(filtered);
   }, [search, products]);
 
-  /*carga inicial */
+  /* 🚀 INIT */
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -53,7 +59,7 @@ const useInventory = () => {
     search,
     setSearch,
     isLoading,
-    refresh: fetchProducts
+    refresh: fetchProducts,
   };
 };
 
