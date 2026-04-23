@@ -9,10 +9,11 @@ export const Wrapper = styled.div`
 
 /* HEADER */
 export const Header = styled.div`
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  position: relative;
+  display: flex;
   align-items: center;
-  margin-bottom: 30px;
+  justify-content: center; /* centra el título */
+  padding: 10px 0;
 `;
 
 /* TITLE */
@@ -244,4 +245,21 @@ export const ScannerOverlay = styled.div`
   justify-content: center;
 
   z-index: 9999;
+`;
+
+export const BackButton = styled.button`
+  position: absolute;
+  left: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #C85F1C;
+
+  &:hover {
+    opacity: 0.6;
+  }
 `;

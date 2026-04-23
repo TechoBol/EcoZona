@@ -174,6 +174,7 @@ export const ProductImage = styled.img`
   width: 100%;
   height: 120px;
   object-fit: cover;
+  border-radius: 25px;
 `;
 
 export const ProductInfo = styled.div`

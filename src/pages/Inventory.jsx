@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthentication from "../hooks/useAuthentication";
 import useInventory from "../hooks/useInventory";
@@ -27,7 +27,7 @@ import {
 import { ScanLine } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
-
+import { useAmazonS3 } from "../hooks/useAmazonS3";
 function Inventory() {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addToCart);
@@ -74,8 +74,7 @@ function Inventory() {
     toggleSelect(product);
   };
 
-  const isSelected = (id) =>
-    selectedProducts.some((p) => p.id === id);
+  const isSelected = (id) => selectedProducts.some((p) => p.id === id);
 
   const handleGoToCart = () => {
     selectedProducts.forEach((product) => {
@@ -84,6 +83,44 @@ function Inventory() {
 
     navigate("/cart");
   };
+
+  const [imageUrls, setImageUrls] = useState({});
+  const { getFileUrl } = useAmazonS3();
+
+useEffect(() => {
+  if (!products.length) return;
+
+  const loadImages = async () => {
+    const urls = {};
+
+    for (const product of products) {
+      if (!product.imageUrl) continue;
+      if (imageUrls[product.id]) continue;
+
+      // ✅ Solo intenta S3 si parece un key válido
+      const isS3Key = product.imageUrl.startsWith("ECOZONA/");
+      
+      if (!isS3Key) {
+        urls[product.id] = null; // fallback al placeholder
+        continue;
+      }
+
+      try {
+        const url = await getFileUrl(product.imageUrl);
+        urls[product.id] = url;
+      } catch (err) {
+        console.error("Error imagen:", err);
+        urls[product.id] = null;
+      }
+    }
+
+    if (Object.keys(urls).length > 0) {
+      setImageUrls((prev) => ({ ...prev, ...urls }));
+    }
+  };
+
+  loadImages();
+}, [products]); 
 
   return (
     <Wrapper>
@@ -116,9 +153,8 @@ function Inventory() {
             onClick={() => handleClick(product)}
           >
             <ProductImage
-              src={product.image || "https://via.placeholder.com/150"}
+              src={imageUrls[product.id] || "https://via.placeholder.com/150"}
             />
-
             <ProductInfo>
               <ProductName>{product.name}</ProductName>
               <ProductCode>{product.code}</ProductCode>

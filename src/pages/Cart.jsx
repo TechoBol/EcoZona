@@ -23,23 +23,18 @@ import {
   BackButton,
 } from "../components/ui/Cart";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { useCartStore } from "../components/store/cartStore";
-import { Trash2 } from "lucide-react";
-import { useNavigate } from "react-router-dom"; // 🔥 IMPORTANTE
+import { useNavigate } from "react-router-dom";
+import { useLoginStore } from "../components/store/loginStore"; // 🔥 IMPORTANTE
+import { useCart } from "../hooks/useCart";
 
 const Cart = () => {
   const navigate = useNavigate();
 
-  const {
-    cartItems,
-    removeItem,
-    increaseQty,
-    decreaseQty,
-    getTotal,
-    clearCart, // 🔥 NUEVO
-  } = useCartStore();
-
+  const { cartItems, removeItem, increaseQty, decreaseQty, getTotal, clearCart } =
+    useCartStore();
+  const {createSale} = useCart();
   const [descuento, setDescuento] = useState("0");
 
   const subtotal = getTotal();
@@ -47,24 +42,16 @@ const Cart = () => {
   const total = Math.max(0, subtotal - discountValue);
 
   const generatePayload = () => {
-    const items = cartItems.map((item) => ({
-      productId: item.id,
-      name: item.name,
-      code: item.code,
-      price: item.price,
-      quantity: item.quantity,
-      subtotal: item.price * item.quantity,
-    }));
-
     return {
-      items,
-      subtotal: Number(subtotal.toFixed(2)),
-      discount: Number(discountValue.toFixed(2)),
-      total: Number(total.toFixed(2)),
+      products: cartItems.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
+      discount: discountValue, 
     };
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cartItems.length === 0) {
       alert("El carrito está vacío");
       return;
@@ -72,19 +59,18 @@ const Cart = () => {
 
     const payload = generatePayload();
 
-    console.log("VENTA:", payload);
+    console.log("🚀 PAYLOAD CORRECTO:", payload);
 
-    // 🔥 AQUÍ IRÁ TU API
-    // await createSale(payload);
+    try {
+      const venta = await createSale(payload);
 
-    // ✅ 1. limpiar carrito
-    clearCart();
-
-    // ✅ 2. reset descuento
-    setDescuento("0");
-
-    // ✅ 3. redirigir
-    navigate("/inventory");
+      clearCart();
+      setDescuento("0");
+      navigate("/inventory");
+    } catch (err) {
+      console.error(err);
+      alert("Error al procesar la venta");
+    }
   };
 
   return (
@@ -93,7 +79,6 @@ const Cart = () => {
         <BackButton onClick={() => navigate("/inventory")}>
           <ArrowLeft size={22} />
         </BackButton>
-
         <Title>Venta</Title>
       </Header>
 

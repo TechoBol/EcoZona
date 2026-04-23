@@ -18,14 +18,17 @@ import {
   PreviewContainer,
   RemoveButton,
   ScannerOverlay,
+  BackButton,
 } from "../../components/ui/Product";
-import { X } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { errorToast, successToast } from "../../services/toasts";
 import BarcodeReader from "../Scanner/BarcodeReader";
 
 function ProductForm() {
   const navigate = useNavigate();
-  const { createProduct, loading } = useProduct();
+  const { createProduct, loading,setLoading, subirArchivo } = useProduct();
+  const [isClosing, setIsClosing] = useState(false);
+  const [scanning, setScanning] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -61,45 +64,49 @@ function ProductForm() {
     },
   });
 
-  // ✅ evita recrear URL cada render
   const previewUrl = useMemo(() => {
     if (!form.values.imageFile) return null;
     return URL.createObjectURL(form.values.imageFile);
   }, [form.values.imageFile]);
 
   const handleSubmit = form.onSubmit(async (values) => {
-    console.log(values.barcode);
-    /* try {
-      const data = new FormData();
-
-      data.append("name", values.name);
-      data.append("description", values.description);
-      data.append("barcode", values.barcode);
-      data.append("price", values.price);
-      data.append("finalPrice", values.finalPrice);
-      data.append("stock", values.stock);
+    try {
+      setLoading(true)
+      let imageUrl = null;
 
       if (values.imageFile) {
-        data.append("image", values.imageFile);
+        imageUrl = await subirArchivo(values.imageFile , values.barcode);
       }
 
-      await createProduct(data);
+      const payload = {
+        name: values.name,
+        description: values.description,
+        barcode: values.barcode,
+        price: Number(values.price),
+        finalPrice: Number(values.finalPrice),
+        stock: Number(values.stock),
+        imageUrl: imageUrl,
+      };
+
+      await createProduct(payload);
 
       successToast("Producto creado");
       form.reset();
       navigate("/inventory");
-    } catch {
+    } catch (err) {
+      console.error(err);
       errorToast("Error creando producto");
-    }*/
+    }
   });
-  const [isClosing, setIsClosing] = useState(false);
-  const [scanning, setScanning] = useState(false);
+
+
   return (
     <Wrapper>
       <Header>
-        <div />
+        <BackButton onClick={() => navigate("/inventory")}>
+          <ArrowLeft size={22} />
+        </BackButton>
         <Title>Crear Producto</Title>
-        <div />
       </Header>
 
       <Form onSubmit={handleSubmit}>
