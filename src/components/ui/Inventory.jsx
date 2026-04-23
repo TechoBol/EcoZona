@@ -179,6 +179,8 @@ export const ProductImage = styled.img`
 
 export const ProductInfo = styled.div`
   padding: 10px;
+  display: flex;
+  flex-direction: column;
 `;
 
 export const ProductName = styled.p`

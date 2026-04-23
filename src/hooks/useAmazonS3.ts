@@ -46,7 +46,6 @@ export const useAmazonS3 = () => {
     return key;
   };
 
-
   const uploadProductImage = async (file: File, name: string) => {
     const extension = file.type.split("/")[1] || "jpg";
     const key = `ECOZONA/PRODUCTS/${name}.${extension}`;
