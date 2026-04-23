@@ -26,7 +26,7 @@ import {
 import { ArrowLeft, Trash2 } from "lucide-react";
 import { useCartStore } from "../components/store/cartStore";
 import { useNavigate } from "react-router-dom";
-import { useLoginStore } from "../components/store/loginStore"; // 🔥 IMPORTANTE
+import { useLoginStore } from "../components/store/loginStore";
 import { useCart } from "../hooks/useCart";
 
 const Cart = () => {
@@ -59,7 +59,7 @@ const Cart = () => {
 
     const payload = generatePayload();
 
-    console.log("🚀 PAYLOAD CORRECTO:", payload);
+    console.log("PAYLOAD CORRECTO:", payload);
 
     try {
       const venta = await createSale(payload);
@@ -91,7 +91,8 @@ const Cart = () => {
               <ProductInfo>
                 <ProductName>{item.name}</ProductName>
                 <ProductCode>{item.code}</ProductCode>
-                <ProductPrice>Bs {item.price}</ProductPrice>
+                <ProductPrice style={{ color: "gray" }}>
+                  Bs {item.finalPrice}</ProductPrice>
               </ProductInfo>
 
               <QuantityControls>

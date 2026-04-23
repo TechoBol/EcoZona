@@ -3,7 +3,7 @@ import { create } from "zustand";
 interface Product {
   id: number;
   name: string;
-  price: number; //CAMBIO IMPORTANTE
+  finalPrice: number;
   quantity?: number;
   code?: string;
   image?: string;
@@ -68,10 +68,10 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   getTotal: () => {
     return get().cartItems.reduce((acc, item) => {
-      return acc + item.price * (item.quantity || 1);
+      return acc + item.finalPrice * (item.quantity || 1);
     }, 0);
   },
 
-  // 🔥 LIMPIAR CARRITO
+  // LIMPIAR CARRITO
   clearCart: () => set({ cartItems: [] }),
 }));

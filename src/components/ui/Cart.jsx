@@ -84,7 +84,7 @@ export const ProductInfo = styled.div`
 
 export const ProductName = styled.span`
   font-weight: 600;
-  font-size: 14px;
+  font-size: 20px;
 `;
 
 export const ProductCode = styled.span`
@@ -96,6 +96,7 @@ export const ProductPrice = styled.span`
   font-size: 14px;
   font-weight: 500;
   margin-top: 4px;
+  color: gray:
 `;
 
 /* QUANTITY */
@@ -185,7 +186,7 @@ export const DiscountInput = styled.input`
   outline: none;
 
   &:focus {
-    border-color: #404594;
+    border-color: #C85F1C;
   }
 
   &::-webkit-outer-spin-button,

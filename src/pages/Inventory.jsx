@@ -32,7 +32,12 @@ function Inventory() {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const { products, search, setSearch } = useInventory();
+  const {
+    products,
+    search,
+    setSearch,
+    onFilterTextBoxChanged
+  } = useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
@@ -87,40 +92,40 @@ function Inventory() {
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
-useEffect(() => {
-  if (!products.length) return;
+  useEffect(() => {
+    if (!products.length) return;
 
-  const loadImages = async () => {
-    const urls = {};
+    const loadImages = async () => {
+      const urls = {};
 
-    for (const product of products) {
-      if (!product.imageUrl) continue;
-      if (imageUrls[product.id]) continue;
+      for (const product of products) {
+        if (!product.imageUrl) continue;
+        if (imageUrls[product.id]) continue;
 
-      // ✅ Solo intenta S3 si parece un key válido
-      const isS3Key = product.imageUrl.startsWith("ECOZONA/");
-      
-      if (!isS3Key) {
-        urls[product.id] = null; // fallback al placeholder
-        continue;
+        // ✅ Solo intenta S3 si parece un key válido
+        const isS3Key = product.imageUrl.startsWith("ECOZONA/");
+
+        if (!isS3Key) {
+          urls[product.id] = null; // fallback al placeholder
+          continue;
+        }
+
+        try {
+          const url = await getFileUrl(product.imageUrl);
+          urls[product.id] = url;
+        } catch (err) {
+          console.error("Error imagen:", err);
+          urls[product.id] = null;
+        }
       }
 
-      try {
-        const url = await getFileUrl(product.imageUrl);
-        urls[product.id] = url;
-      } catch (err) {
-        console.error("Error imagen:", err);
-        urls[product.id] = null;
+      if (Object.keys(urls).length > 0) {
+        setImageUrls((prev) => ({ ...prev, ...urls }));
       }
-    }
+    };
 
-    if (Object.keys(urls).length > 0) {
-      setImageUrls((prev) => ({ ...prev, ...urls }));
-    }
-  };
-
-  loadImages();
-}, [products]); 
+    loadImages();
+  }, [products]);
 
   return (
     <Wrapper>
@@ -134,7 +139,7 @@ useEffect(() => {
         <SearchInput
           placeholder="Buscar producto..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={onFilterTextBoxChanged}
         />
         <ScanButton>
           <ScanLine size={18} />

@@ -5,9 +5,9 @@ import { getProducts } from "../services/InventoryService";
 interface Product {
   id: string;
   name: string;
-  code: string;
+  barcode?: string; // 🔥 CORRECTO (no code)
   price: number;
-  stock: number;
+  stock?: number;
   image?: string;
 }
 
@@ -19,7 +19,6 @@ const useInventory = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  /* 🔹 GET PRODUCTS */
   const fetchProducts = async () => {
     setIsLoading(true);
 
@@ -34,7 +33,7 @@ const useInventory = () => {
     }
   };
 
-  /* 🔍 FILTRO */
+  /* 🔍 FILTRO CORREGIDO */
   useEffect(() => {
     if (!search) {
       setFilteredProducts(products);
@@ -42,14 +41,18 @@ const useInventory = () => {
     }
 
     const filtered = products.filter((product) =>
-      product.name.toLowerCase().includes(search.toLowerCase()) ||
-      product.code.toLowerCase().includes(search.toLowerCase())
+      (product.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (product.barcode || "").toLowerCase().includes(search.toLowerCase())
     );
 
     setFilteredProducts(filtered);
   }, [search, products]);
 
-  /* 🚀 INIT */
+  /* 🔥 ESTA ES LA FUNCIÓN QUE TE FALTABA USAR */
+  const onFilterTextBoxChanged = (e: any) => {
+    setSearch(e.target.value);
+  };
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -59,6 +62,7 @@ const useInventory = () => {
     search,
     setSearch,
     isLoading,
+    onFilterTextBoxChanged,
     refresh: fetchProducts,
   };
 };
