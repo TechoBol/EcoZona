@@ -12,7 +12,7 @@ const useAuthentication = () => {
     setRole,
     changeLogInState,
     setToken,
-    setRegional,
+    setLocation,
   } = useLoginStore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -39,8 +39,8 @@ const useAuthentication = () => {
       setFullName(`${response.name} ${response.lastName}`);
       setToken(response.token);
       setRole(response.role);
-      setRegional(response.regionalOffice);
-
+      setLocation(response.location);
+      console.log(response)
       changeLogInState();
 
       // TOAST
@@ -62,7 +62,7 @@ const useAuthentication = () => {
     setFullName("");
     setRole("");
     setToken("");
-    setRegional("");
+    setLocation("");
 
     changeLogInState();
 

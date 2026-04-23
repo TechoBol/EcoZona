@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast"; // 🔥 AÑADIDO
 import Login from "./pages/Login";
 import Inventory from "./pages/Inventory";
 import Cart from "./pages/Cart";
-import Products from "./pages/Products";
+import Product from "./pages/Product";
 
 function App() {
   const { isLoggedIn, role } = useLoginStore();
@@ -20,23 +20,19 @@ function App() {
       <Routes>
         <Route
           path="/login"
-          element={
-            isLoggedIn ? <Navigate to="/inventory" /> : <Login />
-          }
+          element={isLoggedIn ? <Navigate to="/inventory" /> : <Login />}
         />
 
         {isLoggedIn && (
           <>
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/cart" element={<Cart />} />
-                        <Route path="/product/:id" element={<Products />} />
-
+            <Route path="/product/:id" element={<Product/>} />
+            <Route path="/product" element={<Product/>} />
           </>
         )}
 
-        {!isLoggedIn && (
-          <Route path="*" element={<Navigate to="/login" />} />
-        )}
+        {!isLoggedIn && <Route path="*" element={<Navigate to="/login" />} />}
 
         {isLoggedIn && (
           <Route path="*" element={<Navigate to="/inventory" />} />

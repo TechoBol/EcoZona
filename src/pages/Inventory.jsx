@@ -138,7 +138,9 @@ function Inventory() {
       {/* BOTTOM ACTIONS */}
       <BottomActions>
         {/* ➕ */}
-        <AddProductButton>+</AddProductButton>
+        <AddProductButton onClick={() => navigate("/product")}>
+          +
+        </AddProductButton>
 
         {/* 🟣 */}
         <AddToCartButton
