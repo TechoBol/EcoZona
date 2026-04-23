@@ -1,9 +1,16 @@
 import { errorToast } from "../services/toasts";
 
-export const getProducts = async () => {
+export const getProducts = async (token?: string) => {
   try {
     const response = await fetch(
-      `${import.meta.env.VITE_API_DOMAIN}/products`
+      `${import.meta.env.VITE_API_DOMAIN}/product/get-products`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": token,
+        },
+      }
     );
 
     if (!response.ok) {
@@ -12,7 +19,7 @@ export const getProducts = async () => {
     }
 
     const data = await response.json();
-    return data;
+    return data || [];
 
   } catch (error) {
     console.error("Error:", error);

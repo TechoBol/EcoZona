@@ -59,13 +59,11 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   decreaseQty: (id) =>
     set((state) => ({
-      cartItems: state.cartItems
-        .map((p) =>
-          p.id === id
-            ? { ...p, quantity: (p.quantity || 1) - 1 }
-            : p
-        )
-        .filter((p) => (p.quantity || 1) > 0),
+      cartItems: state.cartItems.map((p) =>
+        p.id === id
+          ? { ...p, quantity: Math.max(1, (p.quantity || 1) - 1) }
+          : p
+      ),
     })),
 
   getTotal: () => {

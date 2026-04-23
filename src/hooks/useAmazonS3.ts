@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useRef } from "react";
 import {
   S3Client,
   PutObjectCommand,
@@ -7,10 +7,9 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const useAmazonS3 = () => {
-  const [s3, setS3] = useState<S3Client | null>(null);
-
-  useEffect(() => {
-    const client = new S3Client({
+  // ✅ Se crea una sola vez, sincrónicamente, sin useEffect
+  const s3Ref = useRef<S3Client>(
+    new S3Client({
       region: "us-east-1",
       endpoint: import.meta.env.VITE_ACCOUNT_ID,
       credentials: {
@@ -18,19 +17,15 @@ export const useAmazonS3 = () => {
         secretAccessKey: import.meta.env.VITE_ACCESS_KEY_SECRET,
       },
       forcePathStyle: true,
-    });
-
-    setS3(client);
-  }, []);
+    })
+  );
 
   const uploadProductImage = async (file: File, name: string) => {
-    if (!s3) throw new Error("S3 no inicializado");
-
     const extension = file.type.split("/")[1] || "jpg";
     const key = `ECOZONA/PRODUCTS/${name}.${extension}`;
 
     const signedUrl = await getSignedUrl(
-      s3,
+      s3Ref.current,
       new PutObjectCommand({
         Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
         Key: key,
@@ -42,24 +37,17 @@ export const useAmazonS3 = () => {
     const response = await fetch(signedUrl, {
       method: "PUT",
       body: file,
-      headers: {
-        "Content-Type": file.type,
-      },
+      headers: { "Content-Type": file.type },
     });
 
-    if (!response.ok) {
-      throw new Error("Error subiendo imagen");
-    }
+    if (!response.ok) throw new Error("Error subiendo imagen");
 
-    return key; // 🔥 esto guardas en BD
+    return key;
   };
 
-  // 🔥 OBTENER URL PARA MOSTRAR
   const getFileUrl = async (key: string) => {
-    if (!s3) throw new Error("S3 no inicializado");
-
     const signedUrl = await getSignedUrl(
-      s3,
+      s3Ref.current,
       new GetObjectCommand({
         Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
         Key: key,
@@ -70,8 +58,5 @@ export const useAmazonS3 = () => {
     return signedUrl;
   };
 
-  return {
-    uploadProductImage,
-    getFileUrl,
-  };
+  return { uploadProductImage, getFileUrl };
 };

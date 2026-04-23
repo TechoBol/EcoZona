@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthentication from "../hooks/useAuthentication";
+import useInventory from "../hooks/useInventory";
 
 import {
   Wrapper,
@@ -25,27 +26,20 @@ import {
 
 import { ScanLine } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
-
-// 🛒 STORE GLOBAL
 import { useCartStore } from "../components/store/cartStore";
-
+import { useAmazonS3 } from "../hooks/useAmazonS3";
 function Inventory() {
-  const { logOut } = useAuthentication();
   const navigate = useNavigate();
-
   const addToCart = useCartStore((state) => state.addToCart);
-  const [selectedProducts, setSelectedProducts] = useState([]);
-  const pressTimer = useRef(null);
-  const longPressProductId = useRef(null);
 
-  const products = [
-    { id: 1, name: "Termo Stanley", code: "123456", price: "150.00", stock: 10 },
-    { id: 2, name: "Coca Cola", code: "654321", price: "20.00", stock: 8 },
-  ];
+  const { products, search, setSearch } = useInventory();
+
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [errorProductId, setErrorProductId] = useState(null);
+
+  const pressTimer = useRef(null);
 
   const handleMouseDown = (productId) => {
-    longPressProductId.current = productId;
-
     pressTimer.current = setTimeout(() => {
       navigate(`/product/${productId}`);
     }, 700);
@@ -53,7 +47,6 @@ function Inventory() {
 
   const handleMouseUp = () => {
     clearTimeout(pressTimer.current);
-    longPressProductId.current = null;
   };
 
   const toggleSelect = (product) => {
@@ -69,11 +62,19 @@ function Inventory() {
   };
 
   const handleClick = (product) => {
+    const stock = product.inventories?.[0]?.quantity || 0;
+    if (stock === 0) {
+      setErrorProductId(product.id);
+      setTimeout(() => {
+        setErrorProductId(null);
+      }, 400);
+      return;
+    }
+
     toggleSelect(product);
   };
 
-  const isSelected = (id) =>
-    selectedProducts.some((p) => p.id === id);
+  const isSelected = (id) => selectedProducts.some((p) => p.id === id);
 
   const handleGoToCart = () => {
     selectedProducts.forEach((product) => {
@@ -82,6 +83,44 @@ function Inventory() {
 
     navigate("/cart");
   };
+
+  const [imageUrls, setImageUrls] = useState({});
+  const { getFileUrl } = useAmazonS3();
+
+useEffect(() => {
+  if (!products.length) return;
+
+  const loadImages = async () => {
+    const urls = {};
+
+    for (const product of products) {
+      if (!product.imageUrl) continue;
+      if (imageUrls[product.id]) continue;
+
+      // ✅ Solo intenta S3 si parece un key válido
+      const isS3Key = product.imageUrl.startsWith("ECOZONA/");
+      
+      if (!isS3Key) {
+        urls[product.id] = null; // fallback al placeholder
+        continue;
+      }
+
+      try {
+        const url = await getFileUrl(product.imageUrl);
+        urls[product.id] = url;
+      } catch (err) {
+        console.error("Error imagen:", err);
+        urls[product.id] = null;
+      }
+    }
+
+    if (Object.keys(urls).length > 0) {
+      setImageUrls((prev) => ({ ...prev, ...urls }));
+    }
+  };
+
+  loadImages();
+}, [products]); 
 
   return (
     <Wrapper>
@@ -92,7 +131,11 @@ function Inventory() {
       </Header>
 
       <SearchBar>
-        <SearchInput placeholder="Buscar producto..." />
+        <SearchInput
+          placeholder="Buscar producto..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
         <ScanButton>
           <ScanLine size={18} />
         </ScanButton>
@@ -103,23 +146,29 @@ function Inventory() {
           <Card
             key={product.id}
             $selected={isSelected(product.id)}
-            onContextMenu={(e) => e.preventDefault()}
+            $error={errorProductId === product.id}
             onMouseDown={() => handleMouseDown(product.id)}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onClick={() => handleClick(product)}
-            onTouchStart={() => handleMouseDown(product.id)}
-            onTouchEnd={handleMouseUp}
           >
-            <ProductImage src="https://via.placeholder.com/150" />
-
+            <ProductImage
+              src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+            />
             <ProductInfo>
               <ProductName>{product.name}</ProductName>
               <ProductCode>{product.code}</ProductCode>
 
               <ProductFooter>
                 <Price>Bs {product.price}</Price>
-                <Stock>Stock: {product.stock}</Stock>
+                {(() => {
+                  const stock = product.inventories?.[0]?.quantity || 0;
+                  return (
+                    <Stock style={{ color: stock === 0 ? "#e81d12" : "#333" }}>
+                      Cant: {stock}
+                    </Stock>
+                  );
+                })()}
               </ProductFooter>
             </ProductInfo>
           </Card>
