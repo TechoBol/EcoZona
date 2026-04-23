@@ -92,7 +92,7 @@ function ProductForm() {
 
       successToast("Producto creado");
       form.reset();
-      navigate("/inventory");
+      navigate("/inventory", { replace: true })
     } catch (err) {
       console.error(err);
       errorToast("Error creando producto");
