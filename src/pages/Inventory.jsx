@@ -160,7 +160,7 @@ useEffect(() => {
               <ProductCode>{product.code}</ProductCode>
 
               <ProductFooter>
-                <Price>Bs {product.price}</Price>
+                <Price>Bs {product.finalPrice}</Price>
                 {(() => {
                   const stock = product.inventories?.[0]?.quantity || 0;
                   return (

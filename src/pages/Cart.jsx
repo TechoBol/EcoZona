@@ -28,13 +28,21 @@ import { useCartStore } from "../components/store/cartStore";
 import { useNavigate } from "react-router-dom";
 import { useLoginStore } from "../components/store/loginStore"; // 🔥 IMPORTANTE
 import { useCart } from "../hooks/useCart";
+import { generarPDF } from "../components/pdf/generarPDF";
 
 const Cart = () => {
   const navigate = useNavigate();
 
-  const { cartItems, removeItem, increaseQty, decreaseQty, getTotal, clearCart } =
-    useCartStore();
-  const {createSale} = useCart();
+  const {
+    cartItems,
+    removeItem,
+    increaseQty,
+    decreaseQty,
+    getTotal,
+    clearCart,
+  } = useCartStore();
+
+  const { createSale } = useCart();
   const [descuento, setDescuento] = useState("0");
 
   const subtotal = getTotal();
@@ -47,7 +55,7 @@ const Cart = () => {
         productId: item.id,
         quantity: item.quantity,
       })),
-      discount: discountValue, 
+      discount: discountValue,
     };
   };
 
@@ -57,12 +65,16 @@ const Cart = () => {
       return;
     }
 
-    const payload = generatePayload();
-
-    console.log("🚀 PAYLOAD CORRECTO:", payload);
+    const payload = {
+      products: cartItems.map((item) => ({
+        productId: item.id,
+        quantity: item.quantity,
+      })),
+      discount: Number(descuento),
+    };
 
     try {
-      const venta = await createSale(payload);
+      await createSale(payload, cartItems, subtotal, Number(descuento), total);
 
       clearCart();
       setDescuento("0");
