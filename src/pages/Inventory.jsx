@@ -20,76 +20,76 @@ import {
   Stock,
   BottomActions,
   AddProductButton,
-  LogoutButton,
   AddToCartButton,
 } from "../components/ui/Inventory";
 
-import { ShoppingCart, ScanLine, LogOut } from "lucide-react";
+import { ScanLine } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
+
+// 🛒 STORE GLOBAL
+import { useCartStore } from "../components/store/cartStore";
 
 function Inventory() {
   const { logOut } = useAuthentication();
   const navigate = useNavigate();
 
+  const addToCart = useCartStore((state) => state.addToCart);
+
+  // 🟢 SELECCIÓN LOCAL (NO CARRITO)
   const [selectedProducts, setSelectedProducts] = useState([]);
 
+  // 🔵 LONG PRESS (detalle)
   const pressTimer = useRef(null);
-  const isLongPress = useRef(false);
+  const longPressProductId = useRef(null);
 
   const products = [
-    { id: 1, name: "Termo Stanley" },
-    { id: 2, name: "Coca Cola" },
+    { id: 1, name: "Termo Stanley", code: "123456", price: "150.00", stock: 10 },
+    { id: 2, name: "Coca Cola", code: "654321", price: "20.00", stock: 8 },
   ];
 
-  // 🔥 LONG PRESS
+  // 🔵 LONG PRESS → detalle producto
   const handleMouseDown = (productId) => {
-    isLongPress.current = false;
+    longPressProductId.current = productId;
 
     pressTimer.current = setTimeout(() => {
-      isLongPress.current = true;
-
-      console.log("👉 LONG PRESS → ir a detalle");
-
       navigate(`/product/${productId}`);
     }, 700);
   };
 
-  // 🔥 SOLO LIMPIA TIMER
   const handleMouseUp = () => {
     clearTimeout(pressTimer.current);
+    longPressProductId.current = null;
   };
 
-  // 🔥 CLICK NORMAL (SELECCIÓN)
-  const handleClick = (product) => {
-    if (isLongPress.current) return;
-
-    console.log("🖱️ CLICK NORMAL");
-
-    toggleSelect(product);
-  };
-
-  // 🔥 AGREGAR / QUITAR
+  // 🟢 TOGGLE SELECCIÓN
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
 
       if (exists) {
-        const updated = prev.filter((p) => p.id !== product.id);
-        console.log("❌ REMOVIDO:", product.id);
-        console.log("📦 LISTA:", updated);
-        return updated;
-      } else {
-        const updated = [...prev, product];
-        console.log("✅ AGREGADO:", product.id);
-        console.log("📦 LISTA:", updated);
-        return updated;
+        return prev.filter((p) => p.id !== product.id);
       }
+
+      return [...prev, product];
     });
   };
 
-  // 🔥 VERIFICAR SI ESTÁ SELECCIONADO
-  const isSelected = (id) => {
-    return selectedProducts.some((p) => p.id === id);
+  // 🟢 CLICK EN PRODUCTO = SELECCIÓN
+  const handleClick = (product) => {
+    toggleSelect(product);
+  };
+
+  // 🟣 VERIFICAR SELECCIÓN VISUAL
+  const isSelected = (id) =>
+    selectedProducts.some((p) => p.id === id);
+
+  // 🛒 ENVIAR AL CARRITO + IR A CART
+  const handleGoToCart = () => {
+    selectedProducts.forEach((product) => {
+      addToCart(product);
+    });
+
+    navigate("/cart");
   };
 
   return (
@@ -124,11 +124,11 @@ function Inventory() {
 
             <ProductInfo>
               <ProductName>{product.name}</ProductName>
-              <ProductCode>123456</ProductCode>
+              <ProductCode>{product.code}</ProductCode>
 
               <ProductFooter>
-                <Price>Bs 150.00</Price>
-                <Stock>Stock: 10</Stock>
+                <Price>Bs {product.price}</Price>
+                <Stock>Stock: {product.stock}</Stock>
               </ProductFooter>
             </ProductInfo>
           </Card>
@@ -137,13 +137,9 @@ function Inventory() {
 
       {/* BOTTOM ACTIONS */}
       <BottomActions>
-        {/* ➕ */}
         <AddProductButton>+</AddProductButton>
 
-        {/* 🟣 */}
-        <AddToCartButton
-          onClick={() => console.log("🛒 CARRITO:", selectedProducts)}
-        >
+        <AddToCartButton onClick={handleGoToCart}>
           Ir al carrito ({selectedProducts.length})
         </AddToCartButton>
       </BottomActions>

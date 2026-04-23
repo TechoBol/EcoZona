@@ -145,7 +145,7 @@ export const Card = styled.div`
   flex-direction: column;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 
-  /* 🔥 BORDE DINÁMICO */
+  /* BORDE DINÁMICO */
   border: ${({ $selected }) =>
     $selected ? "2px solid #22c55e" : "2px solid transparent"};
 
