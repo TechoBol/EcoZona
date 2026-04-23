@@ -7,13 +7,8 @@ import { logInAuth } from "../services/AuthenticationService";
 const useAuthentication = () => {
   const navigate = useNavigate();
 
-  const {
-    setFullName,
-    setRole,
-    changeLogInState,
-    setToken,
-    setLocation,
-  } = useLoginStore();
+  const { setFullName, setRole, changeLogInState, setToken, setLocation } =
+    useLoginStore();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -34,13 +29,13 @@ const useAuthentication = () => {
       if (!response) {
         return;
       }
-
+      console.log(response);
       // GUARDAR DATOS
       setFullName(`${response.name} ${response.lastName}`);
       setToken(response.token);
       setRole(response.role);
       setLocation(response.location);
-      console.log(response)
+      console.log(response);
       changeLogInState();
 
       // TOAST
@@ -48,7 +43,6 @@ const useAuthentication = () => {
 
       // REDIRECCIÓN
       navigate("/Inventory");
-
     } catch (error) {
       console.error("Error en login:", error);
       errorToast("Ocurrió un error inesperado");
