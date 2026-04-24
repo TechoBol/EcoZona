@@ -44,18 +44,26 @@ export const ContainerInput = styled.div`
 /* INPUT */
 export const Input = styled.input`
   height: 45px;
+  width: 100%;
   border-radius: 12px;
   border: 1px solid ${({ hasError }) =>
     hasError ? "#ff4d4f" : "#d9d9d9"};
+
   padding: 0 12px;
   font-size: 14px;
   outline: none;
   background: white;
   font-family: var(--font-title);
 
+  transition: all 0.2s ease;
+
   &:focus {
     border-color: #404594;
-    box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
+    box-shadow: 0 0 0 0px transparent; /* 👈 elimina expansión fea */
+  }
+
+  &.with-icon {
+    padding-right: 44px; /* 🔥 espacio real para el icono */
   }
 `;
 
@@ -67,6 +75,43 @@ export const ErrorText = styled.span`
   margin-left: 4px;
 `;
 
+export const BarcodeWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+`;
+
+export const ScanButton = styled.button`
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 30px;
+  height: 30px;
+
+  border: none;
+  background: transparent;
+  color: #404594;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  padding: 0;
+
+  z-index: 2;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+`;
 /* BUTTON */
 export const Button = styled.button`
   margin-top: 20px;
@@ -257,7 +302,7 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #C85F1C;
+  color: #c85f1c;
 
   &:hover {
     opacity: 0.6;

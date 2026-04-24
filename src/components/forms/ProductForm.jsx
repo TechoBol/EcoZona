@@ -19,14 +19,16 @@ import {
   RemoveButton,
   ScannerOverlay,
   BackButton,
+  BarcodeWrapper,
+  ScanButton,
 } from "../../components/ui/Product";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, ScanLine, X } from "lucide-react";
 import { errorToast, successToast } from "../../services/toasts";
 import BarcodeReader from "../Scanner/BarcodeReader";
 
 function ProductForm() {
   const navigate = useNavigate();
-  const { createProduct, loading,setLoading, subirArchivo } = useProduct();
+  const { createProduct, loading, setLoading, subirArchivo } = useProduct();
   const [isClosing, setIsClosing] = useState(false);
   const [scanning, setScanning] = useState(false);
 
@@ -71,11 +73,11 @@ function ProductForm() {
 
   const handleSubmit = form.onSubmit(async (values) => {
     try {
-      setLoading(true)
+      setLoading(true);
       let imageUrl = null;
 
       if (values.imageFile) {
-        imageUrl = await subirArchivo(values.imageFile , values.barcode);
+        imageUrl = await subirArchivo(values.imageFile, values.barcode);
       }
 
       const payload = {
@@ -98,7 +100,6 @@ function ProductForm() {
       errorToast("Error creando producto");
     }
   });
-
 
   return (
     <Wrapper>
@@ -130,27 +131,18 @@ function ProductForm() {
 
         {/* BARCODE */}
         <ContainerInput>
-          <Input
-            hasError={!!form.errors.barcode}
-            placeholder="Código de barras"
-            {...form.getInputProps("barcode")}
-          />
+          <BarcodeWrapper>
+            <Input
+              className="with-icon"
+              hasError={!!form.errors.barcode}
+              placeholder="Código de barras"
+              {...form.getInputProps("barcode")}
+            />
 
-          <button
-            type="button"
-            onClick={() => setScanning(true)}
-            style={{
-              marginTop: "5px",
-              background: "#404594",
-              color: "white",
-              border: "none",
-              padding: "8px",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            📷 Escanear código
-          </button>
+            <ScanButton type="button" onClick={() => setScanning(true)}>
+              <ScanLine size={18} />
+            </ScanButton>
+          </BarcodeWrapper>
 
           {form.errors.barcode && <ErrorText>{form.errors.barcode}</ErrorText>}
         </ContainerInput>
@@ -160,7 +152,7 @@ function ProductForm() {
           <Input
             hasError={!!form.errors.price}
             type="number"
-            placeholder="Precio base"
+            placeholder="Precio unitario"
             {...form.getInputProps("price")}
           />
           {form.errors.price && <ErrorText>{form.errors.price}</ErrorText>}
@@ -171,7 +163,7 @@ function ProductForm() {
           <Input
             hasError={!!form.errors.finalPrice}
             type="number"
-            placeholder="Precio final"
+            placeholder="Precio venta"
             {...form.getInputProps("finalPrice")}
           />
           {form.errors.finalPrice && (
