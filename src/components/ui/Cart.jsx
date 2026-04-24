@@ -28,7 +28,7 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000;
+  color: #0D0D0D;
 
   &:hover {
     opacity: 0.6;
@@ -38,7 +38,7 @@ export const BackButton = styled.button`
 export const Title = styled.h1`
   font-size: 22px;
   font-weight: bold;
-  color: #000;
+  color: #0D0D0D;
   font-family: var(--font-title);
   text-align: center;
 `;
@@ -231,7 +231,7 @@ export const Total = styled.div`
 export const CheckoutButton = styled.button`
   width: 100%;
   margin-top: 15px;
-  background: #404594;
+  background: #F20C1F;
   color: white;
   padding: 12px;
   border-radius: 30px;

@@ -23,7 +23,7 @@ export const Title = styled.h1`
   font-family: var(--font-title);
   font-size: 20px;
   font-weight: 700;
-  color: #000;
+  color: #0D0D0D;
   text-align: center;
   justify-self: center;
 `;
@@ -52,12 +52,6 @@ export const Content = styled.div`
   padding: 0 5px 100px 5px;
 `;
 
-export const Initial = styled.span`
-  color: #000000;
-  font-weight: 700;
-  font-size: 14px;
-`;
-
 /* DROPDOWN */
 export const Dropdown = styled.div`
   position: absolute;
@@ -82,7 +76,7 @@ export const UserInfo = styled.div`
 export const Name = styled.p`
   font-size: 14px;
   font-weight: 600;
-  color: #000;
+  color: #0D0D0D;
 `;
 
 export const Role = styled.p`
@@ -98,7 +92,7 @@ export const LogoutButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: ${({ $active }) => ($active ? "#ffe5e5" : "#ffffff")};
+  background: ${({ $active }) => ($active ? "#ffe5e5" : "#f8f9fa")};
   border: none;
   cursor: pointer;
   font-size: 14px;
@@ -161,9 +155,9 @@ export const Card = styled.div`
 
   border: 2px solid
     ${(props) =>
-      props.$error
-        ? "#dc655f"
-        : props.$selected
+    props.$error
+      ? "#dc655f"
+      : props.$selected
         ? "#69d584"
         : "transparent"};
 
@@ -274,7 +268,7 @@ export const AddProductButton = styled.button`
 
   border-radius: 50%;
   background: transparent;
-  color: #000000;
+  color: #0D0D0D;
   border: none;
 
   display: flex;
@@ -298,10 +292,10 @@ export const ScannerButton = styled.button`
   height: 52px;
 
   border-radius: 50%;
-  background: #c85f1c;
+  background: #F2727D;
   color: #ffffff;
 
-  border: 2px solid #c85f1c;
+  border: 2px solid #F2727D;
 
   display: flex;
   justify-content: center;
@@ -325,7 +319,7 @@ export const AddToCartButton = styled.button`
   flex: 1;
   height: 52px;
 
-  background: #404594;
+  background: #F20C1F;
   color: #ffffff;
 
   border: none;
@@ -362,4 +356,16 @@ export const ScannerOverlay = styled.div`
   align-items: center;
 
   z-index: 9999;
+`;
+
+export const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.2);
+
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  z-index: 40;
 `;

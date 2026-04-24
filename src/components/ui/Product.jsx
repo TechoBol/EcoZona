@@ -53,7 +53,7 @@ export const Input = styled.input`
   background: white;
 
   &:focus {
-    border-color: #404594;
+    border-color: #F20C1F;
     box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
   }
 `;
@@ -72,7 +72,7 @@ export const Button = styled.button`
   height: 50px;
   border-radius: 30px;
 
-  background: #404594;
+  background: #F20C1F;
   color: white;
 
   border: none;
@@ -118,7 +118,7 @@ export const UploadBox = styled.label`
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: #404594;
+    border-color: #F20C1F;
     background: #f4f5ff;
   }
 `;
@@ -182,7 +182,6 @@ export const PreviewImage = styled.img`
 export const RemoveButton = styled.button`
   position: absolute;
 
-  /* 🔥 ajuste fino real */
   top: -12px;
   right: -12px;
 
@@ -256,7 +255,7 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000;
+  color: #0D0D0D;
 
   &:hover {
     opacity: 0.6;

@@ -27,7 +27,7 @@ export const Card = styled.div`
 
 export const Logo = styled.h1`
   text-align: center;
-  color: #404594;
+  color: #F20C1F;
   font-family: var(--font-title);
 
   font-size: 45px;
@@ -79,7 +79,7 @@ export const Button = styled.button`
   height: 48px;
   margin-top: 5px;
 
-  background-color: #404594;
+  background-color: #F20C1F;
   color: #ffffff;
 
   border: none;
