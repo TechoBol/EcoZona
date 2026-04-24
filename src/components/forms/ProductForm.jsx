@@ -94,7 +94,7 @@ function ProductForm() {
 
       successToast("Producto creado");
       form.reset();
-      navigate("/inventory");
+      navigate("/inventory", { replace: true })
     } catch (err) {
       console.error(err);
       errorToast("Error creando producto");
@@ -104,7 +104,7 @@ function ProductForm() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
+        <BackButton onClick={() => navigate("/inventory", { replace: true })}>
           <ArrowLeft size={22} />
         </BackButton>
         <Title>Crear Producto</Title>

@@ -7,6 +7,8 @@ import Login from "./pages/Login";
 import Inventory from "./pages/Inventory";
 import Cart from "./pages/Cart";
 import Product from "./pages/Product";
+import Sucursales from "./pages/Sucursales";
+import Trabajadores from "./pages/Trabajadores";
 
 function App() {
   const { isLoggedIn, role } = useLoginStore();
@@ -29,6 +31,8 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/product/:id" element={<Product/>} />
             <Route path="/product" element={<Product/>} />
+            <Route path="/sucursales" element={<Sucursales/>} />
+            <Route path="/trabajadores" element={<Trabajadores/>} />
           </>
         )}
 
