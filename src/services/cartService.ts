@@ -1,4 +1,3 @@
-//import { Product } from "../components/models/Product";
 
 export const createSaleService = async (data: any, token: string) => {
   const response = await fetch(
