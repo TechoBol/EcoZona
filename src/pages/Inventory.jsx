@@ -44,8 +44,9 @@ function Inventory() {
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
   const [scanning, setScanning] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  // 🛒 MODO CARRITO
+  // MODO CARRITO
   const [scanCartMode, setScanCartMode] = useState(false);
   const [scannedProducts, setScannedProducts] = useState([]);
   const [lastScanned, setLastScanned] = useState({
@@ -66,7 +67,7 @@ function Inventory() {
     beepRef.current.play().catch(() => { });
   };
 
-  // ⏱ LONG PRESS
+  // LONG PRESS
   const pressTimer = useRef(null);
 
   const handleMouseDown = (productId) => {
@@ -77,7 +78,7 @@ function Inventory() {
 
   const handleMouseUp = () => clearTimeout(pressTimer.current);
 
-  // ✅ selección manual
+  // selección manual
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -145,7 +146,7 @@ function Inventory() {
       return;
     }
 
-    // 🔍 MODO BÚSQUEDA
+    // MODO BÚSQUEDA
     setSearch(cleanCode);
     setScanning(false);
 
@@ -155,7 +156,7 @@ function Inventory() {
     }, 100);
   };
 
-  // 🖼 IMÁGENES
+  // IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -195,14 +196,15 @@ function Inventory() {
   return (
     <Wrapper>
       <Header>
-        <UserMenu />
+        {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Inventario</Title>
         <AddProductButton onClick={() => navigate("/product")}>
           <Plus size={18} />
         </AddProductButton>
       </Header>
 
-      {/* 🔍 BUSCADOR */}
+      {/* BUSCADOR */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."

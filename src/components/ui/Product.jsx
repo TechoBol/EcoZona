@@ -2,7 +2,7 @@ import styled, { createGlobalStyle } from "styled-components";
 
 /* WRAPPER */
 export const Wrapper = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #ffffff;
   padding: 20px;
 `;
@@ -58,12 +58,8 @@ export const Input = styled.input`
   transition: all 0.2s ease;
 
   &:focus {
-    border-color: #404594;
-    box-shadow: 0 0 0 0px transparent; /* 👈 elimina expansión fea */
-  }
-
-  &.with-icon {
-    padding-right: 44px; /* 🔥 espacio real para el icono */
+    border-color: #F20C1F;
+    box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
   }
 `;
 
@@ -118,7 +114,7 @@ export const Button = styled.button`
   height: 50px;
   border-radius: 30px;
 
-  background: #404594;
+  background: #F20C1F;
   color: white;
 
   border: none;
@@ -164,7 +160,7 @@ export const UploadBox = styled.label`
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: #404594;
+    border-color: #F20C1F;
     background: #f4f5ff;
   }
 `;
@@ -228,7 +224,6 @@ export const PreviewImage = styled.img`
 export const RemoveButton = styled.button`
   position: absolute;
 
-  /* 🔥 ajuste fino real */
   top: -12px;
   right: -12px;
 
@@ -302,7 +297,7 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #c85f1c;
+  color: #0D0D0D;
 
   &:hover {
     opacity: 0.6;

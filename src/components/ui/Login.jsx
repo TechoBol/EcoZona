@@ -1,7 +1,7 @@
 import styled, { createGlobalStyle } from "styled-components";
 
 export const Wrapper = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,17 +11,23 @@ export const Wrapper = styled.div`
 export const Card = styled.div`
   width: 100%;
   max-width: 350px;
-  min-height: 400px;
+
   display: flex;
+  flex-direction: column;
+  justify-content: center; /* 🔥 centra contenido vertical */
+
   background: #ffffff;
   border-radius: 25px;
-  padding: 30px;
-  flex-direction: column;
+  padding: 24px;
+
+  box-sizing: border-box;
+
+  max-height: 100%; /* 🔥 evita overflow */
 `;
 
 export const Logo = styled.h1`
   text-align: center;
-  color: #404594;
+  color: #F20C1F;
   font-family: var(--font-title);
 
   font-size: 45px;
@@ -73,7 +79,7 @@ export const Button = styled.button`
   height: 48px;
   margin-top: 5px;
 
-  background-color: #404594;
+  background-color: #F20C1F;
   color: #ffffff;
 
   border: none;

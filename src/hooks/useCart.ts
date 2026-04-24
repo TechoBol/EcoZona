@@ -27,10 +27,10 @@ export const useCart = () => {
         locationId: location.id,
       };
 
-      // 🔥 1. Crear venta en backend
+      // 1. Crear venta en backend
       const venta = await createSaleService(payload, token);
 
-      // 🔥 2. Generar PDF
+      // 2. Generar PDF
       console.log(venta.code)
       const pdfBlob = generarPDF(
         venta.sale,
@@ -38,10 +38,10 @@ export const useCart = () => {
         cartItems,
         subtotal,
         discount,
-        total
+        total,
       );
 
-      // 🔥 3. Convertir a File
+      // 3. Convertir a File
       const file = new File(
         [pdfBlob],
         `venta_${venta.sale.code}.pdf`,
