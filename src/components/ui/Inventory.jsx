@@ -181,6 +181,23 @@ export const Card = styled.div`
   }
 `;
 
+export const MenuOption = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border: none;
+  background: ${({ $active }) => ($active ? "#f2f2f2" : "transparent")};
+
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: #f2f2f2;
+  }
+`;
 export const ProductImage = styled.img`
   width: 100%;
   height: 120px;

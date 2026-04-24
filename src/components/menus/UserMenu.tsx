@@ -2,7 +2,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useLoginStore } from "../store/loginStore";
 import useAuthentication from "../../hooks/useAuthentication";
-import { LogOut } from "lucide-react";
+import { LogOut, Building2, Users, ShoppingCart } from "lucide-react";
 
 import {
   ProfileButton,
@@ -12,6 +12,7 @@ import {
   Name,
   Role,
   LogoutButton,
+  MenuOption, // 👈 si no lo tienes, abajo te explico
 } from "../ui/Inventory";
 
 const UserMenu = () => {
@@ -22,7 +23,7 @@ const UserMenu = () => {
 
   return (
     <Menu as="div" style={{ position: "relative", display: "flex", justifyContent: "flex-start" }}>
-
+      
       {/* BOTÓN */}
       <Menu.Button
         style={{
@@ -52,16 +53,47 @@ const UserMenu = () => {
             position: "absolute",
             top: "calc(100% + 10px)",
             left: 0,
-            minWidth: "180px",
+            minWidth: "220px",
             zIndex: 100,
           }}
         >
           <Dropdown>
+            
+            {/* INFO USUARIO */}
             <UserInfo>
               <Name>{fullName}</Name>
               <Role>{role}</Role>
             </UserInfo>
 
+            {/* OPCIONES NUEVAS */}
+            <Menu.Item>
+              {({ active }) => (
+                <MenuOption $active={active}>
+                  <Building2 size={16} />
+                  <span>Administrar sucursales</span>
+                </MenuOption>
+              )}
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) => (
+                <MenuOption $active={active}>
+                  <Users size={16} />
+                  <span>Administrar trabajadores</span>
+                </MenuOption>
+              )}
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) => (
+                <MenuOption $active={active}>
+                  <ShoppingCart size={16} />
+                  <span>Administrar ventas</span>
+                </MenuOption>
+              )}
+            </Menu.Item>
+
+            {/* LOGOUT */}
             <Menu.Item>
               {({ active }) => (
                 <LogoutButton onClick={logOut} $active={active}>
@@ -70,10 +102,10 @@ const UserMenu = () => {
                 </LogoutButton>
               )}
             </Menu.Item>
+
           </Dropdown>
         </Menu.Items>
       </Transition>
-
     </Menu>
   );
 };
