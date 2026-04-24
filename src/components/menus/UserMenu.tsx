@@ -85,6 +85,15 @@ const UserMenu = () => {
             <Menu.Item>
               {({ active }) => (
                 <MenuOption $active={active}>
+                  <Users size={16} />
+                  <span>Administrar roles</span>
+                </MenuOption>
+              )}
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) => (
+                <MenuOption $active={active}>
                   <ShoppingCart size={16} />
                   <span>Administrar ventas</span>
                 </MenuOption>

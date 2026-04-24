@@ -51,7 +51,6 @@ export const Input = styled.input`
   font-size: 14px;
   outline: none;
   background: white;
-  font-family: var(--font-title);
 
   &:focus {
     border-color: #404594;
@@ -71,7 +70,7 @@ export const ErrorText = styled.span`
 export const Button = styled.button`
   margin-top: 20px;
   height: 50px;
-  border-radius: 25px;
+  border-radius: 30px;
 
   background: #404594;
   color: white;
@@ -257,7 +256,7 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #C85F1C;
+  color: #000;
 
   &:hover {
     opacity: 0.6;
