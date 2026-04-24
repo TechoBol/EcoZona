@@ -21,7 +21,7 @@ export const Header = styled.div`
 /* TITLE */
 export const Title = styled.h1`
   font-family: var(--font-title);
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 700;
   color: #000;
   text-align: center;
@@ -33,7 +33,7 @@ export const ProfileButton = styled.div`
   width: 36px;
   height: 36px;
   border-radius: 30px;
-  background: #404594;
+  background: transparent;
 
   display: flex;
   justify-content: center;
@@ -53,7 +53,7 @@ export const Content = styled.div`
 `;
 
 export const Initial = styled.span`
-  color: #ffffff;
+  color: #000000;
   font-weight: 700;
   font-size: 14px;
 `;
@@ -64,7 +64,7 @@ export const Dropdown = styled.div`
   right: 0;
   margin-top: 10px;
 
-  background: #ffffff;
+  background: #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -103,19 +103,20 @@ export const LogoutButton = styled.button`
   cursor: pointer;
   font-size: 14px;
   color: #e53935;
+
   svg {
     color: #e53935;
   }
+
   &:hover {
     background: #ffe5e5;
   }
 `;
 
-/* SEARCH — mismo ancho que BottomActions (left/right 20px) */
+/* SEARCH */
 export const SearchBar = styled.div`
   position: relative;
   margin-bottom: 12px;
-  /* El Wrapper tiene padding: 20px, así que no necesitamos ajuste extra */
 `;
 
 export const SearchInput = styled.input`
@@ -130,7 +131,7 @@ export const SearchInput = styled.input`
   font-size: 13px;
   outline: none;
 
-  box-sizing: border-box; /* ✅ evita que se desborde */
+  box-sizing: border-box;
 `;
 
 export const ScanButton = styled.div`
@@ -138,6 +139,7 @@ export const ScanButton = styled.div`
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
+  cursor: pointer;
 `;
 
 /* GRID */
@@ -155,6 +157,7 @@ export const Card = styled.div`
   padding: 12px;
   background: #fff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 
   border: 2px solid
     ${(props) =>
@@ -173,14 +176,15 @@ export const Card = styled.div`
   `}
 
   @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-4px); }
-    50% { transform: translateX(4px); }
-    75% { transform: translateX(-3px); }
+    0%   { transform: translateX(0); }
+    25%  { transform: translateX(-4px); }
+    50%  { transform: translateX(4px); }
+    75%  { transform: translateX(-3px); }
     100% { transform: translateX(0); }
   }
 `;
 
+/* MENU OPTION */
 export const MenuOption = styled.button`
   width: 100%;
   display: flex;
@@ -198,13 +202,16 @@ export const MenuOption = styled.button`
     background: #f2f2f2;
   }
 `;
+
+/* IMAGE */
 export const ProductImage = styled.img`
-  width: 100%;
-  height: 120px;
+  width: calc(100% + 24px);
+  height: 140px;
   object-fit: cover;
-  border-radius: 25px;
+  margin: -12px -12px 0 -12px;
 `;
 
+/* INFO */
 export const ProductInfo = styled.div`
   padding: 10px 4px 4px 4px;
   display: flex;
@@ -213,12 +220,12 @@ export const ProductInfo = styled.div`
 `;
 
 export const ProductName = styled.p`
-  font-size: 15px;       /* ✅ bajado un poco para que respire */
+  font-size: 15px;
   font-weight: 600;
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* ✅ corta nombres largos con "..." */
+  text-overflow: ellipsis;
 `;
 
 export const ProductCode = styled.p`
@@ -232,18 +239,18 @@ export const ProductFooter = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-top: 6px;
-  gap: 4px;              /* ✅ separación mínima garantizada */
+  gap: 4px;
 `;
 
 export const Price = styled.span`
-  font-size: 13px;       /* ✅ reducido para que no choque */
+  font-size: 13px;
   font-weight: 500;
   color: gray;
   white-space: nowrap;
 `;
 
 export const Stock = styled.span`
-  font-size: 13px;       /* ✅ mismo tamaño que Price */
+  font-size: 13px;
   font-weight: 700;
   white-space: nowrap;
 `;
@@ -262,18 +269,39 @@ export const BottomActions = styled.div`
 
 /* BOTÓN + */
 export const AddProductButton = styled.button`
+  width: 40px;
+  height: 40px;
+
+  border-radius: 50%;
+  background: transparent;
+  color: #000000;
+  border: none;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+/* BOTÓN ESCÁNER */
+export const ScannerButton = styled.button`
   width: 52px;
   height: 52px;
 
   border-radius: 50%;
-
   background: #c85f1c;
   color: #ffffff;
 
   border: 2px solid #c85f1c;
-
-  font-size: 26px;
-  font-weight: bold;
 
   display: flex;
   justify-content: center;
@@ -285,6 +313,10 @@ export const AddProductButton = styled.button`
 
   &:active {
     transform: scale(0.95);
+  }
+
+  &:hover {
+    opacity: 0.9;
   }
 `;
 
@@ -315,4 +347,19 @@ export const AddToCartButton = styled.button`
   &:active {
     transform: scale(0.98);
   }
+`;
+
+/* 🔥 SCANNER OVERLAY (LO QUE TE FALTABA) */
+export const ScannerOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(4px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
 `;

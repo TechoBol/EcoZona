@@ -5,7 +5,7 @@ import { getProducts } from "../services/InventoryService";
 interface Product {
   id: string;
   name: string;
-  barcode?: string; // 🔥 CORRECTO (no code)
+  barcode?: string;
   price: number;
   stock?: number;
   image?: string;
@@ -18,6 +18,9 @@ const useInventory = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  // 🔥 Para escáner
+  const [scannerBuffer, setScannerBuffer] = useState("");
 
   const fetchProducts = async () => {
     setIsLoading(true);
@@ -33,7 +36,7 @@ const useInventory = () => {
     }
   };
 
-  /* 🔍 FILTRO CORREGIDO */
+  /* 🔍 FILTRO */
   useEffect(() => {
     if (!search) {
       setFilteredProducts(products);
@@ -48,10 +51,56 @@ const useInventory = () => {
     setFilteredProducts(filtered);
   }, [search, products]);
 
-  /* 🔥 ESTA ES LA FUNCIÓN QUE TE FALTABA USAR */
+  /* 🔥 INPUT NORMAL */
   const onFilterTextBoxChanged = (e: any) => {
     setSearch(e.target.value);
   };
+
+  /* 🔥 ESCÁNER GLOBAL */
+  useEffect(() => {
+    let timeout: any;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignorar teclas especiales
+      if (e.key === "Shift" || e.key === "Control" || e.key === "Alt") return;
+
+      if (e.key === "Enter") {
+        if (scannerBuffer) {
+          setSearch(scannerBuffer);
+
+          // 👉 AQUÍ puedes hacer acción automática
+          const found = products.find(
+            (p) => p.barcode === scannerBuffer
+          );
+
+          if (found) {
+            console.log("Producto escaneado:", found);
+
+            // 🔥 OPCIONAL: aquí luego puedes hacer:
+            // addToCart(found);
+          }
+        }
+
+        setScannerBuffer("");
+        return;
+      }
+
+      // Acumular caracteres
+      setScannerBuffer((prev) => prev + e.key);
+
+      // Resetear buffer si pasa mucho tiempo (para evitar mezcla)
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        setScannerBuffer("");
+      }, 100);
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [scannerBuffer, products]);
 
   useEffect(() => {
     fetchProducts();

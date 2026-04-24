@@ -2,31 +2,35 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useLoginStore } from "../store/loginStore";
 import useAuthentication from "../../hooks/useAuthentication";
-import { LogOut, Building2, Users, ShoppingCart } from "lucide-react";
+import { LogOut, Building2, Users, User, ShoppingCart } from "lucide-react";
 
 import {
   ProfileButton,
-  Initial,
   Dropdown,
   UserInfo,
   Name,
   Role,
   LogoutButton,
-  MenuOption,
+  MenuOption
 } from "../ui/Inventory";
 import { useSucursales } from "../../hooks/useSucursales";
 import { useEmployees } from "../../hooks/useEmployees";
+import { useRoles } from "../../hooks/useRoles";
+import { useSales } from "../../hooks/useSale";
 
 const UserMenu = () => {
-  const { fullName, role } = useLoginStore();
+  const { fullName, role } = useLoginStore() || {};
+  const displayName = fullName || "Usuario";
   const { logOut } = useAuthentication();
   const { goToSucursales } = useSucursales();
   const {goToTrabajadores} = useEmployees();
-  
+  const {goToRoles} = useRoles();
+  const {goToSales} = useSales();
   const initial = fullName ? fullName.charAt(0).toUpperCase() : "?";
 
   return (
     <Menu as="div" style={{ position: "relative", display: "flex", justifyContent: "flex-start" }}>
+
 
       {/* BOTÓN */}
       <Menu.Button
@@ -38,7 +42,7 @@ const UserMenu = () => {
         }}
       >
         <ProfileButton>
-          <Initial>{initial}</Initial>
+          <User size={20} />
         </ProfileButton>
       </Menu.Button>
 
@@ -62,6 +66,7 @@ const UserMenu = () => {
           }}
         >
           <Dropdown>
+
 
             {/* INFO USUARIO */}
             <UserInfo>
@@ -90,7 +95,16 @@ const UserMenu = () => {
 
             <Menu.Item>
               {({ active }) => (
-                <MenuOption $active={active}>
+                <MenuOption onClick={goToRoles} $active={active}>
+                  <Users size={16} />
+                  <span>Administrar roles</span>
+                </MenuOption>
+              )}
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) => (
+                <MenuOption onClick={goToSales} $active={active}>
                   <ShoppingCart size={16} />
                   <span>Administrar ventas</span>
                 </MenuOption>

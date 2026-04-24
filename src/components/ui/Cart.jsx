@@ -164,7 +164,7 @@ export const CheckoutButton = styled.button`
   background: #404594;
   color: white;
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 30px;
   border: none;
   font-weight: 600;
   cursor: pointer;

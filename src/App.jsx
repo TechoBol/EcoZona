@@ -9,6 +9,8 @@ import Cart from "./pages/Cart";
 import Product from "./pages/Product";
 import Sucursales from "./pages/Sucursales";
 import Trabajadores from "./pages/Trabajadores";
+import Roles from "./pages/Roles";
+import Sales from "./pages/Sale";
 
 function App() {
   const { isLoggedIn, role } = useLoginStore();
@@ -33,6 +35,8 @@ function App() {
             <Route path="/product" element={<Product/>} />
             <Route path="/sucursales" element={<Sucursales/>} />
             <Route path="/trabajadores" element={<Trabajadores/>} />
+            <Route path="/roles" element={<Roles/>} />
+            <Route path="/reports" element={<Sales/>} />
           </>
         )}
 

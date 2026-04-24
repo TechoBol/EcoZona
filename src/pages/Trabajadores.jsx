@@ -75,6 +75,7 @@ export default function Employees() {
             justifyContent: "center",
             alignItems: "center",
             gap: 16,
+            marginTop: "10px",
             width: "100%",
           }}
         >
@@ -142,6 +143,33 @@ export default function Employees() {
             columns={columns}
             getRowId={(row) => row.id}
             slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 300 },
+              },
+            }}
+            sx={{
+              border: "none",
+
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f8f9ff",
+                fontWeight: 600,
+              },
+
+              "& .MuiDataGrid-toolbarContainer": {
+                padding: "10px",
+              },
+
+              "& .MuiInputBase-root": {
+                borderRadius: "12px",
+                backgroundColor: "#f5f5f5",
+                paddingLeft: "8px",
+              },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                fontWeight: "bold",
+              },
+            }}
           />
         </div>
       </Content>

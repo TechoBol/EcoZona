@@ -2,37 +2,48 @@ import { useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit } from "lucide-react";
-
-import { useSucursales } from "../hooks/useSucursales";
-import CreateLocationModal from "../components/modals/CreateLocationModal";
-
-import { Wrapper, Header, Title, Content } from "../components/ui/Location";
-
-import { Actions, AddButton } from "../components/ui/Location";
-import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
-import { BackButton } from "../components/ui/Product";
 import { useNavigate } from "react-router-dom";
 
-export default function Sucursales() {
-  const { data, createLocation, deleteLocation, updateLocation } =
-    useSucursales();
+import { useRoles } from "../hooks/useRoles";
+import CreateRoleModal from "../components/modals/CreateRoleModal";
+import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
+
+import {
+  Wrapper,
+  Header,
+  Title,
+  Content,
+  Actions,
+  AddButton,
+} from "../components/ui/Location";
+
+import { BackButton } from "../components/ui/Product";
+
+export default function Roles() {
+  const navigate = useNavigate();
+  const { roles, createRole, updateRole, deleteRole } = useRoles();
 
   const [open, setOpen] = useState(false);
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    name: "",
-    abbreviation: "",
-    type: "BRANCH",
-  });
-  const [deleteId, setDeleteId] = useState(null);
   const [openDelete, setOpenDelete] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
-  // 🔥 COLUMNAS
+
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    maxEmployeesAllowed: 1,
+  });
+
   const columns = [
-    { field: "name", headerName: "Nombre", flex: 1, minWidth: 160 },
-    { field: "type", headerName: "Tipo", flex: 1, minWidth: 130 },
-    { field: "abbreviation", headerName: "Abrev.", flex: 1, minWidth: 120 },
+    { field: "name", headerName: "Nombre", flex: 1, minWidth: 150 },
+    { field: "description", headerName: "Descripción", flex: 1, minWidth: 200 },
+    {
+      field: "maxEmployeesAllowed",
+      headerName: "Máx empleados",
+      width: 180,
+    },
     {
       field: "actions",
       headerName: "Acciones",
@@ -46,8 +57,8 @@ export default function Sucursales() {
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-            marginTop: "10px",
             gap: 40,
+            marginTop: "10px",
             width: "100%",
           }}
         >
@@ -57,8 +68,9 @@ export default function Sucursales() {
             onClick={() => {
               setForm({
                 name: params.row.name,
-                abbreviation: params.row.abbreviation,
-                type: params.row.type,
+                description: params.row.description || "",
+                maxEmployeesAllowed:
+                  params.row.maxEmployeesAllowed || 1,
               });
 
               setEditId(params.row.id);
@@ -82,10 +94,10 @@ export default function Sucursales() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory", { replace: true })}>
+        <BackButton onClick={() => navigate("/inventory")}>
           <ArrowLeft size={22} />
         </BackButton>
-        <Title>Sucursales</Title>
+        <Title>Roles</Title>
       </Header>
 
       <Content>
@@ -94,19 +106,20 @@ export default function Sucursales() {
             onClick={() => {
               setForm({
                 name: "",
-                abbreviation: "",
-                type: "BRANCH",
+                description: "",
+                maxEmployeesAllowed: 1,
               });
-              setOpen(true);
               setIsEdit(false);
+              setOpen(true);
             }}
           >
-            + Nueva sucursal
+            + Nuevo rol
           </AddButton>
         </Actions>
+
         <div style={{ height: 450, background: "white", borderRadius: 12 }}>
           <DataGrid
-            rows={data}
+            rows={roles}
             columns={columns}
             getRowId={(row) => row.id}
             pageSizeOptions={[5, 10]}
@@ -135,13 +148,15 @@ export default function Sucursales() {
                 paddingLeft: "8px",
               },
               "& .MuiDataGrid-columnHeaderTitle": {
-                fontWeight: "bold",
-              },
+  fontWeight: "bold",
+}
             }}
           />
         </div>
       </Content>
-      <CreateLocationModal
+
+      {/* MODAL */}
+      <CreateRoleModal
         open={open}
         onClose={() => {
           setOpen(false);
@@ -149,29 +164,31 @@ export default function Sucursales() {
         }}
         form={form}
         setForm={setForm}
-        isEdit={isEdit} // 🔥 nuevo
+        isEdit={isEdit}
         onSubmit={async (data) => {
           if (isEdit) {
-            await updateLocation(editId, data); // 🔥 UPDATE
+            await updateRole(editId, data);
           } else {
-            await createLocation(data); // 🔥 CREATE
+            await createRole(data);
           }
 
           setForm({
             name: "",
-            abbreviation: "",
-            type: "BRANCH",
+            description: "",
+            maxEmployeesAllowed: 1,
           });
 
           setIsEdit(false);
           setOpen(false);
         }}
       />
+
+      {/* DELETE */}
       <ConfirmDeleteModal
         open={openDelete}
         onClose={() => setOpenDelete(false)}
         onConfirm={async () => {
-          await deleteLocation(deleteId);
+          await deleteRole(deleteId);
           setOpenDelete(false);
         }}
       />

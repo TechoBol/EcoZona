@@ -10,7 +10,7 @@ export const useCart = () => {
 
   const { token, location } = useLoginStore();
   const { uploadPDF } = useAmazonS3();
-
+  const {fullName} = useLoginStore()
   const createSale = async (
     data: any,
     cartItems: any[],
@@ -33,7 +33,8 @@ export const useCart = () => {
       // 🔥 2. Generar PDF
       console.log(venta.code)
       const pdfBlob = generarPDF(
-        venta,
+        venta.sale,
+        fullName,
         cartItems,
         subtotal,
         discount,
@@ -43,12 +44,12 @@ export const useCart = () => {
       // 🔥 3. Convertir a File
       const file = new File(
         [pdfBlob],
-        `venta_${venta.code}.pdf`,
+        `venta_${venta.sale.code}.pdf`,
         { type: "application/pdf" }
       );
 
       // 🔥 4. Subir a S3
-      const pdfKey = await uploadPDF(file, venta.code);
+      const pdfKey = await uploadPDF(file, venta.sale.code);
 
       console.log("PDF subido:", pdfKey);
       return venta;

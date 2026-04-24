@@ -11,6 +11,7 @@ export const GlobalStyle = createGlobalStyle`
   :root {
     --font-main: "Inter", sans-serif;
     --font-title: "ModernMuseum", sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   *, *::before, *::after {
