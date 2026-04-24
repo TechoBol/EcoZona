@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthentication from "../hooks/useAuthentication";
 import useInventory from "../hooks/useInventory";
 
 import {
@@ -21,13 +20,16 @@ import {
   Stock,
   BottomActions,
   AddProductButton,
+  ScannerButton,
   AddToCartButton,
+  ScannerOverlay,
 } from "../components/ui/Inventory";
 
-import { ScanLine } from "lucide-react";
+import { ScanLine, Plus } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
+import BarcodeReader from "../components/Scanner/BarcodeReader";
 
 function Inventory() {
   const navigate = useNavigate();
@@ -36,11 +38,13 @@ function Inventory() {
   const {
     products,
     search,
-    onFilterTextBoxChanged
+    setSearch,
+    onFilterTextBoxChanged,
   } = useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
+  const [scanning, setScanning] = useState(false);
 
   const pressTimer = useRef(null);
 
@@ -57,11 +61,7 @@ function Inventory() {
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
-
-      if (exists) {
-        return prev.filter((p) => p.id !== product.id);
-      }
-
+      if (exists) return prev.filter((p) => p.id !== product.id);
       return [...prev, product];
     });
   };
@@ -71,26 +71,32 @@ function Inventory() {
 
     if (stock === 0) {
       setErrorProductId(product.id);
-
-      setTimeout(() => {
-        setErrorProductId(null);
-      }, 400);
-
+      setTimeout(() => setErrorProductId(null), 400);
       return;
     }
 
     toggleSelect(product);
   };
 
-  const isSelected = (id) =>
-    selectedProducts.some((p) => p.id === id);
+  const isSelected = (id) => selectedProducts.some((p) => p.id === id);
 
   const handleGoToCart = () => {
-    selectedProducts.forEach((product) => {
-      addToCart(product);
-    });
-
+    selectedProducts.forEach((product) => addToCart(product));
     navigate("/cart");
+  };
+
+  /* 🔥 ESCÁNER CORREGIDO */
+  const handleBarcodeDetected = (code) => {
+    const cleanCode = code.trim(); // 🔥 clave
+
+    setSearch(cleanCode);
+    setScanning(false);
+
+    // 🔥 Scroll automático al resultado (opcional pero pro)
+    setTimeout(() => {
+      const element = document.querySelector("[data-found='true']");
+      element?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
   };
 
   const [imageUrls, setImageUrls] = useState({});
@@ -132,87 +138,94 @@ function Inventory() {
 
   return (
     <Wrapper>
+      {/* HEADER */}
       <Header>
         <UserMenu />
         <Title>Inventario</Title>
-        <div />
+        <AddProductButton onClick={() => navigate("/product")}>
+          <Plus size={18} />
+        </AddProductButton>
       </Header>
 
+      {/* SEARCH */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."
           value={search}
           onChange={onFilterTextBoxChanged}
         />
-        <ScanButton>
+        <ScanButton onClick={() => setScanning(true)} style={{ cursor: "pointer" }}>
           <ScanLine size={18} />
         </ScanButton>
       </SearchBar>
 
-      {/* 🔥 CONTENEDOR CON SCROLL */}
+      {/* LISTA */}
       <div
         style={{
           height: "calc(100vh - 180px)",
           overflowY: "auto",
-          padding: "0 10px 100px 10px", // 👈 espacio lateral + abajo
+          padding: "0 10px 100px 10px",
         }}
       >
         <ProductsGrid>
-          {products.map((product) => (
-            <Card
-              key={product.id}
-              $selected={isSelected(product.id)}
-              $error={errorProductId === product.id}
-              onMouseDown={() => handleMouseDown(product.id)}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onClick={() => handleClick(product)}
-            >
-              <ProductImage
-                src={
-                  imageUrls[product.id] ||
-                  "https://via.placeholder.com/150"
-                }
-              />
+          {products.map((product) => {
+            const stock = product.inventories?.[0]?.quantity || 0;
 
-              <ProductInfo>
-                <ProductName>{product.name}</ProductName>
-                <ProductCode>{product.code}</ProductCode>
+            return (
+              <Card
+                key={product.id}
+                data-found={product.barcode === search} // 🔥 para scroll
+                $selected={isSelected(product.id)}
+                $error={errorProductId === product.id}
+                onMouseDown={() => handleMouseDown(product.id)}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onClick={() => handleClick(product)}
+              >
+                <ProductImage
+                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+                  alt={product.name}
+                />
 
-                <ProductFooter>
-                  <Price>Bs {product.finalPrice}</Price>
+                <ProductInfo>
+                  <ProductName>{product.name}</ProductName>
 
-                  {(() => {
-                    const stock =
-                      product.inventories?.[0]?.quantity || 0;
+                  {/* 🔥 CORREGIDO */}
+                  <ProductCode>{product.barcode}</ProductCode>
 
-                    return (
-                      <Stock
-                        style={{
-                          color:
-                            stock === 0 ? "#e81d12" : "#333",
-                        }}
-                      >
-                        Cant: {stock}
-                      </Stock>
-                    );
-                  })()}
-                </ProductFooter>
-              </ProductInfo>
-            </Card>
-          ))}
+                  <ProductFooter>
+                    <Price>Bs {product.finalPrice}</Price>
+                    <Stock style={{ color: stock === 0 ? "#e81d12" : "#333" }}>
+                      Cant: {stock}
+                    </Stock>
+                  </ProductFooter>
+                </ProductInfo>
+              </Card>
+            );
+          })}
         </ProductsGrid>
       </div>
 
+      {/* BOTTOM */}
       <BottomActions>
-        <AddProductButton onClick={() => navigate("/product")}>
-          +
-        </AddProductButton>
+        <ScannerButton onClick={() => setScanning(true)}>
+          <ScanLine size={22} />
+        </ScannerButton>
 
         <AddToCartButton onClick={handleGoToCart}>
           Ir al carrito ({selectedProducts.length})
         </AddToCartButton>
       </BottomActions>
+
+      {/* SCANNER */}
+      {scanning && (
+        <ScannerOverlay>
+          <BarcodeReader
+            onDetected={handleBarcodeDetected}
+            onClose={() => setScanning(false)}
+          />
+        </ScannerOverlay>
+      )}
     </Wrapper>
   );
 }

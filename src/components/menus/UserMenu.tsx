@@ -2,28 +2,26 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useLoginStore } from "../store/loginStore";
 import useAuthentication from "../../hooks/useAuthentication";
-import { LogOut, Building2, Users, ShoppingCart } from "lucide-react";
+import { LogOut, Building2, Users, User, ShoppingCart } from "lucide-react";
 
 import {
   ProfileButton,
-  Initial,
   Dropdown,
   UserInfo,
   Name,
   Role,
   LogoutButton,
-  MenuOption, // 👈 si no lo tienes, abajo te explico
+  MenuOption,
 } from "../ui/Inventory";
 
 const UserMenu = () => {
-  const { fullName, role } = useLoginStore();
+  const { fullName, role } = useLoginStore() || {};
+  const displayName = fullName || "Usuario";
   const { logOut } = useAuthentication();
-
-  const initial = fullName ? fullName.charAt(0).toUpperCase() : "?";
 
   return (
     <Menu as="div" style={{ position: "relative", display: "flex", justifyContent: "flex-start" }}>
-      
+
       {/* BOTÓN */}
       <Menu.Button
         style={{
@@ -34,7 +32,7 @@ const UserMenu = () => {
         }}
       >
         <ProfileButton>
-          <Initial>{initial}</Initial>
+          <User size={20} />
         </ProfileButton>
       </Menu.Button>
 
@@ -58,7 +56,7 @@ const UserMenu = () => {
           }}
         >
           <Dropdown>
-            
+
             {/* INFO USUARIO */}
             <UserInfo>
               <Name>{fullName}</Name>

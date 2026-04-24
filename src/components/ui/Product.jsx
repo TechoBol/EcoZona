@@ -3,7 +3,7 @@ import styled, { createGlobalStyle } from "styled-components";
 /* WRAPPER */
 export const Wrapper = styled.div`
   min-height: 100vh;
-  background: #f7f8fc;
+  background: #ffffff;
   padding: 20px;
 `;
 
@@ -18,7 +18,7 @@ export const Header = styled.div`
 
 /* TITLE */
 export const Title = styled.h1`
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 700;
   text-align: center;
   font-family: var(--font-title);
