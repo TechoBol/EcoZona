@@ -2,7 +2,7 @@ import styled, { createGlobalStyle } from "styled-components";
 
 /* WRAPPER */
 export const Wrapper = styled.div`
-  min-height: 100vh;
+  min-height: 100dvh;
   background: #ffffff;
   padding: 20px;
 `;

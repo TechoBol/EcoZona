@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Trash2, Plus, Minus, ArrowLeft } from "lucide-react";
+
 import {
   Wrapper,
   Header,
@@ -7,11 +9,13 @@ import {
   ProductList,
   ProductCard,
   ProductImage,
-  ProductInfo,
+  RightSection,
+  TopRow,
+  ProductText,
   ProductName,
-  ProductCode,
   ProductPrice,
   QuantityControls,
+  QuantityText,
   Button,
   DeleteButton,
   Footer,
@@ -23,12 +27,9 @@ import {
   BackButton,
 } from "../components/ui/Cart";
 
-import { ArrowLeft, Trash2 } from "lucide-react";
 import { useCartStore } from "../components/store/cartStore";
 import { useNavigate } from "react-router-dom";
-import { useLoginStore } from "../components/store/loginStore";
 import { useCart } from "../hooks/useCart";
-import { generarPDF } from "../components/pdf/generarPDF";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 
 const Cart = () => {
@@ -49,22 +50,17 @@ const Cart = () => {
   const subtotal = getTotal();
   const discountValue = Number(descuento || 0);
   const total = Math.max(0, subtotal - discountValue);
-
-  const generatePayload = () => {
-    return {
-      products: cartItems.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-      })),
-      discount: discountValue,
-    };
-  };
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
       alert("El carrito está vacío");
       return;
     }
+
+    if (isProcessing) return; // evita doble click
+
+    setIsProcessing(true); // bloquea
 
     const payload = {
       products: cartItems.map((item) => ({
@@ -79,12 +75,16 @@ const Cart = () => {
 
       clearCart();
       setDescuento("0");
-      navigate("/inventory", { replace: true })
+      navigate("/inventory", { replace: true });
     } catch (err) {
       console.error(err);
       alert("Error al procesar la venta");
+    } finally {
+      setIsProcessing(false); // 🔓 por si falla
     }
   };
+
+  // IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -101,15 +101,14 @@ const Cart = () => {
         const isS3Key = item.imageUrl.startsWith("ECOZONA/");
 
         if (!isS3Key) {
-          urls[item.id] = null; // fallback al placeholder
+          urls[item.id] = null;
           continue;
         }
 
         try {
           const url = await getFileUrl(item.imageUrl);
           urls[item.id] = url;
-        } catch (err) {
-          console.error("Error imagen:", err);
+        } catch {
           urls[item.id] = null;
         }
       }
@@ -140,23 +139,41 @@ const Cart = () => {
                 alt={item.name}
               />
 
-              <ProductInfo>
-                <ProductName>{item.name}</ProductName>
-                <ProductCode>{item.code}</ProductCode>
-                <ProductPrice style={{ color: "gray" }}>
-                  Bs {item.finalPrice}
-                </ProductPrice>
-              </ProductInfo>
+              <RightSection>
+                <TopRow>
+                  <ProductText>
+                    <ProductName>{item.name}</ProductName>
+                    <ProductPrice>Bs {item.finalPrice}</ProductPrice>
+                  </ProductText>
 
-              <QuantityControls>
-                <Button onClick={() => decreaseQty(item.id)}>-</Button>
-                <span>{item.quantity}</span>
-                <Button onClick={() => increaseQty(item.id)}>+</Button>
-              </QuantityControls>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                      gap: 6,
+                    }}
+                  >
+                    {/* FILA 1: CONTROLES */}
+                    <QuantityControls>
+                      <Button onClick={() => decreaseQty(item.id)}>
+                        <Minus size={18} />
+                      </Button>
 
-              <DeleteButton onClick={() => removeItem(item.id)}>
-                <Trash2 size={18} />
-              </DeleteButton>
+                      <QuantityText>{item.quantity}</QuantityText>
+
+                      <Button onClick={() => increaseQty(item.id)}>
+                        <Plus size={18} />
+                      </Button>
+                    </QuantityControls>
+
+                    {/* FILA 2: TRASH */}
+                    <DeleteButton onClick={() => removeItem(item.id)}>
+                      <Trash2 size={18} />
+                    </DeleteButton>
+                  </div>
+                </TopRow>
+              </RightSection>
             </ProductCard>
           ))}
         </ProductList>
@@ -198,8 +215,11 @@ const Cart = () => {
           <span>Bs {total.toFixed(2)}</span>
         </Total>
 
-        <CheckoutButton onClick={handleCheckout}>
-          Finalizar Venta
+        <CheckoutButton
+          onClick={handleCheckout}
+          disabled={isProcessing}
+        >
+          {isProcessing ? "Procesando..." : "Finalizar Venta"}
         </CheckoutButton>
       </Footer>
     </Wrapper>

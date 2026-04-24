@@ -145,7 +145,7 @@ function Inventory() {
       return;
     }
 
-    // 🔍 MODO BÚSQUEDA
+    // MODO BÚSQUEDA
     setSearch(cleanCode);
     setScanning(false);
 
@@ -155,7 +155,7 @@ function Inventory() {
     }, 100);
   };
 
-  // 🖼 IMÁGENES
+  // IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -202,7 +202,7 @@ function Inventory() {
         </AddProductButton>
       </Header>
 
-      {/* 🔍 BUSCADOR */}
+      {/* BUSCADOR */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."

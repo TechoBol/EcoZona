@@ -11,7 +11,7 @@ const baseConfig = {
   },
 };
 
-/* ✅ SUCCESS */
+/* SUCCESS */
 const successToast = (message: string) => {
   toast.success(message, {
     ...baseConfig,
@@ -27,7 +27,7 @@ const successToast = (message: string) => {
   });
 };
 
-/* ❌ ERROR */
+/* ERROR */
 const errorToast = (message: string) => {
   toast.error(message, {
     ...baseConfig,

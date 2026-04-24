@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 /* WRAPPER */
 export const Wrapper = styled.div`
-  height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -349,7 +349,7 @@ export const AddToCartButton = styled.button`
   }
 `;
 
-/* 🔥 SCANNER OVERLAY (LO QUE TE FALTABA) */
+/*SCANNER OVERLAY */
 export const ScannerOverlay = styled.div`
   position: fixed;
   inset: 0;

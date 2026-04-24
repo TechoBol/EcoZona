@@ -19,7 +19,7 @@ const useInventory = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // 🔥 Para escáner
+  // Para escáner
   const [scannerBuffer, setScannerBuffer] = useState("");
 
   const fetchProducts = async () => {
@@ -36,7 +36,7 @@ const useInventory = () => {
     }
   };
 
-  /* 🔍 FILTRO */
+  /* FILTRO */
   useEffect(() => {
     if (!search) {
       setFilteredProducts(products);
@@ -51,12 +51,12 @@ const useInventory = () => {
     setFilteredProducts(filtered);
   }, [search, products]);
 
-  /* 🔥 INPUT NORMAL */
+  /* INPUT NORMAL */
   const onFilterTextBoxChanged = (e: any) => {
     setSearch(e.target.value);
   };
 
-  /* 🔥 ESCÁNER GLOBAL */
+  /* ESCÁNER GLOBAL */
   useEffect(() => {
     let timeout: any;
 
@@ -67,17 +67,12 @@ const useInventory = () => {
       if (e.key === "Enter") {
         if (scannerBuffer) {
           setSearch(scannerBuffer);
-
-          // 👉 AQUÍ puedes hacer acción automática
           const found = products.find(
             (p) => p.barcode === scannerBuffer
           );
 
           if (found) {
             console.log("Producto escaneado:", found);
-
-            // 🔥 OPCIONAL: aquí luego puedes hacer:
-            // addToCart(found);
           }
         }
 
