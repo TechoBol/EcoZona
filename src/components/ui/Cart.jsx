@@ -1,22 +1,22 @@
 import styled from "styled-components";
-import {theme} from "./Theme"
+import { theme } from "./Theme";
 
-/* Wrapper */
 export const Wrapper = styled.div`
-  min-height: 100dvh;
-  background: ${theme.colors.background};;
+  height: 100dvh;
+  background: ${theme.colors.background};
   padding: 20px;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 `;
 
-/* Header */
 export const Header = styled.div`
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 10px 0;
+  flex-shrink: 0;
 `;
 
 export const BackButton = styled.button`
@@ -44,17 +44,16 @@ export const Title = styled.h1`
   text-align: center;
 `;
 
-/* CART */
-export const CartContainer = styled.div`
-  flex: 1;
-  margin-top: 15px;
-`;
-
 export const ProductList = styled.div`
+  flex: 1;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 15px;
+  padding-right: 4px;
 `;
+
 export const DiscountInput = styled.input`
   width: 70px;
   text-align: right;
@@ -86,7 +85,6 @@ export const DiscountPrefix = styled.span`
   margin-right: 4px;
 `;
 
-/* CARD */
 export const ProductCard = styled.div`
   display: flex;
   align-items: stretch;
@@ -96,23 +94,19 @@ export const ProductCard = styled.div`
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   gap: 12px;
   overflow: hidden;
+  flex-shrink: 0;
 `;
 
-/* IMAGE FULL HEIGHT */
 export const ProductImage = styled.img`
   width: 90px;
   height: calc(100% + 24px);
   object-fit: cover;
-
   margin: -12px 0 -12px -12px;
-
   border-top-left-radius: 14px;
   border-bottom-left-radius: 14px;
-
   flex-shrink: 0;
 `;
 
-/* RIGHT SIDE */
 export const RightSection = styled.div`
   flex: 1;
   display: flex;
@@ -120,14 +114,12 @@ export const RightSection = styled.div`
   justify-content: space-between;
 `;
 
-/* TOP ROW */
 export const TopRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
 `;
 
-/* TEXT */
 export const ProductText = styled.div`
   display: flex;
   flex-direction: column;
@@ -144,19 +136,15 @@ export const ProductPrice = styled.span`
   margin-top: 4px;
 `;
 
-/* DELETE BUTTON */
 export const DeleteButton = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
   color: ${theme.colors.secondary};
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   padding: 4px;
-
   -webkit-tap-highlight-color: transparent;
 
   &:focus {
@@ -168,7 +156,6 @@ export const DeleteButton = styled.button`
   }
 `;
 
-/* QUANTITY */
 export const QuantityControls = styled.div`
   display: flex;
   align-items: center;
@@ -179,15 +166,12 @@ export const QuantityControls = styled.div`
 export const Button = styled.button`
   width: 28px;
   height: 28px;
-
   border: none;
   background: transparent;
   cursor: pointer;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border-radius: 6px;
   -webkit-tap-highlight-color: transparent;
 
@@ -207,9 +191,8 @@ export const QuantityText = styled.span`
   text-align: center;
 `;
 
-/* FOOTER */
 export const Footer = styled.div`
-  margin-top: auto;
+  flex-shrink: 0;
   padding-top: 15px;
   border-top: 1px solid #eee;
 `;
@@ -239,8 +222,14 @@ export const CheckoutButton = styled.button`
   border: none;
   font-weight: 600;
   cursor: pointer;
+
   &:hover {
     opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 

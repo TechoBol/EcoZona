@@ -10,6 +10,7 @@ import {
   SearchBar,
   SearchInput,
   ScanButton,
+  ScrollArea,
   ProductsGrid,
   Card,
   ProductImage,
@@ -31,7 +32,6 @@ import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 
-//DOS ESCÁNERES
 import BarcodeReader from "../components/Scanner/BarcodeReader";
 import MultiBarcodeReader from "../components/Scanner/MultiBarcodeReader";
 
@@ -47,7 +47,6 @@ function Inventory() {
   const [scanning, setScanning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // MODO CARRITO
   const [scanCartMode, setScanCartMode] = useState(false);
   const [scannedProducts, setScannedProducts] = useState([]);
   const [lastScanned, setLastScanned] = useState({
@@ -55,7 +54,6 @@ function Inventory() {
     time: 0,
   });
 
-  // AUDIO
   const beepRef = useRef(null);
 
   useEffect(() => {
@@ -68,11 +66,9 @@ function Inventory() {
     beepRef.current.play().catch(() => {});
   };
 
-  // LONG PRESS
   const pressTimer = useRef(null);
 
   const handleMouseDown = (product) => {
-    console.log(product)
     pressTimer.current = setTimeout(() => {
       navigate(`/product/edit`, { state: product });
     }, 700);
@@ -80,7 +76,6 @@ function Inventory() {
 
   const handleMouseUp = () => clearTimeout(pressTimer.current);
 
-  // selección manual
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -108,14 +103,13 @@ function Inventory() {
     navigate("/cart");
   };
 
-  // ESCÁNER
   const handleBarcodeDetected = (code) => {
     const cleanCode = code.trim();
     const now = Date.now();
 
     if (
       lastScanned.code === cleanCode &&
-      now - lastScanned.time < 1200 // ⏱ 1.2s bloqueo
+      now - lastScanned.time < 1200
     ) {
       return;
     }
@@ -129,24 +123,19 @@ function Inventory() {
 
     playBeep();
 
-    // MODO CARRITO
     if (scanCartMode) {
       setScannedProducts((prev) => {
         const exists = prev.find((p) => p.id === found.id);
-
         if (exists) {
           return prev.map((p) =>
             p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
           );
         }
-
         return [...prev, { ...found, quantity: 1 }];
       });
-
       return;
     }
 
-    // MODO BÚSQUEDA
     setSearch(cleanCode);
     setScanning(false);
 
@@ -156,7 +145,6 @@ function Inventory() {
     }, 100);
   };
 
-  // IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -204,7 +192,6 @@ function Inventory() {
         </AddProductButton>
       </Header>
 
-      {/* BUSCADOR */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."
@@ -216,8 +203,7 @@ function Inventory() {
         </ScanButton>
       </SearchBar>
 
-      {/* LISTA */}
-      <div style={{ height: "calc(100vh - 180px)", overflowY: "auto" }}>
+      <ScrollArea>
         <ProductsGrid>
           {products.map((product) => {
             const stock = product.inventories?.[0]?.quantity || 0;
@@ -252,15 +238,14 @@ function Inventory() {
             );
           })}
         </ProductsGrid>
-      </div>
+      </ScrollArea>
 
-      {/* BOTONES */}
       <BottomActions>
         <ScannerButton
           onClick={async () => {
             if (beepRef.current) {
               try {
-                await beepRef.current.play(); //desbloquea audio
+                await beepRef.current.play();
                 beepRef.current.pause();
                 beepRef.current.currentTime = 0;
               } catch {}
@@ -279,7 +264,6 @@ function Inventory() {
         </AddToCartButton>
       </BottomActions>
 
-      {/* SCANNER */}
       {scanning && (
         <ScannerOverlay>
           <div style={{ position: "relative", width: "100%", height: "100%" }}>

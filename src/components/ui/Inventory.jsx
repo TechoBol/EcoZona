@@ -3,11 +3,12 @@ import {theme} from "./Theme"
 
 /* Wrapper */
 export const Wrapper = styled.div`
-  height: 100dvh;
+  height: 100dvh; 
+  background: ${theme.colors.background};;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  background: ${theme.colors.background};
-  padding: 20px;
+  overflow: hidden; 
 `;
 
 /* Header */
@@ -59,7 +60,7 @@ export const Dropdown = styled.div`
   right: 0;
   margin-top: 10px;
 
-  background: #f8f9fa;
+  background: ${theme.colors.background};
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -72,6 +73,7 @@ export const Dropdown = styled.div`
 export const UserInfo = styled.div`
   padding: 12px;
   border-bottom: 1px solid #eee;
+  background: ${theme.colors.background};
 `;
 
 export const Name = styled.p`
@@ -93,14 +95,14 @@ export const LogoutButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-  background: ${({ $active }) => ($active ? "#ffe5e5" : "#f8f9fa")};
+  background: ${theme.colors.background};
   border: none;
   cursor: pointer;
   font-size: 14px;
-  color: ${theme.colors.error};
+  color: ${theme.colors.primary};
 
   svg {
-    color: ${theme.colors.error};
+    color: ${theme.colors.primary};
   }
 
   &:hover {
@@ -135,6 +137,14 @@ export const ScanButton = styled.div`
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
+`;
+
+/* ScrollArea — único componente nuevo */
+export const ScrollArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 80px;
 `;
 
 /* Grid */
@@ -225,7 +235,7 @@ export const ProductName = styled.p`
 
 export const ProductCode = styled.p`
   font-size: 12px;
-  color: ${theme.colors.secondary};
+  color: ${theme.colors.textSecondary};
   margin: 0;
 `;
 
