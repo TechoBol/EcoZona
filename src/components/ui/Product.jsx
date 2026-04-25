@@ -1,13 +1,14 @@
 import styled, { createGlobalStyle } from "styled-components";
+import {theme} from "./Theme"
 
-/* WRAPPER */
+/* Wrapper */
 export const Wrapper = styled.div`
   min-height: 100dvh;
-  background: #ffffff;
+  background: ${theme.colors.background};
   padding: 20px;
 `;
 
-/* HEADER */
+/* Header */
 export const Header = styled.div`
   position: relative;
   display: flex;
@@ -16,7 +17,7 @@ export const Header = styled.div`
   padding: 10px 0;
 `;
 
-/* TITLE */
+/* Title */
 export const Title = styled.h1`
   font-size: 20px;
   font-weight: 700;
@@ -24,15 +25,14 @@ export const Title = styled.h1`
   font-family: var(--font-title);
 `;
 
-/* FORM */
+/* Form */
 export const Form = styled.form`
   display: flex;
   flex-direction: column;
   gap: 16px;
-  font-family: var(--font-title);
 `;
 
-/* CONTAINER INPUT */
+/* Container input */
 export const ContainerInput = styled.div`
   width: 100%;
   max-width: 400px;
@@ -41,7 +41,7 @@ export const ContainerInput = styled.div`
   flex-direction: column;
 `;
 
-/* INPUT */
+/* Input */
 export const Input = styled.input`
   height: 45px;
   width: 100%;
@@ -52,20 +52,19 @@ export const Input = styled.input`
   padding: 0 12px;
   font-size: 14px;
   outline: none;
-  background: white;
-  font-family: var(--font-title);
+  background: ${theme.colors.background};
 
   transition: all 0.2s ease;
 
   &:focus {
-    border-color: #F20C1F;
+    border-color: ${theme.colors.secondary};;
     box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
   }
 `;
 
-/* ERROR TEXT */
+/* Error Text */
 export const ErrorText = styled.span`
-  color: #ff4d4f;
+  color: ${theme.colors.error};
   font-size: 12px;
   margin-top: 4px;
   margin-left: 4px;
@@ -89,7 +88,7 @@ export const ScanButton = styled.button`
 
   border: none;
   background: transparent;
-  color: #404594;
+  color: ${theme.colors.secondary};;
 
   display: flex;
   align-items: center;
@@ -108,14 +107,14 @@ export const ScanButton = styled.button`
     transform: translateY(-50%) scale(0.95);
   }
 `;
-/* BUTTON */
+/* Button */
 export const Button = styled.button`
   margin-top: 20px;
   height: 50px;
   border-radius: 30px;
 
-  background: #F20C1F;
-  color: white;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
 
   border: none;
   font-size: 16px;
@@ -138,7 +137,7 @@ export const Button = styled.button`
   }
 `;
 
-/* IMAGE UPLOAD */
+/* Image Upload */
 export const UploadBox = styled.label`
   width: 100%;
   max-width: 400px;
@@ -155,26 +154,26 @@ export const UploadBox = styled.label`
   gap: 8px;
 
   cursor: pointer;
-  background: white;
+  background: ${theme.colors.background};
 
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: #F20C1F;
-    background: #f4f5ff;
+    border-color: ${theme.colors.secondary};;
+    background: ${theme.colors.background};
   }
 `;
 
 export const UploadText = styled.span`
   font-size: 14px;
-  color: #666;
+  color: ${theme.colors.text};
 `;
 
 export const HiddenInput = styled.input`
   display: none;
 `;
 
-/* CONTENEDOR */
+/* Container */
 export const PreviewContainer = styled.div`
   position: relative;
   width: fit-content;
@@ -209,7 +208,7 @@ export const PreviewContainer = styled.div`
   }
 `;
 
-/* IMAGEN */
+/* Image */
 export const PreviewImage = styled.img`
   width: 220px;
   height: 220px;
@@ -220,7 +219,7 @@ export const PreviewImage = styled.img`
   box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
 `;
 
-/* BOTÓN ELIMINAR */
+/* Delete Button */
 export const RemoveButton = styled.button`
   position: absolute;
 
@@ -233,8 +232,8 @@ export const RemoveButton = styled.button`
   border-radius: 50%;
   border: 2px solid white;
 
-  background: #ff4d4f;
-  color: white;
+  background: ${theme.colors.secondary};
+  color: ${theme.colors.background};
 
   display: flex;
   align-items: center;
@@ -245,8 +244,6 @@ export const RemoveButton = styled.button`
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 
   transition: all 0.2s ease;
-
-  /* 👇 animación entrada */
   animation: popIn 0.3s ease;
 
   @keyframes popIn {
@@ -278,7 +275,7 @@ export const ScannerOverlay = styled.div`
   width: 100%;
   height: 100vh;
 
-  background: black;
+  background: ${theme.colors.text};
 
   display: flex;
   align-items: center;
@@ -297,9 +294,9 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0D0D0D;
+  color: ${theme.colors.text};
 
-  &:hover {
+  &:hover { 
     opacity: 0.6;
   }
 `;

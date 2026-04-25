@@ -23,7 +23,7 @@ export default function CreateRoleModal({
     maxEmployeesAllowed: "",
   });
 
-  // 🔥 ESC para cerrar
+  //ESC para cerrar
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -33,7 +33,7 @@ export default function CreateRoleModal({
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // 🔥 limpiar errores al abrir
+  // Limpiar errores al abrir
   useEffect(() => {
     if (open) {
       setErrors({
@@ -43,7 +43,7 @@ export default function CreateRoleModal({
     }
   }, [open]);
 
-  // 🔥 VALIDACIÓN
+  // Validacion
   const validate = () => {
     let valid = true;
     const newErrors = {
@@ -74,7 +74,7 @@ export default function CreateRoleModal({
     onSubmit(form);
   };
 
-  // 🔥 cerrar limpiando errores
+  // Cerrar limpiando errores
   const handleClose = () => {
     setErrors({
       name: "",
@@ -97,7 +97,7 @@ export default function CreateRoleModal({
         </ModalTitle>
 
         <FormGroup>
-          {/* 🔥 NAME */}
+          {/* NAME */}
           <div>
             <ModalInput
               placeholder="Nombre del rol"
@@ -114,7 +114,7 @@ export default function CreateRoleModal({
             )}
           </div>
 
-          {/* 🔥 DESCRIPCIÓN */}
+          {/* DESCRIPCIÓN */}
           <ModalInput
             placeholder="Descripción (opcional)"
             value={form.description || ""}
@@ -126,7 +126,7 @@ export default function CreateRoleModal({
             }
           />
 
-          {/* 🔥 MAX EMPLEADOS */}
+          {/* MAX EMPLEADOS */}
           <div>
             <ModalInput
               type="number"

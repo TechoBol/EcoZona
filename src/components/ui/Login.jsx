@@ -1,11 +1,12 @@
 import styled, { createGlobalStyle } from "styled-components";
+import {theme} from "./Theme"
 
 export const Wrapper = styled.div`
   min-height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #ffffffff;
+  background: ${theme.colors.background};
 `;
 
 export const Card = styled.div`
@@ -14,7 +15,7 @@ export const Card = styled.div`
 
   display: flex;
   flex-direction: column;
-  justify-content: center; /* 🔥 centra contenido vertical */
+  justify-content: center;
 
   background: #ffffff;
   border-radius: 25px;
@@ -22,18 +23,18 @@ export const Card = styled.div`
 
   box-sizing: border-box;
 
-  max-height: 100%; /* 🔥 evita overflow */
+  max-height: 100%;
 `;
 
 export const Logo = styled.h1`
   text-align: center;
-  color: #F20C1F;
+  color: ${theme.colors.primary};
   font-family: var(--font-title);
 
   font-size: 45px;
   font-weight: 700;
 
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 `;
 
 export const Title = styled.h2`
@@ -43,7 +44,7 @@ export const Title = styled.h2`
 export const Subtitle = styled.p`
   text-align: center;
   font-size: 14px;
-  color: black;
+  color: ${theme.colors.text};
   margin-bottom: 10px;
   margin-top: 20px;
 `;
@@ -53,7 +54,7 @@ export const Input = styled.input`
   height: 48px;
   padding: 0 45px 0 15px; /* espacio para el icono */
 
-  background-color: #ffffff;
+  background: ${theme.colors.background};
   border: 1px solid rgba(0, 0, 0, 0.2);
   border-radius: 20px;
 
@@ -79,8 +80,8 @@ export const Button = styled.button`
   height: 48px;
   margin-top: 5px;
 
-  background-color: #F20C1F;
-  color: #ffffff;
+  background-color: ${theme.colors.primary};
+  color: ${theme.colors.background};
 
   border: none;
   border-radius: 30px;
@@ -116,7 +117,7 @@ export const Label = styled.label`
   font-size: 14px;
   margin-bottom: 5px;
   text-align: left;
-  color: black;
+  color: ${theme.colors.text};
   font-weight: 700;
 `;
 
