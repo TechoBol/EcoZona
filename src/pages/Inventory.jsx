@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useInventory from "../hooks/useInventory";
-import Beep from "../assets/sounds/Beep.mp3"
+import Beep from "../assets/sounds/Beep.mp3";
 
 import {
   Wrapper,
@@ -39,7 +39,8 @@ function Inventory() {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const { products, search, setSearch, onFilterTextBoxChanged } = useInventory();
+  const { products, search, setSearch, onFilterTextBoxChanged } =
+    useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
@@ -64,15 +65,16 @@ function Inventory() {
   const playBeep = () => {
     if (!beepRef.current) return;
     beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => { });
+    beepRef.current.play().catch(() => {});
   };
 
   // LONG PRESS
   const pressTimer = useRef(null);
 
-  const handleMouseDown = (productId) => {
+  const handleMouseDown = (product) => {
+    console.log(product)
     pressTimer.current = setTimeout(() => {
-      navigate(`/product/${productId}`);
+      navigate(`/product/edit`, { state: product });
     }, 700);
   };
 
@@ -120,7 +122,7 @@ function Inventory() {
     setLastScanned({ code: cleanCode, time: now });
 
     const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase()
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
     );
 
     if (!found) return;
@@ -134,9 +136,7 @@ function Inventory() {
 
         if (exists) {
           return prev.map((p) =>
-            p.id === found.id
-              ? { ...p, quantity: (p.quantity || 1) + 1 }
-              : p
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
           );
         }
 
@@ -228,13 +228,15 @@ function Inventory() {
                 data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
-                onMouseDown={() => handleMouseDown(product.id)}
+                onMouseDown={() => handleMouseDown(product)}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
-                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+                  src={
+                    imageUrls[product.id] || "https://via.placeholder.com/150"
+                  }
                 />
 
                 <ProductInfo>
@@ -261,7 +263,7 @@ function Inventory() {
                 await beepRef.current.play(); //desbloquea audio
                 beepRef.current.pause();
                 beepRef.current.currentTime = 0;
-              } catch { }
+              } catch {}
             }
 
             setScanCartMode(true);
@@ -281,7 +283,6 @@ function Inventory() {
       {scanning && (
         <ScannerOverlay>
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
-
             {scanCartMode ? (
               <MultiBarcodeReader
                 onDetected={handleBarcodeDetected}

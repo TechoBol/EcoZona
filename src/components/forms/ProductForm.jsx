@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useProduct } from "../../hooks/useProduct";
 import { useForm } from "@mantine/form";
 
@@ -22,62 +22,112 @@ import {
   BarcodeWrapper,
   ScanButton,
 } from "../../components/ui/Product";
+
 import { ArrowLeft, ScanLine, X } from "lucide-react";
 import { errorToast, successToast } from "../../services/toasts";
 import BarcodeReader from "../Scanner/BarcodeReader";
+import { useAmazonS3 } from "../../hooks/useAmazonS3";
 
 function ProductForm() {
   const navigate = useNavigate();
-  const { createProduct, loading, setLoading, subirArchivo } = useProduct();
-  const [isClosing, setIsClosing] = useState(false);
-  const [scanning, setScanning] = useState(false);
+  const location = useLocation();
 
+  const product = location.state ?? null;
+  const isEdit = !!product;
+
+  const { createProduct, updateProduct, loading, setLoading, subirArchivo } =
+    useProduct();
+
+  const { getFileUrl } = useAmazonS3();
+
+  const [scanning, setScanning] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  // 🔥 estado real de imagen S3
+  const [s3Image, setS3Image] = useState(null);
+  const [imageDeleted, setImageDeleted] = useState(false);
+
+  // =========================
+  // LOAD IMAGE FROM S3
+  // =========================
+  useEffect(() => {
+    if (!product?.imageUrl) return;
+
+    const loadImage = async () => {
+      try {
+        const url = await getFileUrl(product.imageUrl);
+        setS3Image(url);
+      } catch {
+        setS3Image(null);
+      }
+    };
+
+    loadImage();
+  }, [product]);
+
+  // =========================
+  // FORM
+  // =========================
   const form = useForm({
     initialValues: {
-      name: "",
-      description: "",
-      barcode: "",
+      name: product?.name ?? "",
+      description: product?.description ?? "",
+      barcode: product?.barcode ?? "",
       imageFile: null,
-      price: "",
-      finalPrice: "",
-      stock: "",
+      price: product?.price ?? "",
+      finalPrice: product?.finalPrice ?? "",
+      stock: product?.inventories?.[0]?.quantity ?? "",
     },
 
     validateInputOnChange: true,
 
     validate: {
-      name: (value) => (!value.trim() ? "El nombre es obligatorio" : null),
-
-      barcode: (value) =>
-        !value.trim() ? "El código de barras es obligatorio" : null,
-
-      price: (value) =>
-        !value || Number(value) <= 0 ? "El precio debe ser mayor a 0" : null,
-
-      finalPrice: (value, values) =>
-        !value || Number(value) <= 0
-          ? "El precio final debe ser mayor a 0"
-          : Number(value) < Number(values.price)
+      name: (v) => (!v.trim() ? "El nombre es obligatorio" : null),
+      barcode: (v) => (!v.trim() ? "El código es obligatorio" : null),
+      price: (v) => (!v || Number(v) <= 0 ? "Precio inválido" : null),
+      finalPrice: (v, values) =>
+        !v || Number(v) <= 0
+          ? "Precio inválido"
+          : Number(v) < Number(values.price)
             ? "No puede ser menor al precio base"
             : null,
-
-      stock: (value) =>
-        value === "" || Number(value) < 0 ? "Stock inválido" : null,
+      stock: (v) =>
+        v === "" || Number(v) < 0 ? "Stock inválido" : null,
     },
   });
 
+  // =========================
+  // PREVIEW IMAGE LOGIC
+  // =========================
   const previewUrl = useMemo(() => {
-    if (!form.values.imageFile) return null;
-    return URL.createObjectURL(form.values.imageFile);
-  }, [form.values.imageFile]);
+    if (form.values.imageFile) {
+      return URL.createObjectURL(form.values.imageFile);
+    }
 
+    if (!imageDeleted && s3Image) {
+      return s3Image;
+    }
+
+    return null;
+  }, [form.values.imageFile, s3Image, imageDeleted]);
+
+  // =========================
+  // SUBMIT
+  // =========================
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
-      let imageUrl = null;
 
+      let imageKey = product?.imageUrl || null;
+
+      // 🟢 CASO 1: sube nueva imagen
       if (values.imageFile) {
-        imageUrl = await subirArchivo(values.imageFile, values.barcode);
+        imageKey = await subirArchivo(values.imageFile, values.barcode);
+      }
+
+      // 🔴 CASO 2: eliminó imagen y no subió otra
+      if (imageDeleted && !values.imageFile) {
+        imageKey = null;
       }
 
       const payload = {
@@ -87,100 +137,73 @@ function ProductForm() {
         price: Number(values.price),
         finalPrice: Number(values.finalPrice),
         stock: Number(values.stock),
-        imageUrl: imageUrl,
+        imageUrl: imageKey,
       };
 
-      await createProduct(payload);
+      if (isEdit) {
+        await updateProduct(product.id, payload);
+        successToast("Producto actualizado");
+      } else {
+        await createProduct(payload);
+        successToast("Producto creado");
+      }
 
-      successToast("Producto creado");
       form.reset();
-      navigate("/inventory", { replace: true })
+      navigate("/inventory", { replace: true });
     } catch (err) {
       console.error(err);
-      errorToast("Error creando producto");
+      errorToast(
+        isEdit ? "Error actualizando producto" : "Error creando producto",
+      );
+    } finally {
+      setLoading(false);
     }
   });
 
+  // =========================
+  // UI
+  // =========================
   return (
     <Wrapper>
       <Header>
         <BackButton onClick={() => navigate("/inventory", { replace: true })}>
           <ArrowLeft size={22} />
         </BackButton>
-        <Title>Crear Producto</Title>
+        <Title>{isEdit ? "Editar Producto" : "Crear Producto"}</Title>
       </Header>
 
       <Form onSubmit={handleSubmit}>
-        {/* NAME */}
         <ContainerInput>
-          <Input
-            hasError={!!form.errors.name}
-            placeholder="Nombre de producto"
-            {...form.getInputProps("name")}
-          />
+          <Input placeholder="Nombre" {...form.getInputProps("name")} />
           {form.errors.name && <ErrorText>{form.errors.name}</ErrorText>}
         </ContainerInput>
 
-        {/* DESCRIPTION */}
         <ContainerInput>
-          <Input
-            placeholder="Descripción"
-            {...form.getInputProps("description")}
-          />
+          <Input placeholder="Descripción" {...form.getInputProps("description")} />
         </ContainerInput>
 
-        {/* BARCODE */}
         <ContainerInput>
           <BarcodeWrapper>
-            <Input
-              className="with-icon"
-              hasError={!!form.errors.barcode}
-              placeholder="Código de barras"
-              {...form.getInputProps("barcode")}
-            />
-
+            <Input placeholder="Código" {...form.getInputProps("barcode")} />
             <ScanButton type="button" onClick={() => setScanning(true)}>
               <ScanLine size={18} />
             </ScanButton>
           </BarcodeWrapper>
-
-          {form.errors.barcode && <ErrorText>{form.errors.barcode}</ErrorText>}
         </ContainerInput>
 
-        {/* PRICE */}
         <ContainerInput>
-          <Input
-            hasError={!!form.errors.price}
-            type="number"
-            placeholder="Precio unitario"
-            {...form.getInputProps("price")}
-          />
-          {form.errors.price && <ErrorText>{form.errors.price}</ErrorText>}
+          <Input type="number" placeholder="Precio" {...form.getInputProps("price")} />
         </ContainerInput>
 
-        {/* FINAL PRICE */}
         <ContainerInput>
-          <Input
-            hasError={!!form.errors.finalPrice}
-            type="number"
-            placeholder="Precio venta"
-            {...form.getInputProps("finalPrice")}
-          />
-          {form.errors.finalPrice && (
-            <ErrorText>{form.errors.finalPrice}</ErrorText>
-          )}
+          <Input type="number" placeholder="Precio venta" {...form.getInputProps("finalPrice")} />
         </ContainerInput>
 
-        {/* STOCK */}
         <ContainerInput>
-          <Input
-            hasError={!!form.errors.stock}
-            type="number"
-            placeholder="Stock inicial"
-            {...form.getInputProps("stock")}
-          />
-          {form.errors.stock && <ErrorText>{form.errors.stock}</ErrorText>}
+          <Input type="number" placeholder="Stock" {...form.getInputProps("stock")} />
         </ContainerInput>
+
+        {/* ================= IMAGE ================= */}
         <ContainerInput style={{ flexDirection: "column" }}>
           {!form.values.imageFile && (
             <div style={{ display: "flex", gap: "10px" }}>
@@ -190,8 +213,11 @@ function ProductForm() {
                   type="file"
                   accept="image/*"
                   onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) form.setFieldValue("imageFile", file);
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      form.setFieldValue("imageFile", file);
+                      setImageDeleted(false);
+                    }
                   }}
                 />
               </UploadBox>
@@ -203,8 +229,11 @@ function ProductForm() {
                   accept="image/*"
                   capture="environment"
                   onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (file) form.setFieldValue("imageFile", file);
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      form.setFieldValue("imageFile", file);
+                      setImageDeleted(false);
+                    }
                   }}
                 />
               </UploadBox>
@@ -222,8 +251,9 @@ function ProductForm() {
 
                   setTimeout(() => {
                     form.setFieldValue("imageFile", null);
+                    setImageDeleted(true);
                     setIsClosing(false);
-                  }, 200); // duración animación
+                  }, 200);
                 }}
               >
                 <X size={18} />
@@ -231,10 +261,16 @@ function ProductForm() {
             </PreviewContainer>
           )}
         </ContainerInput>
+
         <Button type="submit" disabled={!form.isValid() || loading}>
-          {loading ? "Creando..." : "Crear Producto"}
+          {loading
+            ? "Guardando..."
+            : isEdit
+              ? "Actualizar Producto"
+              : "Crear Producto"}
         </Button>
       </Form>
+
       {scanning && (
         <ScannerOverlay>
           <BarcodeReader
