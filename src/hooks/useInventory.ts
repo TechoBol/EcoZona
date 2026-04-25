@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
 import { getProducts } from "../services/InventoryService";
-
+import socket from "../services/SocketIOConnection";
 interface Product {
   id: string;
   name: string;
@@ -43,9 +43,10 @@ const useInventory = () => {
       return;
     }
 
-    const filtered = products.filter((product) =>
-      (product.name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (product.barcode || "").toLowerCase().includes(search.toLowerCase())
+    const filtered = products.filter(
+      (product) =>
+        (product.name || "").toLowerCase().includes(search.toLowerCase()) ||
+        (product.barcode || "").toLowerCase().includes(search.toLowerCase()),
     );
 
     setFilteredProducts(filtered);
@@ -67,9 +68,7 @@ const useInventory = () => {
       if (e.key === "Enter") {
         if (scannerBuffer) {
           setSearch(scannerBuffer);
-          const found = products.find(
-            (p) => p.barcode === scannerBuffer
-          );
+          const found = products.find((p) => p.barcode === scannerBuffer);
 
           if (found) {
             console.log("Producto escaneado:", found);
@@ -99,6 +98,27 @@ const useInventory = () => {
 
   useEffect(() => {
     fetchProducts();
+  }, []);
+
+  useEffect(() => {
+    socket.on("newProduct", (producto) => {
+      setProducts((prev) => {
+        const exists = prev.some((p) => p.id === producto.id);
+        if (exists)
+          return prev.map((p) => (p.id === producto.id ? producto : p));
+        return [...prev, producto];
+      });
+    });
+
+    // Cuando llega una venta, recargar productos frescos del backend
+    socket.on("cartProduct", () => {
+      fetchProducts(); // ✅ más simple y siempre correcto
+    });
+
+    return () => {
+      socket.off("newProduct");
+      socket.off("cartProduct");
+    };
   }, []);
 
   return {

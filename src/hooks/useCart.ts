@@ -52,7 +52,7 @@ export const useCart = () => {
       const pdfKey = await uploadPDF(file, venta.sale.code);
 
       console.log("PDF subido:", pdfKey);
-      return venta;
+      return venta.sale;
     } catch (err) {
       setError("Error creando venta");
       throw err;

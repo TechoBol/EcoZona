@@ -23,6 +23,13 @@ export const GlobalStyle = createGlobalStyle`
     user-select: none;
   }
 
+  img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+  }
+  
   html, body, #root {
     height: 100%;
     width: 100%;

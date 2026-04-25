@@ -27,6 +27,7 @@ import { ArrowLeft, ScanLine, X } from "lucide-react";
 import { errorToast, successToast } from "../../services/toasts";
 import BarcodeReader from "../Scanner/BarcodeReader";
 import { useAmazonS3 } from "../../hooks/useAmazonS3";
+import socket from "../../services/SocketIOConnection";
 
 function ProductForm() {
   const navigate = useNavigate();
@@ -120,12 +121,10 @@ function ProductForm() {
 
       let imageKey = product?.imageUrl || null;
 
-      // 🟢 CASO 1: sube nueva imagen
       if (values.imageFile) {
         imageKey = await subirArchivo(values.imageFile, values.barcode);
       }
 
-      // 🔴 CASO 2: eliminó imagen y no subió otra
       if (imageDeleted && !values.imageFile) {
         imageKey = null;
       }
@@ -140,16 +139,20 @@ function ProductForm() {
         imageUrl: imageKey,
       };
 
+      // ✅ Renombrar a "result" para no pisar la variable "product" externa
+      let result;
       if (isEdit) {
-        await updateProduct(product.id, payload);
+        result = await updateProduct(product.id, payload); // usa el "product" externo
         successToast("Producto actualizado");
       } else {
-        await createProduct(payload);
+        result = await createProduct(payload);
         successToast("Producto creado");
       }
 
       form.reset();
+      socket.emit("createProduct", result); // emite el resultado
       navigate("/inventory", { replace: true });
+
     } catch (err) {
       console.error(err);
       errorToast(

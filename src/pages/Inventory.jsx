@@ -31,7 +31,6 @@ import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 
-//DOS ESCÁNERES
 import BarcodeReader from "../components/Scanner/BarcodeReader";
 import MultiBarcodeReader from "../components/Scanner/MultiBarcodeReader";
 
@@ -50,10 +49,7 @@ function Inventory() {
   // MODO CARRITO
   const [scanCartMode, setScanCartMode] = useState(false);
   const [scannedProducts, setScannedProducts] = useState([]);
-  const [lastScanned, setLastScanned] = useState({
-    code: "",
-    time: 0,
-  });
+  const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
 
   // AUDIO
   const beepRef = useRef(null);
@@ -71,8 +67,8 @@ function Inventory() {
   // LONG PRESS
   const pressTimer = useRef(null);
 
+  // --- MOUSE (desktop) ---
   const handleMouseDown = (product) => {
-    console.log(product)
     pressTimer.current = setTimeout(() => {
       navigate(`/product/edit`, { state: product });
     }, 700);
@@ -80,7 +76,23 @@ function Inventory() {
 
   const handleMouseUp = () => clearTimeout(pressTimer.current);
 
-  // selección manual
+  // --- TOUCH (móvil) ---
+  const handleTouchStart = (product) => {
+    pressTimer.current = setTimeout(() => {
+      navigate(`/product/edit`, { state: product });
+    }, 700);
+  };
+
+  const handleTouchEnd = () => {
+    clearTimeout(pressTimer.current);
+  };
+
+  const handleTouchMove = () => {
+    // Si el usuario scrollea, cancelar el long press
+    clearTimeout(pressTimer.current);
+  };
+
+  // SELECCIÓN MANUAL
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -115,14 +127,14 @@ function Inventory() {
 
     if (
       lastScanned.code === cleanCode &&
-      now - lastScanned.time < 1200 // ⏱ 1.2s bloqueo
+      now - lastScanned.time < 1200
     ) {
       return;
     }
     setLastScanned({ code: cleanCode, time: now });
 
     const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase()
     );
 
     if (!found) return;
@@ -133,16 +145,13 @@ function Inventory() {
     if (scanCartMode) {
       setScannedProducts((prev) => {
         const exists = prev.find((p) => p.id === found.id);
-
         if (exists) {
           return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p
           );
         }
-
         return [...prev, { ...found, quantity: 1 }];
       });
-
       return;
     }
 
@@ -228,9 +237,17 @@ function Inventory() {
                 data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
+
+                // Mouse (desktop)
                 onMouseDown={() => handleMouseDown(product)}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
+
+                // Touch (móvil) ← fix
+                onTouchStart={() => handleTouchStart(product)}
+                onTouchEnd={handleTouchEnd}
+                onTouchMove={handleTouchMove}
+
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
@@ -260,7 +277,7 @@ function Inventory() {
           onClick={async () => {
             if (beepRef.current) {
               try {
-                await beepRef.current.play(); //desbloquea audio
+                await beepRef.current.play();
                 beepRef.current.pause();
                 beepRef.current.currentTime = 0;
               } catch {}

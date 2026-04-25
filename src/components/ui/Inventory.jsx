@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import {theme} from "./Theme"
+import { theme } from "./Theme";
 
 /* Wrapper */
 export const Wrapper = styled.div`
@@ -156,11 +156,7 @@ export const Card = styled.div`
 
   border: 2px solid
     ${(props) =>
-    props.$error
-      ? "#dc655f"
-      : props.$selected
-        ? "#69d584"
-        : "transparent"};
+      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -171,11 +167,21 @@ export const Card = styled.div`
   `}
 
   @keyframes shake {
-    0%   { transform: translateX(0); }
-    25%  { transform: translateX(-4px); }
-    50%  { transform: translateX(4px); }
-    75%  { transform: translateX(-3px); }
-    100% { transform: translateX(0); }
+    0% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4px);
+    }
+    50% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-3px);
+    }
+    100% {
+      transform: translateX(0);
+    }
   }
 `;
 
@@ -204,6 +210,12 @@ export const ProductImage = styled.img`
   height: 140px;
   object-fit: cover;
   margin: -12px -12px 0 -12px;
+
+  /* Bloquear menú contextual en móvil */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  pointer-events: none;
 `;
 
 /* Info */
@@ -293,7 +305,7 @@ export const ScannerButton = styled.button`
   height: 52px;
 
   border-radius: 50%;
-  background: ${theme.colors.secondary};;
+  background: ${theme.colors.secondary};
   color: ${theme.colors.background};
 
   border: 2px solid ${theme.colors.secondary};

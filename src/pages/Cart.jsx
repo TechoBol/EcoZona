@@ -32,7 +32,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 import Swal from "sweetalert2";
-
+import socket from "../services/SocketIOConnection"
 const Cart = () => {
   const navigate = useNavigate();
 
@@ -53,86 +53,88 @@ const Cart = () => {
   const total = Math.max(0, subtotal - discountValue);
   const [isProcessing, setIsProcessing] = useState(false);
 
-const handleCheckout = async () => {
-  if (cartItems.length === 0) {
-    Swal.fire({
-      title: "Carrito vacío",
-      text: "Agrega productos antes de continuar.",
-      icon: "warning",
-    });
-    return;
-  }
+  const handleCheckout = async () => {
+    if (cartItems.length === 0) {
+      Swal.fire({
+        title: "Carrito vacío",
+        text: "Agrega productos antes de continuar.",
+        icon: "warning",
+      });
+      return;
+    }
 
-  // PASO 1: Confirmar la venta
-  const confirmResult = await Swal.fire({
-    title: "¿Confirmar venta?",
-    text: "Selecciona el método de pago",
-    icon: "question",
-    showDenyButton: true,
-    confirmButtonText: "💵 Efectivo",
-    denyButtonText: "📱 QR",
-    confirmButtonColor: "#28a745",
-    denyButtonColor: "#007bff",
-  });
-
-  // Canceló
-  if (confirmResult.isDismissed) return;
-
-  // PASO 2A: Pago en efectivo
-  if (confirmResult.isConfirmed) {
-    await finalizarVenta({ metodoPago: "efectivo", codigoTransaccion: null });
-    Swal.fire({
-      title: "¡Venta realizada!",
-      text: "Pago en efectivo registrado correctamente.",
-      icon: "success",
+    // PASO 1: Confirmar la venta
+    const confirmResult = await Swal.fire({
+      title: "¿Confirmar venta?",
+      text: "Selecciona el método de pago",
+      icon: "question",
+      showDenyButton: true,
+      confirmButtonText: "💵 Efectivo",
+      denyButtonText: "📱 QR",
       confirmButtonColor: "#28a745",
-    });
-    return;
-  }
-
-  // PASO 2B: Pago QR → pedir código de transacción
-  if (confirmResult.isDenied) {
-    const qrResult = await Swal.fire({
-      title: "Pago QR",
-      text: "Ingresa el código de transacción",
-      input: "text",
-      inputPlaceholder: "Ej: TRX-123456",
-      inputAttributes: { autocapitalize: "off" },
-      showCancelButton: true,
-      confirmButtonText: "Confirmar pago",
-      cancelButtonText: "Cancelar",
-      confirmButtonColor: "#007bff",
-      showLoaderOnConfirm: true,
-      inputValidator: (value) => {
-        if (!value || value.trim() === "") {
-          return "Debes ingresar el código de transacción";
-        }
-      },
-      preConfirm: async (codigo) => {
-        try {
-          return codigo.trim();
-        } catch (error) {
-          Swal.showValidationMessage(`Error: ${error.message}`);
-        }
-      },
-      allowOutsideClick: () => !Swal.isLoading(),
+      denyButtonColor: "#007bff",
     });
 
-    if (!qrResult.isConfirmed) return;
+    // Canceló
+    if (confirmResult.isDismissed) return;
 
-    await finalizarVenta({ metodoPago: "qr", codigoTransaccion: qrResult.value });
+    // PASO 2A: Pago en efectivo
+    if (confirmResult.isConfirmed) {
+      await finalizarVenta({ metodoPago: "efectivo", codigoTransaccion: null });
+      Swal.fire({
+        title: "¡Venta realizada!",
+        text: "Pago en efectivo registrado correctamente.",
+        icon: "success",
+        confirmButtonColor: "#28a745",
+      });
+      return;
+    }
 
-    Swal.fire({
-      title: "¡Venta realizada!",
-      html: `Pago QR confirmado.<br><b>Código:</b> ${qrResult.value}`,
-      icon: "success",
-      confirmButtonColor: "#28a745",
-    });
-  }
-};
+    // PASO 2B: Pago QR → pedir código de transacción
+    if (confirmResult.isDenied) {
+      const qrResult = await Swal.fire({
+        title: "Pago QR",
+        text: "Ingresa el código de transacción",
+        input: "text",
+        inputPlaceholder: "Ej: TRX-123456",
+        inputAttributes: { autocapitalize: "off" },
+        showCancelButton: true,
+        confirmButtonText: "Confirmar pago",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#007bff",
+        showLoaderOnConfirm: true,
+        inputValidator: (value) => {
+          if (!value || value.trim() === "") {
+            return "Debes ingresar el código de transacción";
+          }
+        },
+        preConfirm: async (codigo) => {
+          try {
+            return codigo.trim();
+          } catch (error) {
+            Swal.showValidationMessage(`Error: ${error.message}`);
+          }
+        },
+        allowOutsideClick: () => !Swal.isLoading(),
+      });
 
-const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
-  
+      if (!qrResult.isConfirmed) return;
+
+      await finalizarVenta({
+        metodoPago: "qr",
+        codigoTransaccion: qrResult.value,
+      });
+
+      Swal.fire({
+        title: "¡Venta realizada!",
+        html: `Pago QR confirmado.<br><b>Código:</b> ${qrResult.value}`,
+        icon: "success",
+        confirmButtonColor: "#28a745",
+      });
+    }
+  };
+
+  const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
     if (isProcessing) return; // evita doble click
 
     setIsProcessing(true); // bloquea
@@ -144,14 +146,16 @@ const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
       })),
       discount: Number(descuento),
       metodoPago: metodoPago,
-      codigoTransaccion : codigoTransaccion
+      codigoTransaccion: codigoTransaccion,
     };
 
     try {
-      await createSale(payload, cartItems, subtotal, Number(descuento), total);
-
+      const result = await createSale(payload, cartItems, subtotal, Number(descuento), total);
+      console.log("Venta")
+      console.log(result)
       clearCart();
       setDescuento("0");
+      socket.emit("newCartProduct", result);
       navigate("/inventory", { replace: true });
     } catch (err) {
       console.error(err);
@@ -159,7 +163,7 @@ const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
     } finally {
       setIsProcessing(false); // 🔓 por si falla
     }
-};
+  };
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -290,10 +294,7 @@ const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
           <span>Bs {total.toFixed(2)}</span>
         </Total>
 
-        <CheckoutButton
-          onClick={handleCheckout}
-          disabled={isProcessing}
-        >
+        <CheckoutButton onClick={handleCheckout} disabled={isProcessing}>
           {isProcessing ? "Procesando..." : "Finalizar Venta"}
         </CheckoutButton>
       </Footer>
