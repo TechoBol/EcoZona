@@ -32,6 +32,7 @@ export default function CreateEmployeeModal({
 
     if (!form.name) e.name = "Nombre requerido";
     if (!form.lastName) e.lastName = "Apellido requerido";
+    if (!form.password) e.password = "Contraseña requerido";
     if (!form.roleId) e.roleId = "Rol requerido";
 
     setErrors(e);
@@ -75,6 +76,12 @@ export default function CreateEmployeeModal({
             placeholder="Email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
+          />
+
+          <ModalInput
+            placeholder="Contraseña"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
 
           <ModalSelect

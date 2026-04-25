@@ -36,6 +36,7 @@ export default function Employees() {
     email: "",
     roleId: "",
     locationId: "",
+    password : ""
   });
 
   const rows = (data || []).map((emp) => ({
@@ -128,6 +129,7 @@ export default function Employees() {
                 email: "",
                 roleId: "",
                 locationId: "",
+                password : ""
               });
               setIsEdit(false);
               setOpen(true);
