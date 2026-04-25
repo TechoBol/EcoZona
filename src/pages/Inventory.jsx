@@ -304,7 +304,7 @@ function Inventory() {
                   height: 50,
                   borderRadius: 30,
                   border: "none",
-                  background: "#404594",
+                  background: "#F20C1F",
                   color: "#fff",
                   fontWeight: "600",
                 }}

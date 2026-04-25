@@ -17,7 +17,7 @@ export const Card = styled.div`
   flex-direction: column;
   justify-content: center;
 
-  background: #ffffff;
+  background:  ${theme.colors.background};
   border-radius: 25px;
   padding: 24px;
 
