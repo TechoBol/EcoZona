@@ -1,8 +1,9 @@
 import styled from "styled-components";
+import {theme} from "./Theme"
 
 export const Wrapper = styled.div`
-  min-height: 100vh;
-  background: #f7f8fc;
+  min-height: 100dvh;
+  background: ${theme.colors.background};
   padding: 20px;
 `;
 
@@ -14,7 +15,7 @@ export const Header = styled.div`
   padding: 10px 0;
 `;
 
-/* TITLE */
+/* Title */
 export const Title = styled.h1`
   font-size: 22px;
   font-weight: 700;
@@ -27,7 +28,7 @@ export const Content = styled.div`
   overflow-y: auto;
   padding: 0 5px 100px 5px;
 `;
-/* ACTIONS */
+/* Actions */
 export const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -38,7 +39,7 @@ export const AddButton = styled.button`
   height: 44px;
   padding: 0 20px;
   border-radius: 22px;
-  background: #404594;
+  background: ${theme.colors.primary};
   color: white;
   border: none;
   font-weight: 600;
@@ -55,7 +56,7 @@ export const AddButton = styled.button`
   }
 `;
 
-/* OVERLAY */
+/* Overlay */
 export const ModalOverlay = styled.div`
   position: fixed;
   top: 0;
@@ -63,7 +64,7 @@ export const ModalOverlay = styled.div`
   width: 100%;
   height: 100vh;
 
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.5);
 
   display: flex;
   align-items: center;
@@ -79,9 +80,9 @@ export const ModalOverlay = styled.div`
   }
 `;
 
-/* MODAL */
+/* Modal */
 export const ModalContent = styled.div`
-  background: #ffffff;
+  background: ${theme.colors.background};
   padding: 30px 25px 25px 25px;
   border-radius: 20px;
   width: 360px;
@@ -103,24 +104,24 @@ export const ModalContent = styled.div`
   }
 `;
 
-/* TITLE */
+/* Modal Title */
 export const ModalTitle = styled.h3`
   margin-bottom: 20px;
   padding-right: 50px;
   font-size: 20px;
   font-weight: 700;
-  color: #000;
+  color: ${theme.colors.text};
 `;
 
-/* FORM WRAPPER 🔥 (CLAVE PARA ESPACIADO) */
+/* form Wrapper  */
 export const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 14px; /* 🔥 separación real entre inputs */
+  gap: 14px;
   margin-bottom: 10px;
 `;
 
-/* INPUT CUSTOM (NO AFECTA A LOS DEMÁS) */
+/* Input Custom */
 export const ModalInput = styled.input`
   height: 48px;
   width: 100%;
@@ -131,17 +132,17 @@ export const ModalInput = styled.input`
   font-size: 14px;
 
   outline: none;
-  background: #fafafa;
+  background: ${theme.colors.background};
 
   transition: all 0.2s ease;
 
   &:focus {
-    border-color: #404594;
-    background: #fff;
+    border-color: ${theme.colors.text};
+    background: ${theme.colors.background};
   }
 `;
 
-/* SELECT CUSTOM */
+/* Select Custom */
 export const ModalSelect = styled.select`
   height: 48px;
   width: 100%;
@@ -151,23 +152,23 @@ export const ModalSelect = styled.select`
   padding: 0 12px;
   font-size: 14px;
 
-  background: #fafafa;
+  background: ${theme.colors.background};;
   cursor: pointer;
 
   &:focus {
-    border-color: #404594;
-    background: #fff;
+    border-color: ${theme.colors.text};
+    background: ${theme.colors.background};
   }
 `;
 
-/* BOTÓN GUARDAR */
+/* Save Button */
 export const SaveButton = styled.button`
   margin-top: 20px;
   height: 50px;
   border-radius: 25px;
 
-  background: #404594;
-  color: white;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
 
   border: none;
   font-size: 16px;
@@ -184,7 +185,7 @@ export const SaveButton = styled.button`
   }
 `;
 
-/* BOTÓN CERRAR */
+/* Close Button */
 export const CloseButton = styled.button`
   position: absolute;
   top: 14px;
@@ -196,7 +197,7 @@ export const CloseButton = styled.button`
   border-radius: 50%;
   border: none;
 
-  background: #f2f2f2;
+  background: transparent;
 
   display: flex;
   align-items: center;
@@ -207,7 +208,7 @@ export const CloseButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: #e6e6e6;
+    background: transparent;
   }
 
   &:active {

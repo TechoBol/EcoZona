@@ -1,15 +1,16 @@
 import styled from "styled-components";
+import {theme} from "./Theme"
 
-/* WRAPPER */
+/* Wrapper */
 export const Wrapper = styled.div`
   min-height: 100dvh;
-  background: #ffffff;
+  background: ${theme.colors.background};;
   padding: 20px;
   display: flex;
   flex-direction: column;
 `;
 
-/* HEADER */
+/* Header */
 export const Header = styled.div`
   position: relative;
   display: flex;
@@ -28,7 +29,7 @@ export const BackButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #0D0D0D;
+  color: ${theme.colors.text};
 
   &:hover {
     opacity: 0.6;
@@ -38,7 +39,7 @@ export const BackButton = styled.button`
 export const Title = styled.h1`
   font-size: 22px;
   font-weight: bold;
-  color: #0D0D0D;
+  color: ${theme.colors.text};
   font-family: var(--font-title);
   text-align: center;
 `;
@@ -61,7 +62,7 @@ export const DiscountInput = styled.input`
   border-radius: 8px;
   padding: 2px 6px;
   font-size: 14px;
-  color: #111;
+  color: ${theme.colors.text};
   outline: none;
 
   &:focus {
@@ -81,7 +82,7 @@ export const DiscountInput = styled.input`
 
 export const DiscountPrefix = styled.span`
   font-size: 14px;
-  color: #999;
+  color: ${theme.colors.textSecondary};
   margin-right: 4px;
 `;
 
@@ -89,7 +90,7 @@ export const DiscountPrefix = styled.span`
 export const ProductCard = styled.div`
   display: flex;
   align-items: stretch;
-  background: #fff;
+  background: ${theme.colors.background};
   border-radius: 14px;
   padding: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
@@ -139,7 +140,7 @@ export const ProductName = styled.span`
 
 export const ProductPrice = styled.span`
   font-size: 14px;
-  color: gray;
+  color: ${theme.colors.textSecondary};
   margin-top: 4px;
 `;
 
@@ -148,7 +149,7 @@ export const DeleteButton = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #ff3b30;
+  color: ${theme.colors.secondary};
 
   display: flex;
   align-items: center;
@@ -231,14 +232,13 @@ export const Total = styled.div`
 export const CheckoutButton = styled.button`
   width: 100%;
   margin-top: 15px;
-  background: #F20C1F;
-  color: white;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
   padding: 12px;
   border-radius: 30px;
   border: none;
   font-weight: 600;
   cursor: pointer;
-
   &:hover {
     opacity: 0.9;
   }

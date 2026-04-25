@@ -1,15 +1,16 @@
 import styled from "styled-components";
+import {theme} from "./Theme"
 
-/* WRAPPER */
+/* Wrapper */
 export const Wrapper = styled.div`
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: ${theme.colors.background};
   padding: 20px;
 `;
 
-/* HEADER */
+/* Header */
 export const Header = styled.div`
   display: grid;
   grid-template-columns: auto 1fr auto;
@@ -18,17 +19,17 @@ export const Header = styled.div`
   margin-bottom: 20px;
 `;
 
-/* TITLE */
+/* Title */
 export const Title = styled.h1`
   font-family: var(--font-title);
   font-size: 20px;
   font-weight: 700;
-  color: #0D0D0D;
+  color: ${theme.colors.text};
   text-align: center;
   justify-self: center;
 `;
 
-/* PROFILE */
+/* Profile */
 export const ProfileButton = styled.div`
   width: 36px;
   height: 36px;
@@ -52,7 +53,7 @@ export const Content = styled.div`
   padding: 0 5px 100px 5px;
 `;
 
-/* DROPDOWN */
+/* Dropdown */
 export const Dropdown = styled.div`
   position: absolute;
   right: 0;
@@ -67,7 +68,7 @@ export const Dropdown = styled.div`
   z-index: 50;
 `;
 
-/* USER INFO */
+/* User Info */
 export const UserInfo = styled.div`
   padding: 12px;
   border-bottom: 1px solid #eee;
@@ -76,15 +77,15 @@ export const UserInfo = styled.div`
 export const Name = styled.p`
   font-size: 14px;
   font-weight: 600;
-  color: #0D0D0D;
+  color: ${theme.colors.text};
 `;
 
 export const Role = styled.p`
   font-size: 12px;
-  color: gray;
+  color: ${theme.colors.textSecondary};
 `;
 
-/* LOGOUT */
+/* Logout */
 export const LogoutButton = styled.button`
   width: 100%;
   padding: 10px 12px;
@@ -96,10 +97,10 @@ export const LogoutButton = styled.button`
   border: none;
   cursor: pointer;
   font-size: 14px;
-  color: #e53935;
+  color: ${theme.colors.error};
 
   svg {
-    color: #e53935;
+    color: ${theme.colors.error};
   }
 
   &:hover {
@@ -107,7 +108,7 @@ export const LogoutButton = styled.button`
   }
 `;
 
-/* SEARCH */
+/* Search */
 export const SearchBar = styled.div`
   position: relative;
   margin-bottom: 12px;
@@ -120,7 +121,7 @@ export const SearchInput = styled.input`
 
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #fff;
+  background: ${theme.colors.background};
 
   font-size: 13px;
   outline: none;
@@ -136,20 +137,20 @@ export const ScanButton = styled.div`
   cursor: pointer;
 `;
 
-/* GRID */
+/* Grid */
 export const ProductsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
 `;
 
-/* CARD */
+/* Card */
 export const Card = styled.div`
   display: flex;
   flex-direction: column;
   border-radius: 14px;
   padding: 12px;
-  background: #fff;
+  background: ${theme.colors.background};
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   overflow: hidden;
 
@@ -178,7 +179,7 @@ export const Card = styled.div`
   }
 `;
 
-/* MENU OPTION */
+/* Menu Option */
 export const MenuOption = styled.button`
   width: 100%;
   display: flex;
@@ -193,11 +194,11 @@ export const MenuOption = styled.button`
   cursor: pointer;
 
   &:hover {
-    background: #f2f2f2;
+    background: ${theme.colors.background};
   }
 `;
 
-/* IMAGE */
+/* Image */
 export const ProductImage = styled.img`
   width: calc(100% + 24px);
   height: 140px;
@@ -205,7 +206,7 @@ export const ProductImage = styled.img`
   margin: -12px -12px 0 -12px;
 `;
 
-/* INFO */
+/* Info */
 export const ProductInfo = styled.div`
   padding: 10px 4px 4px 4px;
   display: flex;
@@ -224,7 +225,7 @@ export const ProductName = styled.p`
 
 export const ProductCode = styled.p`
   font-size: 12px;
-  color: gray;
+  color: ${theme.colors.secondary};
   margin: 0;
 `;
 
@@ -239,7 +240,7 @@ export const ProductFooter = styled.div`
 export const Price = styled.span`
   font-size: 13px;
   font-weight: 500;
-  color: gray;
+  color: ${theme.colors.textSecondary};
   white-space: nowrap;
 `;
 
@@ -249,7 +250,7 @@ export const Stock = styled.span`
   white-space: nowrap;
 `;
 
-/* BOTTOM ACTIONS */
+/* Button Actions */
 export const BottomActions = styled.div`
   position: fixed;
   bottom: 20px;
@@ -261,14 +262,14 @@ export const BottomActions = styled.div`
   gap: 12px;
 `;
 
-/* BOTÓN + */
+/* + Button */
 export const AddProductButton = styled.button`
   width: 40px;
   height: 40px;
 
   border-radius: 50%;
   background: transparent;
-  color: #0D0D0D;
+  color: ${theme.colors.text};
   border: none;
 
   display: flex;
@@ -286,16 +287,16 @@ export const AddProductButton = styled.button`
   }
 `;
 
-/* BOTÓN ESCÁNER */
+/* Escanner Button */
 export const ScannerButton = styled.button`
   width: 52px;
   height: 52px;
 
   border-radius: 50%;
-  background: #F2727D;
-  color: #ffffff;
+  background: ${theme.colors.secondary};;
+  color: ${theme.colors.background};
 
-  border: 2px solid #F2727D;
+  border: 2px solid ${theme.colors.secondary};
 
   display: flex;
   justify-content: center;
@@ -314,13 +315,13 @@ export const ScannerButton = styled.button`
   }
 `;
 
-/* BOTÓN PRINCIPAL */
+/* Principal Button */
 export const AddToCartButton = styled.button`
   flex: 1;
   height: 52px;
 
-  background: #F20C1F;
-  color: #ffffff;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
 
   border: none;
   border-radius: 30px;
@@ -343,7 +344,7 @@ export const AddToCartButton = styled.button`
   }
 `;
 
-/*SCANNER OVERLAY */
+/* Scanner Overlay */
 export const ScannerOverlay = styled.div`
   position: fixed;
   inset: 0;

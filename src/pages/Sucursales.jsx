@@ -28,7 +28,7 @@ export default function Sucursales() {
   const [openDelete, setOpenDelete] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
-  // 🔥 COLUMNAS
+  // COLUMNAS
   const columns = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 160 },
     { field: "type", headerName: "Tipo", flex: 1, minWidth: 130 },
@@ -118,7 +118,7 @@ export default function Sucursales() {
               },
             }}
             sx={{
-              border: "none",
+              border: "1px solid #eee",
 
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: "#f8f9ff",

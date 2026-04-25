@@ -17,14 +17,14 @@ export default function CreateLocationModal({
   onSubmit,
   form,
   setForm,
-  isEdit, // 🔥 nuevo
+  isEdit,
 }) {
   const [errors, setErrors] = useState({
     name: "",
     abbreviation: "",
   });
 
-  // 🔥 ESC para cerrar
+  // ESC para cerrar
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -34,7 +34,7 @@ export default function CreateLocationModal({
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // 🔥 limpiar errores cuando se abre
+  // Limpiar errores cuando se abre
   useEffect(() => {
     if (open) {
       setErrors({
@@ -44,7 +44,7 @@ export default function CreateLocationModal({
     }
   }, [open]);
 
-  // 🔥 VALIDACIÓN
+  // VALIDACIÓN
   const validate = () => {
     let valid = true;
     const newErrors = { name: "", abbreviation: "" };
@@ -68,7 +68,7 @@ export default function CreateLocationModal({
     onSubmit(form);
   };
 
-  // 🔥 cerrar limpiando errores
+  // cerrar limpiando errores
   const handleClose = () => {
     setErrors({
       name: "",
@@ -97,7 +97,7 @@ export default function CreateLocationModal({
               value={form.name}
               onChange={(e) => {
                 setForm({ ...form, name: e.target.value });
-                setErrors({ ...errors, name: "" }); // 🔥 limpia error al escribir
+                setErrors({ ...errors, name: "" });
               }}
             />
             {errors.name && (
@@ -116,7 +116,7 @@ export default function CreateLocationModal({
                   ...form,
                   abbreviation: e.target.value,
                 });
-                setErrors({ ...errors, abbreviation: "" }); // 🔥 limpia error
+                setErrors({ ...errors, abbreviation: "" });
               }}
             />
             {errors.abbreviation && (

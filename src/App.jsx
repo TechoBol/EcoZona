@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { GlobalStyle } from "./components/ui/GlobalStyle";
 import { useLoginStore } from "./components/store/loginStore";
-import { Toaster } from "react-hot-toast"; // 🔥 AÑADIDO
+import { Toaster } from "react-hot-toast";
 
 import Login from "./pages/Login";
 import Inventory from "./pages/Inventory";
