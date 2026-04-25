@@ -33,7 +33,7 @@ import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 
 import BarcodeReader from "../components/Scanner/BarcodeReader";
-import MultiBarCodeReader from "../components/Scanner/MultiBarcodeReader";
+import MultiBarCodeReader from "../components/Scanner/MultiBarCodeReader";
 
 function Inventory() {
   const navigate = useNavigate();

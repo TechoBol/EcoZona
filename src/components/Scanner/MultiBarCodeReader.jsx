@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Html5Qrcode } from "html5-qrcode";
 
-function MultiBarcodeReader({ onDetected, onClose }) {
+function MultiBarCodeReader({ onDetected, onClose }) {
   const scannerRef = useRef(null);
   const scannedRef = useRef(false);
   const isRunningRef = useRef(false);
@@ -93,4 +93,4 @@ function MultiBarcodeReader({ onDetected, onClose }) {
   );
 }
 
-export default MultiBarcodeReader;
+export default MultiBarCodeReader;
