@@ -33,7 +33,7 @@ import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 
 import BarcodeReader from "../components/Scanner/BarcodeReader";
-import MultiBarcodeReader from "../components/Scanner/MultiBarcodeReader";
+import MultiBarCodeReader from "../components/Scanner/MultiBarcodeReader";
 
 function Inventory() {
   const navigate = useNavigate();
@@ -291,7 +291,7 @@ function Inventory() {
         <ScannerOverlay>
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
             {scanCartMode ? (
-              <MultiBarcodeReader
+              <MultiBarCodeReader
                 onDetected={handleBarcodeDetected}
                 onClose={() => {
                   setScanning(false);
