@@ -10,6 +10,7 @@ import {
   SearchBar,
   SearchInput,
   ScanButton,
+  ScrollArea,
   ProductsGrid,
   Card,
   ProductImage,
@@ -46,12 +47,10 @@ function Inventory() {
   const [scanning, setScanning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // MODO CARRITO
   const [scanCartMode, setScanCartMode] = useState(false);
   const [scannedProducts, setScannedProducts] = useState([]);
   const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
 
-  // AUDIO
   const beepRef = useRef(null);
 
   useEffect(() => {
@@ -64,7 +63,6 @@ function Inventory() {
     beepRef.current.play().catch(() => {});
   };
 
-  // LONG PRESS
   const pressTimer = useRef(null);
 
   // --- MOUSE (desktop) ---
@@ -120,7 +118,6 @@ function Inventory() {
     navigate("/cart");
   };
 
-  // ESCÁNER
   const handleBarcodeDetected = (code) => {
     const cleanCode = code.trim();
     const now = Date.now();
@@ -141,7 +138,6 @@ function Inventory() {
 
     playBeep();
 
-    // MODO CARRITO
     if (scanCartMode) {
       setScannedProducts((prev) => {
         const exists = prev.find((p) => p.id === found.id);
@@ -155,7 +151,6 @@ function Inventory() {
       return;
     }
 
-    // MODO BÚSQUEDA
     setSearch(cleanCode);
     setScanning(false);
 
@@ -165,7 +160,6 @@ function Inventory() {
     }, 100);
   };
 
-  // IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -213,7 +207,6 @@ function Inventory() {
         </AddProductButton>
       </Header>
 
-      {/* BUSCADOR */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."
@@ -225,8 +218,7 @@ function Inventory() {
         </ScanButton>
       </SearchBar>
 
-      {/* LISTA */}
-      <div style={{ height: "calc(100vh - 180px)", overflowY: "auto" }}>
+      <ScrollArea>
         <ProductsGrid>
           {products.map((product) => {
             const stock = product.inventories?.[0]?.quantity || 0;
@@ -269,9 +261,8 @@ function Inventory() {
             );
           })}
         </ProductsGrid>
-      </div>
+      </ScrollArea>
 
-      {/* BOTONES */}
       <BottomActions>
         <ScannerButton
           onClick={async () => {
@@ -296,7 +287,6 @@ function Inventory() {
         </AddToCartButton>
       </BottomActions>
 
-      {/* SCANNER */}
       {scanning && (
         <ScannerOverlay>
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
@@ -337,7 +327,7 @@ function Inventory() {
                   height: 50,
                   borderRadius: 30,
                   border: "none",
-                  background: "#404594",
+                  background: "#F20C1F",
                   color: "#fff",
                   fontWeight: "600",
                 }}

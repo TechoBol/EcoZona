@@ -11,7 +11,7 @@ export const Header = styled.div`
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center; /* centra el título */
+  justify-content: center;
   padding: 10px 0;
 `;
 

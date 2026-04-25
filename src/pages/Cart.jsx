@@ -5,7 +5,6 @@ import {
   Wrapper,
   Header,
   Title,
-  CartContainer,
   ProductList,
   ProductCard,
   ProductImage,
@@ -78,7 +77,6 @@ const Cart = () => {
     // Canceló
     if (confirmResult.isDismissed) return;
 
-    // PASO 2A: Pago en efectivo
     if (confirmResult.isConfirmed) {
       await finalizarVenta({ metodoPago: "efectivo", codigoTransaccion: null });
       Swal.fire({
@@ -135,9 +133,8 @@ const Cart = () => {
   };
 
   const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
-    if (isProcessing) return; // evita doble click
-
-    setIsProcessing(true); // bloquea
+    if (isProcessing) return;
+    setIsProcessing(true);
 
     const payload = {
       products: cartItems.map((item) => ({
@@ -161,9 +158,10 @@ const Cart = () => {
       console.error(err);
       alert("Error al procesar la venta");
     } finally {
-      setIsProcessing(false); // 🔓 por si falla
+      setIsProcessing(false);
     }
   };
+
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -209,54 +207,48 @@ const Cart = () => {
         <Title>Venta</Title>
       </Header>
 
-      <CartContainer>
-        <ProductList>
-          {cartItems.map((item) => (
-            <ProductCard key={item.id}>
-              <ProductImage
-                src={imageUrls[item.id] || "https://via.placeholder.com/150"}
-                alt={item.name}
-              />
+      <ProductList>
+        {cartItems.map((item) => (
+          <ProductCard key={item.id}>
+            <ProductImage
+              src={imageUrls[item.id] || "https://via.placeholder.com/150"}
+              alt={item.name}
+            />
 
-              <RightSection>
-                <TopRow>
-                  <ProductText>
-                    <ProductName>{item.name}</ProductName>
-                    <ProductPrice>Bs {item.finalPrice}</ProductPrice>
-                  </ProductText>
+            <RightSection>
+              <TopRow>
+                <ProductText>
+                  <ProductName>{item.name}</ProductName>
+                  <ProductPrice>Bs {item.finalPrice}</ProductPrice>
+                </ProductText>
 
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                      gap: 6,
-                    }}
-                  >
-                    {/* FILA 1: CONTROLES */}
-                    <QuantityControls>
-                      <Button onClick={() => decreaseQty(item.id)}>
-                        <Minus size={18} />
-                      </Button>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "flex-end",
+                    gap: 6,
+                  }}
+                >
+                  <QuantityControls>
+                    <Button onClick={() => decreaseQty(item.id)}>
+                      <Minus size={18} />
+                    </Button>
+                    <QuantityText>{item.quantity}</QuantityText>
+                    <Button onClick={() => increaseQty(item.id)}>
+                      <Plus size={18} />
+                    </Button>
+                  </QuantityControls>
 
-                      <QuantityText>{item.quantity}</QuantityText>
-
-                      <Button onClick={() => increaseQty(item.id)}>
-                        <Plus size={18} />
-                      </Button>
-                    </QuantityControls>
-
-                    {/* FILA 2: TRASH */}
-                    <DeleteButton onClick={() => removeItem(item.id)}>
-                      <Trash2 size={18} />
-                    </DeleteButton>
-                  </div>
-                </TopRow>
-              </RightSection>
-            </ProductCard>
-          ))}
-        </ProductList>
-      </CartContainer>
+                  <DeleteButton onClick={() => removeItem(item.id)}>
+                    <Trash2 size={18} />
+                  </DeleteButton>
+                </div>
+              </TopRow>
+            </RightSection>
+          </ProductCard>
+        ))}
+      </ProductList>
 
       <Footer>
         <SummaryRow>
@@ -268,7 +260,6 @@ const Cart = () => {
           <span>Descuento:</span>
           <div style={{ display: "flex", alignItems: "center" }}>
             <DiscountPrefix>Bs</DiscountPrefix>
-
             <DiscountInput
               type="number"
               min="0"
@@ -281,7 +272,15 @@ const Cart = () => {
               }}
               onChange={(e) => {
                 const value = e.target.value;
-                if (value === "" || Number(value) >= 0) {
+                if (value === "") {
+                  setDescuento("");
+                  return;
+                }
+                const num = Number(value);
+                if (num < 0) return;
+                if (num > subtotal) {
+                  setDescuento(String(subtotal));
+                } else {
                   setDescuento(value);
                 }
               }}
