@@ -30,7 +30,7 @@ function Login() {
 
   return (
     <Wrapper>
-      {/* 🔥 FORM AQUÍ */}
+      {/* FORM AQUÍ */}
       <Card as="form" onSubmit={handleSubmit}>
         <Logo>EcoZona</Logo>
 
@@ -77,7 +77,7 @@ function Login() {
           </PasswordWrapper>
         </Field>
 
-        {/* 🔥 IMPORTANTE: type="submit" */}
+        {/* IMPORTANTE: type="submit" */}
         <Button type="submit" disabled={isLoading}>
           {isLoading ? "Cargando..." : "Iniciar sesión"}
         </Button>

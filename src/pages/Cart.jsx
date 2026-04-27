@@ -24,6 +24,9 @@ import {
   DiscountInput,
   DiscountPrefix,
   BackButton,
+  ProductPriceRow,
+  PriceDivider,
+  ProductSubtotal,
 } from "../components/ui/Cart";
 
 import { useCartStore } from "../components/store/cartStore";
@@ -67,11 +70,18 @@ const Cart = () => {
       title: "¿Confirmar venta?",
       text: "Selecciona el método de pago",
       icon: "question",
+
       showDenyButton: true,
+
       confirmButtonText: "💵 Efectivo",
       denyButtonText: "📱 QR",
-      confirmButtonColor: "#28a745",
-      denyButtonColor: "#007bff",
+
+      confirmButtonColor: "#F20C1F",
+      denyButtonColor: "#ffffff",
+
+      customClass: {
+        denyButton: "qr-button",
+      },
     });
 
     // Canceló
@@ -83,7 +93,7 @@ const Cart = () => {
         title: "¡Venta realizada!",
         text: "Pago en efectivo registrado correctamente.",
         icon: "success",
-        confirmButtonColor: "#28a745",
+        confirmButtonColor: "#69d584",
       });
       return;
     }
@@ -197,7 +207,11 @@ const Cart = () => {
               <TopRow>
                 <ProductText>
                   <ProductName>{item.name}</ProductName>
-                  <ProductPrice>Bs {item.finalPrice}</ProductPrice>
+                  <ProductPriceRow>
+                    <ProductPrice>Bs {item.finalPrice}</ProductPrice>
+                    <PriceDivider>|</PriceDivider>
+                    <ProductSubtotal>Bs {(item.finalPrice * item.quantity).toFixed(2)}</ProductSubtotal>
+                  </ProductPriceRow>
                 </ProductText>
 
                 <div

@@ -36,4 +36,13 @@ export const GlobalStyle = createGlobalStyle`
     background-color: #f3f4f6;
     font-family: var(--font-main);
   }
+
+  .qr-button {
+  color: #000 !important;
+  border: 2px solid #F20C1F !important;
+}
+
+.qr-button:focus {
+  box-shadow: none !important;
+}
 `;

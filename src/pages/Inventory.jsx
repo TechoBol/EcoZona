@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useInventory from "../hooks/useInventory";
 import Beep from "../assets/sounds/Beep.mp3";
+import { useLoginStore } from "../components/store/loginStore";
+import { useSucursales } from "../hooks/useSucursales";
 
 import {
   Wrapper,
@@ -35,12 +37,12 @@ import { useAmazonS3 } from "../hooks/useAmazonS3";
 import BarcodeReader from "../components/Scanner/BarcodeReader";
 import MultiBarCodeReader from "../components/Scanner/MultiBarCodeReader";
 
-import { useLoginStore } from "../components/store/loginStore";
-
 function Inventory() {
   const navigate = useNavigate();
+  const { location, role } = useLoginStore();
+  const { data: locations } = useSucursales();
+
   const addToCart = useCartStore((state) => state.addToCart);
-  const { role } = useLoginStore();
   const { products, search, setSearch, onFilterTextBoxChanged } =
     useInventory();
 
@@ -49,9 +51,19 @@ function Inventory() {
   const [scanning, setScanning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const [scanCartMode, setScanCartMode] = useState(false);
-  const [scannedProducts, setScannedProducts] = useState([]);
-  const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
+  // 🔥 NUEVO: selector de sucursal
+  const [selectedLocation, setSelectedLocation] = useState(null);
+  const [openLocations, setOpenLocations] = useState(false);
+
+  // 🔥 DEFAULT sucursal 1
+  useEffect(() => {
+    if (!locations.length) return;
+
+    const defaultLoc =
+      locations.find((l) => l.id === 1) || locations[0];
+
+    setSelectedLocation(defaultLoc);
+  }, [locations]);
 
   const beepRef = useRef(null);
 
@@ -67,7 +79,6 @@ function Inventory() {
 
   const pressTimer = useRef(null);
 
-  // --- MOUSE (desktop) ---
   const handleMouseDown = (product) => {
     pressTimer.current = setTimeout(() => {
       navigate(`/product/edit`, { state: product });
@@ -76,23 +87,27 @@ function Inventory() {
 
   const handleMouseUp = () => clearTimeout(pressTimer.current);
 
-  // --- TOUCH (móvil) ---
   const handleTouchStart = (product) => {
     pressTimer.current = setTimeout(() => {
       navigate(`/product/edit`, { state: product });
     }, 700);
   };
 
-  const handleTouchEnd = () => {
-    clearTimeout(pressTimer.current);
+  const handleTouchEnd = () => clearTimeout(pressTimer.current);
+  const handleTouchMove = () => clearTimeout(pressTimer.current);
+
+  // 🔥 STOCK DINÁMICO
+  const getStock = (product) => {
+    if (product.stockBySucursal && selectedLocation) {
+      const found = product.stockBySucursal.find(
+        (s) => s.locationId === selectedLocation.id
+      );
+      return found?.quantity || 0;
+    }
+
+    return product.inventories?.[0]?.quantity || 0;
   };
 
-  const handleTouchMove = () => {
-    // Si el usuario scrollea, cancelar el long press
-    clearTimeout(pressTimer.current);
-  };
-
-  // SELECCIÓN MANUAL
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -102,7 +117,7 @@ function Inventory() {
   };
 
   const handleClick = (product) => {
-    const stock = product.inventories?.[0]?.quantity || 0;
+    const stock = getStock(product);
 
     if (stock === 0) {
       setErrorProductId(product.id);
@@ -113,52 +128,15 @@ function Inventory() {
     toggleSelect(product);
   };
 
-  const isSelected = (id) => selectedProducts.some((p) => p.id === id);
+  const isSelected = (id) =>
+    selectedProducts.some((p) => p.id === id);
 
   const handleGoToCart = () => {
     selectedProducts.forEach((product) => addToCart(product));
     navigate("/cart");
   };
 
-  const handleBarcodeDetected = (code) => {
-    const cleanCode = code.trim();
-    const now = Date.now();
-
-    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) {
-      return;
-    }
-    setLastScanned({ code: cleanCode, time: now });
-
-    const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
-    );
-
-    if (!found) return;
-
-    playBeep();
-
-    if (scanCartMode) {
-      setScannedProducts((prev) => {
-        const exists = prev.find((p) => p.id === found.id);
-        if (exists) {
-          return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
-          );
-        }
-        return [...prev, { ...found, quantity: 1 }];
-      });
-      return;
-    }
-
-    setSearch(cleanCode);
-    setScanning(false);
-
-    setTimeout(() => {
-      const element = document.querySelector("[data-found='true']");
-      element?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 100);
-  };
-
+  // 🔥 IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -172,24 +150,14 @@ function Inventory() {
         if (!product.imageUrl) continue;
         if (imageUrls[product.id]) continue;
 
-        const isS3Key = product.imageUrl.startsWith("ECOZONA/");
-
-        if (!isS3Key) {
-          urls[product.id] = null;
-          continue;
-        }
-
         try {
-          const url = await getFileUrl(product.imageUrl);
-          urls[product.id] = url;
+          urls[product.id] = await getFileUrl(product.imageUrl);
         } catch {
           urls[product.id] = null;
         }
       }
 
-      if (Object.keys(urls).length > 0) {
-        setImageUrls((prev) => ({ ...prev, ...urls }));
-      }
+      setImageUrls((prev) => ({ ...prev, ...urls }));
     };
 
     loadImages();
@@ -198,9 +166,16 @@ function Inventory() {
   return (
     <Wrapper>
       <Header>
-        {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
-        <Title>Inventario</Title>
+
+        {/* 🔥 CLICK PARA CAMBIAR SUCURSAL */}
+        <Title
+          onClick={() => setOpenLocations(!openLocations)}
+          style={{ cursor: "pointer" }}
+        >
+          {selectedLocation?.name || "Inventario"}
+        </Title>
+
         {(role === "Administrador sucursal" ||
           role === "Almacenero" ||
           role === "Técnico en sistemas") && (
@@ -209,6 +184,40 @@ function Inventory() {
           </AddProductButton>
         )}
       </Header>
+
+      {/* 🔥 SELECTOR DE SUCURSAL */}
+      {openLocations && (
+        <div
+          style={{
+            position: "absolute",
+            top: 70,
+            left: 20,
+            right: 20,
+            background: "white",
+            borderRadius: 12,
+            padding: 10,
+            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
+            zIndex: 1000,
+          }}
+        >
+          {locations.map((loc) => (
+            <div
+              key={loc.id}
+              style={{
+                padding: 10,
+                cursor: "pointer",
+                borderBottom: "1px solid #eee",
+              }}
+              onClick={() => {
+                setSelectedLocation(loc);
+                setOpenLocations(false);
+              }}
+            >
+              {loc.name}
+            </div>
+          ))}
+        </div>
+      )}
 
       <SearchBar>
         <SearchInput
@@ -224,19 +233,16 @@ function Inventory() {
       <ScrollArea>
         <ProductsGrid>
           {products.map((product) => {
-            const stock = product.inventories?.[0]?.quantity || 0;
+            const stock = getStock(product);
 
             return (
               <Card
                 key={product.id}
-                data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
-                // Mouse (desktop)
+                $outOfStock={stock === 0}
                 onMouseDown={() => handleMouseDown(product)}
                 onMouseUp={handleMouseUp}
-                onMouseLeave={handleMouseUp}
-                // Touch (móvil) ← fix
                 onTouchStart={() => handleTouchStart(product)}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
@@ -244,7 +250,8 @@ function Inventory() {
               >
                 <ProductImage
                   src={
-                    imageUrls[product.id] || "https://via.placeholder.com/150"
+                    imageUrls[product.id] ||
+                    "https://via.placeholder.com/150"
                   }
                 />
 
@@ -262,86 +269,12 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
-      {(role === "Administrador sucursal" ||
-        role === "Almacenero" ||
-        role === "Técnico en sistemas" ||
-        role === "Vendedor") && (
-        <BottomActions>
-          <ScannerButton
-            onClick={async () => {
-              if (beepRef.current) {
-                try {
-                  await beepRef.current.play();
-                  beepRef.current.pause();
-                  beepRef.current.currentTime = 0;
-                } catch {}
-              }
 
-              setScanCartMode(true);
-              setScannedProducts([]);
-              setScanning(true);
-            }}
-          >
-            <ScanLine size={22} />
-          </ScannerButton>
-
-          <AddToCartButton onClick={handleGoToCart}>
-            Ir al carrito ({selectedProducts.length})
-          </AddToCartButton>
-        </BottomActions>
-      )}
-
-      {scanning && (
-        <ScannerOverlay>
-          <div style={{ position: "relative", width: "100%", height: "100%" }}>
-            {scanCartMode ? (
-              <MultiBarCodeReader
-                onDetected={handleBarcodeDetected}
-                onClose={() => {
-                  setScanning(false);
-                  setScanCartMode(false);
-                  setScannedProducts([]);
-                }}
-              />
-            ) : (
-              <BarcodeReader
-                onDetected={handleBarcodeDetected}
-                onClose={() => setScanning(false)}
-              />
-            )}
-
-            {scanCartMode && (
-              <button
-                onClick={() => {
-                  scannedProducts.forEach((p) => {
-                    for (let i = 0; i < (p.quantity || 1); i++) {
-                      addToCart(p);
-                    }
-                  });
-
-                  setScanning(false);
-                  setScanCartMode(false);
-                  navigate("/cart");
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: 30,
-                  left: 20,
-                  right: 20,
-                  height: 50,
-                  borderRadius: 30,
-                  border: "none",
-                  background: "#F20C1F",
-                  color: "#fff",
-                  fontWeight: "600",
-                }}
-              >
-                Añadir {scannedProducts.length} productos
-              </button>
-            )}
-          </div>
-        </ScannerOverlay>
-      )}
+      <BottomActions>
+        <AddToCartButton onClick={handleGoToCart}>
+          Ir al carrito ({selectedProducts.length})
+        </AddToCartButton>
+      </BottomActions>
     </Wrapper>
   );
 }
