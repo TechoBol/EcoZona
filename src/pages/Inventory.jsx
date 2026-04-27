@@ -59,8 +59,7 @@ function Inventory() {
   useEffect(() => {
     if (!locations.length) return;
 
-    const defaultLoc =
-      locations.find((l) => l.id === 1) || locations[0];
+    const defaultLoc = locations.find((l) => l.id === 1) || locations[0];
 
     setSelectedLocation(defaultLoc);
   }, [locations]);
@@ -100,7 +99,7 @@ function Inventory() {
   const getStock = (product) => {
     if (product.stockBySucursal && selectedLocation) {
       const found = product.stockBySucursal.find(
-        (s) => s.locationId === selectedLocation.id
+        (s) => s.locationId === selectedLocation.id,
       );
       return found?.quantity || 0;
     }
@@ -128,8 +127,7 @@ function Inventory() {
     toggleSelect(product);
   };
 
-  const isSelected = (id) =>
-    selectedProducts.some((p) => p.id === id);
+  const isSelected = (id) => selectedProducts.some((p) => p.id === id);
 
   const handleGoToCart = () => {
     selectedProducts.forEach((product) => addToCart(product));
@@ -163,6 +161,13 @@ function Inventory() {
     loadImages();
   }, [products]);
 
+  const allowedRoles = [
+    "Gerente General",
+    "Gerente Operativo",
+  ];
+
+  const canChangeLocation = allowedRoles.includes(role);
+
   return (
     <Wrapper>
       <Header>
@@ -170,8 +175,14 @@ function Inventory() {
 
         {/* 🔥 CLICK PARA CAMBIAR SUCURSAL */}
         <Title
-          onClick={() => setOpenLocations(!openLocations)}
-          style={{ cursor: "pointer" }}
+          onClick={() => {
+            if (!canChangeLocation) return;
+            setOpenLocations(!openLocations);
+          }}
+          style={{
+            cursor: canChangeLocation ? "pointer" : "default",
+            opacity: canChangeLocation ? 1 : 0.7,
+          }}
         >
           {selectedLocation?.name || "Inventario"}
         </Title>
@@ -250,8 +261,7 @@ function Inventory() {
               >
                 <ProductImage
                   src={
-                    imageUrls[product.id] ||
-                    "https://via.placeholder.com/150"
+                    imageUrls[product.id] || "https://via.placeholder.com/150"
                   }
                 />
 
