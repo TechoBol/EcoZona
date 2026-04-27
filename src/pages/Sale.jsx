@@ -15,6 +15,7 @@ import {
   TotalText,
 } from "../components/ui/Location";
 import { BackButton } from "../components/ui/Product";
+import { esES } from "@mui/x-data-grid/locales";
 
 export default function Sales() {
   const navigate = useNavigate();
@@ -80,6 +81,7 @@ export default function Sales() {
     {
       field: "date",
       headerName: "Fecha",
+      type: "date",
       width: 180,
       valueFormatter: (value) => {
         if (!value) return "";
@@ -124,6 +126,7 @@ export default function Sales() {
             columns={columns}
             getRowId={(row) => row.id}
             pageSizeOptions={[5, 10]}
+            localeText={esES.components.MuiDataGrid.defaultProps.localeText} 
             slots={{ toolbar: GridToolbar }}
             slotProps={{
               toolbar: {
