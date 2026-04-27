@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { DataGrid, GridToolbar, useGridApiRef } from "@mui/x-data-grid";
+import { useState, useEffect } from "react";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BsFillFileEarmarkPdfFill } from "react-icons/bs";
@@ -15,52 +15,59 @@ import {
   TotalText,
 } from "../components/ui/Location";
 import { BackButton } from "../components/ui/Product";
+import { esES } from "@mui/x-data-grid/locales";
+
+// 🔥 NUEVO
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
 export default function Sales() {
   const navigate = useNavigate();
   const { data } = useSales();
   const { getFileUrl } = useAmazonS3();
-  const apiRef = useGridApiRef();
+
   const [filteredTotal, setFilteredTotal] = useState(0);
+
+  // 🔥 NUEVO: rango de fechas
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
 
   const handleViewPDF = async (key) => {
     const url = await getFileUrl(key);
     window.open(url, "_blank");
   };
 
+  // ✅ Convertimos fecha correctamente
   const rows = (data || []).map((sale) => ({
     ...sale,
-    employeeName: `${sale.employee?.name} ${sale.employee?.lastName}`,
-    locationName: sale.location?.name,
+    date: sale.date ? new Date(sale.date) : null,
+    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""}`,
+    locationName: sale.location?.name || "",
   }));
 
-  const handleStateChange = useCallback(() => {
-    const api = apiRef.current;
-    if (!api?.state) return;
+  // 🔥 FILTRO POR RANGO
+  const filteredRows = rows.filter((row) => {
+    if (!row.date) return true;
 
-    try {
-      const state = api.state;
-      const visibleRowIds = state.filter?.filteredRowsLookup;
+    const date = dayjs(row.date);
 
-      if (!visibleRowIds) {
-        const total = rows.reduce(
-          (sum, row) => sum + Number(row.total || 0),
-          0,
-        );
-        setFilteredTotal(total);
-        return;
-      }
-      const total = rows.reduce((sum, row) => {
-        const isVisible = visibleRowIds[row.id] !== false;
-        return sum + (isVisible ? Number(row.total || 0) : 0);
-      }, 0);
+    if (startDate && date.isBefore(startDate, "day")) return false;
+    if (endDate && date.isAfter(endDate, "day")) return false;
 
-      setFilteredTotal(total);
-    } catch {
-      const total = rows.reduce((sum, row) => sum + Number(row.total || 0), 0);
-      setFilteredTotal(total);
-    }
-  }, [apiRef, rows]);
+    return true;
+  });
+
+  // 🔥 TOTAL DINÁMICO
+  useEffect(() => {
+    const total = filteredRows.reduce(
+      (sum, row) => sum + Number(row.total || 0),
+      0
+    );
+    setFilteredTotal(total);
+  }, [filteredRows]);
 
   const columns = [
     { field: "code", headerName: "Código", width: 130 },
@@ -73,7 +80,7 @@ export default function Sales() {
       width: 140,
       renderCell: (params) => (
         <span style={{ fontWeight: 600 }}>
-          Bs {Number(params.value).toFixed(2)}
+          Bs {Number(params.value || 0).toFixed(2)}
         </span>
       ),
     },
@@ -81,11 +88,7 @@ export default function Sales() {
       field: "date",
       headerName: "Fecha",
       width: 180,
-      valueFormatter: (value) => {
-        if (!value) return "";
-        const date = new Date(value);
-        return isNaN(date.getTime()) ? "Fecha inválida" : date.toLocaleString();
-      },
+      type: "dateTime", // 👈 importante
     },
     {
       field: "actions",
@@ -114,16 +117,44 @@ export default function Sales() {
         </BackButton>
         <Title>Ventas</Title>
       </Header>
+
       <Content>
         <Actions />
+
+        {/* 🔥 DATE PICKERS */}
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+            <DatePicker
+              label="Desde"
+              value={startDate}
+              onChange={(newValue) => setStartDate(newValue)}
+            />
+
+            <DatePicker
+              label="Hasta"
+              value={endDate}
+              onChange={(newValue) => setEndDate(newValue)}
+            />
+
+            {/* 🔥 botón limpiar */}
+            <button
+              onClick={() => {
+                setStartDate(null);
+                setEndDate(null);
+              }}
+            >
+              Limpiar
+            </button>
+          </div>
+        </LocalizationProvider>
+
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>
           <DataGrid
-            apiRef={apiRef}
-            onStateChange={handleStateChange}
-            rows={rows}
+            rows={filteredRows} // 👈 usamos filtrados
             columns={columns}
             getRowId={(row) => row.id}
             pageSizeOptions={[5, 10]}
+            //localeText={esES.components.MuiDataGrid.defaultProps.localeText}
             slots={{ toolbar: GridToolbar }}
             slotProps={{
               toolbar: {
@@ -147,8 +178,9 @@ export default function Sales() {
             }}
           />
         </div>
+
         <TotalBar>
-          <TotalText bold>TOTAL:</TotalText>
+          <TotalText $bold>TOTAL:</TotalText>
           <TotalText>Bs {filteredTotal.toFixed(2)}</TotalText>
         </TotalBar>
       </Content>
