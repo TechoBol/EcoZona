@@ -13,16 +13,18 @@ import {
   Actions,
   TotalBar,
   TotalText,
+  FiltersRow,
+  FilterInput,
+  DatePickerWrapper,
+  ClearButton,
 } from "../components/ui/Location";
 import { BackButton } from "../components/ui/Product";
-import { esES } from "@mui/x-data-grid/locales";
-
-// 🔥 NUEVO
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { FaTrash } from "react-icons/fa";
 
 export default function Sales() {
   const navigate = useNavigate();
@@ -30,8 +32,7 @@ export default function Sales() {
   const { getFileUrl } = useAmazonS3();
 
   const [filteredTotal, setFilteredTotal] = useState(0);
-
-  // 🔥 NUEVO: rango de fechas
+  const [globalFilter, setGlobalFilter] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
 
@@ -40,31 +41,36 @@ export default function Sales() {
     window.open(url, "_blank");
   };
 
-  // ✅ Convertimos fecha correctamente
   const rows = (data || []).map((sale) => ({
     ...sale,
     date: sale.date ? new Date(sale.date) : null,
-    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""}`,
+    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""}`.trim(),
     locationName: sale.location?.name || "",
   }));
 
-  // 🔥 FILTRO POR RANGO
   const filteredRows = rows.filter((row) => {
-    if (!row.date) return true;
+    // Filtro por fechas
+    if (row.date) {
+      const date = dayjs(row.date);
+      if (startDate && date.isBefore(startDate, "day")) return false;
+      if (endDate && date.isAfter(endDate, "day")) return false;
+    }
 
-    const date = dayjs(row.date);
-
-    if (startDate && date.isBefore(startDate, "day")) return false;
-    if (endDate && date.isAfter(endDate, "day")) return false;
+    // Filtro global (empleado + sucursal + tipo)
+    if (globalFilter) {
+      const q = globalFilter.toLowerCase();
+      const matchEmpleado = row.employeeName.toLowerCase().includes(q);
+      const matchSucursal = row.locationName.toLowerCase().includes(q);
+      const matchTipo = row.typeSale?.toLowerCase().includes(q);
+      if (!matchEmpleado && !matchSucursal && !matchTipo) return false;
+    }
 
     return true;
   });
 
-  // 🔥 TOTAL DINÁMICO
   useEffect(() => {
     const total = filteredRows.reduce(
-      (sum, row) => sum + Number(row.total || 0),
-      0
+      (sum, row) => sum + Number(row.total || 0), 0
     );
     setFilteredTotal(total);
   }, [filteredRows]);
@@ -88,7 +94,7 @@ export default function Sales() {
       field: "date",
       headerName: "Fecha",
       width: 180,
-      type: "dateTime", // 👈 importante
+      type: "dateTime",
     },
     {
       field: "actions",
@@ -121,40 +127,83 @@ export default function Sales() {
       <Content>
         <Actions />
 
-        {/* 🔥 DATE PICKERS */}
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-          <div style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+        {/* FILTRO DE FECHAS */}
+        <DatePickerWrapper>
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
             <DatePicker
               label="Desde"
               value={startDate}
               onChange={(newValue) => setStartDate(newValue)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: {
+                    width: "150px",
+                    "& .MuiOutlinedInput-root": {
+                      height: "44px",
+                      borderRadius: "14px",
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "0 14px",
+                    },
+                    "& .MuiInputLabel-root": {
+                      transform: "translate(14px, 12px) scale(1)",
+                      "&.MuiInputLabel-shrink": {
+                        transform: "translate(14px, -9px) scale(0.75)",
+                      },
+                    },
+                  },
+                },
+              }}
             />
 
             <DatePicker
               label="Hasta"
               value={endDate}
               onChange={(newValue) => setEndDate(newValue)}
-            />
-
-            {/* 🔥 botón limpiar */}
-            <button
-              onClick={() => {
-                setStartDate(null);
-                setEndDate(null);
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: {
+                    width: "150px",
+                    "& .MuiOutlinedInput-root": {
+                      height: "44px",
+                      borderRadius: "14px",
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "0 14px",
+                    },
+                    "& .MuiInputLabel-root": {
+                      transform: "translate(14px, 12px) scale(1)",
+                      "&.MuiInputLabel-shrink": {
+                        transform: "translate(14px, -9px) scale(0.75)",
+                      },
+                    },
+                  },
+                },
               }}
-            >
-              Limpiar
-            </button>
-          </div>
-        </LocalizationProvider>
+            />
+          </LocalizationProvider>
+          <ClearButton onClick={() => { setStartDate(null); setEndDate(null); }}>
+            <FaTrash size={18} />
+          </ClearButton>
+        </DatePickerWrapper>
+
+        {/* BUSCADOR GLOBAL */}
+        <FiltersRow>
+          <FilterInput
+            placeholder="Buscar por empleado, sucursal o tipo de venta..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+          />
+        </FiltersRow>
 
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>
           <DataGrid
-            rows={filteredRows} // 👈 usamos filtrados
+            rows={filteredRows}
             columns={columns}
             getRowId={(row) => row.id}
             pageSizeOptions={[5, 10]}
-            //localeText={esES.components.MuiDataGrid.defaultProps.localeText}
             slots={{ toolbar: GridToolbar }}
             slotProps={{
               toolbar: {
