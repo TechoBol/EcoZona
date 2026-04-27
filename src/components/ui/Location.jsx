@@ -206,6 +206,12 @@ export const DatePickerWrapper = styled.div`
   flex-wrap: wrap;
   margin-bottom: 10px;
   align-items: center;
+    flex-wrap: nowrap;
+
+  .MuiFormControl-root {
+    flex: 1;
+    min-width: 0;
+  }
 `;
 
 export const ClearButton = styled.button`

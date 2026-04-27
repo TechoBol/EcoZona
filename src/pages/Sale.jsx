@@ -203,7 +203,12 @@ export default function Sales() {
             rows={filteredRows}
             columns={columns}
             getRowId={(row) => row.id}
-            pageSizeOptions={[5, 10]}
+            initialState={{
+              pagination: {
+                paginationModel: { pageSize: 25 },
+              },
+            }}
+            pageSizeOptions={[25, 50, 100]}
             slots={{ toolbar: GridToolbar }}
             slotProps={{
               toolbar: {
