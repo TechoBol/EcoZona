@@ -1,4 +1,5 @@
 import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 /* 🔧 CONFIG BASE */
 const baseConfig = {
@@ -11,35 +12,25 @@ const baseConfig = {
   },
 };
 
-/* ✅ SUCCESS */
+/* SUCCESS */
 const successToast = (message: string) => {
-  toast.success(message, {
-    ...baseConfig,
-    style: {
-      ...baseConfig.style,
-      background: "#16a34a",
-      color: "#fff",
-    },
-    iconTheme: {
-      primary: "#fff",
-      secondary: "#16a34a",
-    },
+  Swal.fire({
+    text: message,
+    icon: "success",
+    timer: 800, 
+    showConfirmButton: false,
   });
 };
 
-/* ❌ ERROR */
+/* ERROR */
 const errorToast = (message: string) => {
-  toast.error(message, {
-    ...baseConfig,
-    style: {
-      ...baseConfig.style,
-      background: "#dc2626",
-      color: "#fff",
-    },
-    iconTheme: {
-      primary: "#fff",
-      secondary: "#dc2626",
-    },
+  Swal.fire({
+    text: message,
+    icon: "error",
+    toast: true,
+    position: "top-end",
+    timer: 800,
+    showConfirmButton: false,
   });
 };
 

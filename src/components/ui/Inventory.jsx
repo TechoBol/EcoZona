@@ -1,34 +1,41 @@
-import styled, { createGlobalStyle } from "styled-components";
+import styled from "styled-components";
+import { theme } from "./Theme";
 
-/* WRAPPER */
+/* Wrapper */
 export const Wrapper = styled.div`
-  min-height: 100vh;
-  background: #ffffff;
+  height: 100dvh; 
+  background: ${theme.colors.background};;
   padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden; 
 `;
 
-/* HEADER */
+/* Header */
 export const Header = styled.div`
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  padding: 0 10px;
   margin-bottom: 20px;
 `;
 
+/* Title */
 export const Title = styled.h1`
   font-family: var(--font-title);
-  font-size: 25px;
+  font-size: 20px;
   font-weight: 700;
-  color: #000;
+  color: ${theme.colors.text};
   text-align: center;
+  justify-self: center;
 `;
 
-/* BOTÓN PERFIL */
+/* Profile */
 export const ProfileButton = styled.div`
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: #3d44c9;
+  border-radius: 30px;
+  background: transparent;
 
   display: flex;
   justify-content: center;
@@ -41,19 +48,19 @@ export const ProfileButton = styled.div`
   }
 `;
 
-export const Initial = styled.span`
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 14px;
+export const Content = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 5px 100px 5px;
 `;
 
-/* DROPDOWN */
+/* Dropdown */
 export const Dropdown = styled.div`
   position: absolute;
   right: 0;
   margin-top: 10px;
 
-  background: #ffffff;
+  background: ${theme.colors.background};
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
@@ -62,24 +69,25 @@ export const Dropdown = styled.div`
   z-index: 50;
 `;
 
-/* USER INFO */
+/* User Info */
 export const UserInfo = styled.div`
   padding: 12px;
   border-bottom: 1px solid #eee;
+  background: ${theme.colors.background};
 `;
 
 export const Name = styled.p`
   font-size: 14px;
   font-weight: 600;
-  color: #000;
+  color: ${theme.colors.text};
 `;
 
 export const Role = styled.p`
   font-size: 12px;
-  color: gray;
+  color: ${theme.colors.textSecondary};
 `;
 
-/* LOGOUT ITEM */
+/* Logout */
 export const LogoutButton = styled.button`
   width: 100%;
   padding: 10px 12px;
@@ -87,40 +95,25 @@ export const LogoutButton = styled.button`
   display: flex;
   align-items: center;
   gap: 8px;
-
-  background: ${({ $active }) => ($active ? "#f3f4f6" : "#ffffff")};
+  background: ${theme.colors.background};
   border: none;
-
   cursor: pointer;
   font-size: 14px;
-  color: #000;
+  color: ${theme.colors.primary};
+
+  svg {
+    color: ${theme.colors.primary};
+  }
 
   &:hover {
-    background: #f3f4f6;
+    background: #ffe5e5;
   }
 `;
 
-/* CARRITO (DERECHA) */
-export const CartButton = styled.div`
-  justify-self: end;
-
-  width: 40px;
-  height: 40px;
-  background: #ffffff;
-  border-radius: 10px;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  color: #3d44c9;
-  cursor: pointer;
-`;
-
-/* SEARCH */
+/* Search */
 export const SearchBar = styled.div`
   position: relative;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 `;
 
 export const SearchInput = styled.input`
@@ -130,14 +123,12 @@ export const SearchInput = styled.input`
 
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.2);
-  background: #fff;
+  background: ${theme.colors.background};
 
   font-size: 13px;
   outline: none;
 
-  &::placeholder {
-    color: rgba(0, 0, 0, 0.4);
-  }
+  box-sizing: border-box;
 `;
 
 export const ScanButton = styled.div`
@@ -145,103 +136,167 @@ export const ScanButton = styled.div`
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-
-  width: 28px;
-  height: 28px;
-
-  border-radius: 8px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: rgba(0, 0, 0, 0.3);
+  cursor: pointer;
 `;
 
-/* GRID */
+/* ScrollArea */
+export const ScrollArea = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 80px;
+`;
+
+/* Grid */
 export const ProductsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
 `;
 
-/* CARD */
+/* Card */
 export const Card = styled.div`
-  background: #ffffff;
-  border-radius: 20px;
-  overflow: hidden;
-
   display: flex;
   flex-direction: column;
+  border-radius: 14px;
+  padding: 12px;
+  background: ${theme.colors.background};
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-
-  /* 🔥 BORDE DINÁMICO */
-  border: ${({ $selected }) =>
-    $selected ? "2px solid #22c55e" : "2px solid transparent"};
+  border: 2px solid
+    ${(props) =>
+      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
-  touch-action: manipulation;
+  ${(props) =>
+    props.$error &&
+    `
+    animation: shake 0.25s;
+  `}
+  ${(props) => props.$outOfStock && `
+    opacity: 0.5;
+    filter: grayscale(10%);
+  `}
+
+  @keyframes shake {
+    0% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4px);
+    }
+    50% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-3px);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+`;
+
+/* Menu Option */
+export const MenuOption = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 12px;
+  border: none;
+  background: ${({ $active }) => ($active ? "#f2f2f2" : "transparent")};
+
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background: ${theme.colors.background};
+  }
+`;
+
+/* Image */
+export const ProductImage = styled.img`
+  width: calc(100% + 24px);
+  height: 140px;
+  object-fit: cover;
+  margin: -12px -12px 0 -12px;
+
+  /* Bloquear menú contextual en móvil */
+  -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
+  pointer-events: none;
 `;
 
-/* IMAGE */
-export const ProductImage = styled.img`
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-`;
-
-/* INFO */
+/* Info */
 export const ProductInfo = styled.div`
-  padding: 10px;
+  padding: 10px 4px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 `;
 
 export const ProductName = styled.p`
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 export const ProductCode = styled.p`
   font-size: 12px;
-  color: gray;
+  color: ${theme.colors.textSecondary};
+  margin: 0;
 `;
 
-/* FOOTER */
 export const ProductFooter = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 5px;
+  margin-top: 6px;
+  gap: 4px;
 `;
 
 export const Price = styled.span`
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  color: ${theme.colors.textSecondary};
+  white-space: nowrap;
 `;
 
 export const Stock = styled.span`
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
+  white-space: nowrap;
 `;
 
-/* BOTÓN AZUL (TIPO LOGIN) */
-export const AddButton = styled.button`
-  width: 100%;
-  height: 45px;
+/* Button Actions */
+export const BottomActions = styled.div`
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
 
-  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+`;
 
-  background: #3d44c9;
-  color: #ffffff;
+/* + Button */
+export const AddProductButton = styled.button`
+  width: 40px;
+  height: 40px;
 
+  border-radius: 50%;
+  background: transparent;
+  color: ${theme.colors.text};
   border: none;
-  border-radius: 25px;
-
-  font-size: 14px;
-  font-weight: 600;
 
   display: flex;
   justify-content: center;
@@ -249,13 +304,95 @@ export const AddButton = styled.button`
 
   cursor: pointer;
 
-  transition: all 0.2s ease;
+  &:active {
+    transform: scale(0.95);
+  }
 
   &:hover {
     opacity: 0.9;
   }
+`;
+
+/* Escanner Button */
+export const ScannerButton = styled.button`
+  width: 52px;
+  height: 52px;
+
+  border-radius: 50%;
+  background: ${theme.colors.secondary};
+  color: ${theme.colors.background};
+
+  border: 2px solid ${theme.colors.secondary};
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:hover {
+    opacity: 0.9;
+  }
+`;
+
+/* Principal Button */
+export const AddToCartButton = styled.button`
+  flex: 1;
+  height: 52px;
+
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
+
+  border: none;
+  border-radius: 30px;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  gap: 10px;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 10px rgba(61, 68, 201, 0.25);
 
   &:active {
     transform: scale(0.98);
   }
+`;
+
+/* Scanner Overlay */
+export const ScannerOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(4px);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  z-index: 9999;
+`;
+
+export const Overlay = styled.div`
+  position: fixed;
+  inset: 0;
+
+  background: rgba(0, 0, 0, 0.2);
+
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  z-index: 40;
 `;

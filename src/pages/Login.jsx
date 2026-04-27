@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import useAuthentication from "../hooks/useAuthentication";
 
@@ -21,6 +21,8 @@ function Login() {
 
   const { signIn, isLoading } = useAuthentication();
 
+  const passwordRef = useRef(null);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     signIn(email, password);
@@ -28,7 +30,8 @@ function Login() {
 
   return (
     <Wrapper>
-      <Card>
+      {/* FORM AQUÍ */}
+      <Card as="form" onSubmit={handleSubmit}>
         <Logo>EcoZona</Logo>
 
         <Subtitle>
@@ -41,24 +44,41 @@ function Login() {
             placeholder="Correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+
+            autoFocus
+            autoComplete="email"
+            enterKeyHint="next"
+
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                passwordRef.current.focus();
+              }
+            }}
           />
         </Field>
 
         <Field>
           <PasswordWrapper>
             <Input
+              ref={passwordRef}
               type={showPassword ? "text" : "password"}
               placeholder="Contraseña"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+
+              autoComplete="current-password"
+              enterKeyHint="go"
             />
+
             <IconWrapper onClick={() => setShowPassword(!showPassword)}>
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </IconWrapper>
           </PasswordWrapper>
         </Field>
 
-        <Button onClick={handleSubmit} disabled={isLoading}>
+        {/* IMPORTANTE: type="submit" */}
+        <Button type="submit" disabled={isLoading}>
           {isLoading ? "Cargando..." : "Iniciar sesión"}
         </Button>
       </Card>

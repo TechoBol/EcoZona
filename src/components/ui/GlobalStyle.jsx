@@ -11,6 +11,7 @@ export const GlobalStyle = createGlobalStyle`
   :root {
     --font-main: "Inter", sans-serif;
     --font-title: "ModernMuseum", sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   *, *::before, *::after {
@@ -22,10 +23,26 @@ export const GlobalStyle = createGlobalStyle`
     user-select: none;
   }
 
+  img {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    pointer-events: none;
+  }
+  
   html, body, #root {
     height: 100%;
     width: 100%;
     background-color: #f3f4f6;
     font-family: var(--font-main);
   }
+
+  .qr-button {
+  color: #000 !important;
+  border: 2px solid #F20C1F !important;
+}
+
+.qr-button:focus {
+  box-shadow: none !important;
+}
 `;
