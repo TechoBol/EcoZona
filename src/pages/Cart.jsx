@@ -31,7 +31,7 @@ import { useNavigate } from "react-router-dom";
 import { useCart } from "../hooks/useCart";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 import Swal from "sweetalert2";
-import socket from "../services/SocketIOConnection"
+import socket from "../services/SocketIOConnection";
 const Cart = () => {
   const navigate = useNavigate();
 
@@ -78,7 +78,7 @@ const Cart = () => {
     if (confirmResult.isDismissed) return;
 
     if (confirmResult.isConfirmed) {
-      await finalizarVenta({ metodoPago: "efectivo", codigoTransaccion: null });
+      await finalizarVenta({ metodoPago: "Efectivo", codigoTransaccion: null });
       Swal.fire({
         title: "¡Venta realizada!",
         text: "Pago en efectivo registrado correctamente.",
@@ -90,42 +90,14 @@ const Cart = () => {
 
     // PASO 2B: Pago QR → pedir código de transacción
     if (confirmResult.isDenied) {
-      const qrResult = await Swal.fire({
-        title: "Pago QR",
-        text: "Ingresa el código de transacción",
-        input: "text",
-        inputPlaceholder: "Ej: TRX-123456",
-        inputAttributes: { autocapitalize: "off" },
-        showCancelButton: true,
-        confirmButtonText: "Confirmar pago",
-        cancelButtonText: "Cancelar",
-        confirmButtonColor: "#007bff",
-        showLoaderOnConfirm: true,
-        inputValidator: (value) => {
-          if (!value || value.trim() === "") {
-            return "Debes ingresar el código de transacción";
-          }
-        },
-        preConfirm: async (codigo) => {
-          try {
-            return codigo.trim();
-          } catch (error) {
-            Swal.showValidationMessage(`Error: ${error.message}`);
-          }
-        },
-        allowOutsideClick: () => !Swal.isLoading(),
-      });
-
-      if (!qrResult.isConfirmed) return;
-
       await finalizarVenta({
-        metodoPago: "qr",
-        codigoTransaccion: qrResult.value,
+        metodoPago: "Qr",
+        codigoTransaccion: null,
       });
 
       Swal.fire({
         title: "¡Venta realizada!",
-        html: `Pago QR confirmado.<br><b>Código:</b> ${qrResult.value}`,
+        text: "Pago QR registrado correctamente.",
         icon: "success",
         confirmButtonColor: "#28a745",
       });
@@ -147,9 +119,15 @@ const Cart = () => {
     };
 
     try {
-      const result = await createSale(payload, cartItems, subtotal, Number(descuento), total);
-      console.log("Venta")
-      console.log(result)
+      const result = await createSale(
+        payload,
+        cartItems,
+        subtotal,
+        Number(descuento),
+        total,
+      );
+      console.log("Venta");
+      console.log(result);
       clearCart();
       setDescuento("0");
       socket.emit("newCartProduct", result);

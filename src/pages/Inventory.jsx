@@ -35,10 +35,12 @@ import { useAmazonS3 } from "../hooks/useAmazonS3";
 import BarcodeReader from "../components/Scanner/BarcodeReader";
 import MultiBarCodeReader from "../components/Scanner/MultiBarCodeReader";
 
+import { useLoginStore } from "../components/store/loginStore";
+
 function Inventory() {
   const navigate = useNavigate();
   const addToCart = useCartStore((state) => state.addToCart);
-
+  const { role } = useLoginStore();
   const { products, search, setSearch, onFilterTextBoxChanged } =
     useInventory();
 
@@ -122,16 +124,13 @@ function Inventory() {
     const cleanCode = code.trim();
     const now = Date.now();
 
-    if (
-      lastScanned.code === cleanCode &&
-      now - lastScanned.time < 1200
-    ) {
+    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) {
       return;
     }
     setLastScanned({ code: cleanCode, time: now });
 
     const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase()
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
     );
 
     if (!found) return;
@@ -143,7 +142,7 @@ function Inventory() {
         const exists = prev.find((p) => p.id === found.id);
         if (exists) {
           return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
           );
         }
         return [...prev, { ...found, quantity: 1 }];
@@ -202,9 +201,13 @@ function Inventory() {
         {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Inventario</Title>
-        <AddProductButton onClick={() => navigate("/product")}>
-          <Plus size={18} />
-        </AddProductButton>
+        {(role === "Administrador sucursal" ||
+          role === "Almacenero" ||
+          role === "Técnico en sistemas") && (
+          <AddProductButton onClick={() => navigate("/product")}>
+            <Plus size={18} />
+          </AddProductButton>
+        )}
       </Header>
 
       <SearchBar>
@@ -229,17 +232,14 @@ function Inventory() {
                 data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
-
                 // Mouse (desktop)
                 onMouseDown={() => handleMouseDown(product)}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
-
                 // Touch (móvil) ← fix
                 onTouchStart={() => handleTouchStart(product)}
                 onTouchEnd={handleTouchEnd}
                 onTouchMove={handleTouchMove}
-
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
@@ -262,30 +262,34 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
+      {(role === "Administrador sucursal" ||
+        role === "Almacenero" ||
+        role === "Técnico en sistemas" ||
+        role === "Vendedor") && (
+        <BottomActions>
+          <ScannerButton
+            onClick={async () => {
+              if (beepRef.current) {
+                try {
+                  await beepRef.current.play();
+                  beepRef.current.pause();
+                  beepRef.current.currentTime = 0;
+                } catch {}
+              }
 
-      <BottomActions>
-        <ScannerButton
-          onClick={async () => {
-            if (beepRef.current) {
-              try {
-                await beepRef.current.play();
-                beepRef.current.pause();
-                beepRef.current.currentTime = 0;
-              } catch {}
-            }
+              setScanCartMode(true);
+              setScannedProducts([]);
+              setScanning(true);
+            }}
+          >
+            <ScanLine size={22} />
+          </ScannerButton>
 
-            setScanCartMode(true);
-            setScannedProducts([]);
-            setScanning(true);
-          }}
-        >
-          <ScanLine size={22} />
-        </ScannerButton>
-
-        <AddToCartButton onClick={handleGoToCart}>
-          Ir al carrito ({selectedProducts.length})
-        </AddToCartButton>
-      </BottomActions>
+          <AddToCartButton onClick={handleGoToCart}>
+            Ir al carrito ({selectedProducts.length})
+          </AddToCartButton>
+        </BottomActions>
+      )}
 
       {scanning && (
         <ScannerOverlay>

@@ -13,9 +13,13 @@ import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
 import { BackButton } from "../components/ui/Product";
 import { useNavigate } from "react-router-dom";
 
+import { useLoginStore } from "../components/store/loginStore";
+
 export default function Sucursales() {
   const { data, createLocation, deleteLocation, updateLocation } =
     useSucursales();
+
+  const { role } = useLoginStore();
 
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
@@ -29,55 +33,71 @@ export default function Sucursales() {
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   // COLUMNAS
+  const canEdit =
+    role === "Administrador sucursal" || role === "Técnico en sistemas";
+
   const columns = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 160 },
-    { field: "type", headerName: "Tipo", flex: 1, minWidth: 130 },
-    { field: "abbreviation", headerName: "Abrev.", flex: 1, minWidth: 120 },
     {
-      field: "actions",
-      headerName: "Acciones",
-      width: 140,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: (params) => (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            marginTop: "10px",
-            gap: 40,
-            width: "100%",
-          }}
-        >
-          <Edit
-            size={18}
-            style={{ cursor: "pointer", color: "#22c55e" }}
-            onClick={() => {
-              setForm({
-                name: params.row.name,
-                abbreviation: params.row.abbreviation,
-                type: params.row.type,
-              });
-
-              setEditId(params.row.id);
-              setIsEdit(true);
-              setOpen(true);
-            }}
-          />
-
-          <Delete
-            style={{ cursor: "pointer", color: "#e53935" }}
-            onClick={() => {
-              setDeleteId(params.row.id);
-              setOpenDelete(true);
-            }}
-          />
-        </div>
-      ),
+      field: "type",
+      headerName: "Tipo",
+      flex: 1,
+      minWidth: 130,
+      renderCell: ({ value }) => {
+        if (value === "BRANCH") return "Sucursal";
+        if (value === "WAREHOUSE") return "Almacén";
+        return value;
+      },
     },
-  ];
+    { field: "abbreviation", headerName: "Abrev.", flex: 1, minWidth: 120 },
+
+    canEdit
+      ? {
+          field: "actions",
+          headerName: "Acciones",
+          width: 140,
+          sortable: false,
+          filterable: false,
+          disableColumnMenu: true,
+          renderCell: (params) => (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                marginTop: "10px",
+                gap: 40,
+                width: "100%",
+              }}
+            >
+              <Edit
+                size={18}
+                style={{ cursor: "pointer", color: "#22c55e" }}
+                onClick={() => {
+                  setForm({
+                    name: params.row.name,
+                    abbreviation: params.row.abbreviation,
+                    type: params.row.type,
+                  });
+
+                  setEditId(params.row.id);
+                  setIsEdit(true);
+                  setOpen(true);
+                }}
+              />
+
+              <Delete
+                style={{ cursor: "pointer", color: "#e53935" }}
+                onClick={() => {
+                  setDeleteId(params.row.id);
+                  setOpenDelete(true);
+                }}
+              />
+            </div>
+          ),
+        }
+      : null,
+  ].filter(Boolean); // 🔥 clave
 
   return (
     <Wrapper>
@@ -90,19 +110,21 @@ export default function Sucursales() {
 
       <Content>
         <Actions>
-          <AddButton
-            onClick={() => {
-              setForm({
-                name: "",
-                abbreviation: "",
-                type: "BRANCH",
-              });
-              setOpen(true);
-              setIsEdit(false);
-            }}
-          >
-            + Nueva sucursal
-          </AddButton>
+          {canEdit && (
+            <AddButton
+              onClick={() => {
+                setForm({
+                  name: "",
+                  abbreviation: "",
+                  type: "BRANCH",
+                });
+                setOpen(true);
+                setIsEdit(false);
+              }}
+            >
+              + Nueva sucursal
+            </AddButton>
+          )}
         </Actions>
         <div style={{ height: 450, background: "white", borderRadius: 12 }}>
           <DataGrid

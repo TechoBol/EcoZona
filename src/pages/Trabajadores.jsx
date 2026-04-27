@@ -15,6 +15,7 @@ import { Actions, AddButton } from "../components/ui/Location";
 import { BackButton } from "../components/ui/Product";
 import { useRoles } from "../hooks/useRoles";
 import { useSucursales } from "../hooks/useSucursales";
+import { useLoginStore } from "../components/store/loginStore";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -36,7 +37,7 @@ export default function Employees() {
     email: "",
     roleId: "",
     locationId: "",
-    password : ""
+    password: "",
   });
 
   const rows = (data || []).map((emp) => ({
@@ -44,6 +45,11 @@ export default function Employees() {
     roleName: emp.role?.name || "",
     locationName: emp.location?.name || "",
   }));
+  const { role } = useLoginStore();
+
+  const canEdit =
+    role === "Administrador sucursal" || role === "Técnico en sistemas";
+
   const columns = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 150 },
     { field: "lastName", headerName: "Apellido", flex: 1, minWidth: 150 },
@@ -60,55 +66,22 @@ export default function Employees() {
       width: 200,
     },
 
-    {
-      field: "actions",
-      headerName: "Acciones",
-      width: 140,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 16,
-            marginTop: "10px",
-            width: "100%",
-          }}
-        >
-          <Edit
-            size={18}
-            style={{ cursor: "pointer", color: "#22c55e" }}
-            onClick={() => {
-              setForm({
-                name: params.row.name,
-                lastName: params.row.lastName,
-                email: params.row.email || "",
-                roleId: params.row.role?.id || "",
-                locationId: params.row.location?.id || "",
-              });
-
-              setEditId(params.row.id);
-              setIsEdit(true);
-              setOpen(true);
-            }}
-          />
-
-          <Delete
-            style={{ cursor: "pointer", color: "#e53935" }}
-            onClick={() => {
-              setDeleteId(params.row.id);
-              setOpenDelete(true);
-            }}
-          />
-        </div>
-      ),
-    },
-  ];
+    canEdit
+      ? {
+          field: "actions",
+          headerName: "Acciones",
+          width: 140,
+          sortable: false,
+          filterable: false,
+          disableColumnMenu: true,
+          align: "center",
+          headerAlign: "center",
+          renderCell: (params) => (
+            <div style={{ display: "flex", gap: 16 }}>{/* botones */}</div>
+          ),
+        }
+      : null,
+  ].filter(Boolean); // 🔥 CLAVE
 
   return (
     <Wrapper>
@@ -116,27 +89,29 @@ export default function Employees() {
         <BackButton onClick={() => navigate("/inventory")}>
           <ArrowLeft size={22} />
         </BackButton>
-        <Title>Empleados</Title>
+        <Title>Trabajadores</Title>
       </Header>
 
       <Content>
         <Actions>
-          <AddButton
-            onClick={() => {
-              setForm({
-                name: "",
-                lastName: "",
-                email: "",
-                roleId: "",
-                locationId: "",
-                password : ""
-              });
-              setIsEdit(false);
-              setOpen(true);
-            }}
-          >
-            + Nuevo empleado
-          </AddButton>{" "}
+          {canEdit && (
+            <AddButton
+              onClick={() => {
+                setForm({
+                  name: "",
+                  lastName: "",
+                  email: "",
+                  roleId: "",
+                  locationId: "",
+                  password: "",
+                });
+                setIsEdit(false);
+                setOpen(true);
+              }}
+            >
+              + Nuevo empleado
+            </AddButton>
+          )}
         </Actions>
 
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>

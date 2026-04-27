@@ -215,3 +215,24 @@ export const CloseButton = styled.button`
     transform: scale(0.9);
   }
 `;
+
+export const TotalBar = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  background: ${theme.colors.background};
+  border-radius: 0 0 12px 12px;
+  border-top: 1px solid #f0f0f0;
+  padding: 14px 24px;
+  margin-top: -1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-family: var(--font-title);
+`;
+
+export const TotalText = styled.span`
+  font-size: 20px;
+  font-weight: ${({ bold }) => (bold ? 700 : 400)};
+  color: ${theme.colors.text};
+  font-family: var(--font-title);
+`;

@@ -29,6 +29,11 @@ const UserMenu = () => {
   const { goToSales } = useSales();
 
   const initial = fullName ? fullName.charAt(0).toUpperCase() : "?";
+  const canEdit =
+    role === "Administrador sucursal" ||
+    role === "Técnico en sistemas" ||
+    role === "Gerente General" ||
+    role === "Gerente Operaciones";
 
   return (
     <Menu as="div" style={{ position: "relative", display: "flex" }}>
@@ -89,32 +94,43 @@ const UserMenu = () => {
                 </UserInfo>
 
                 {/* OPCIONES NUEVAS */}
-                <Menu.Item>
-                  {({ active }) => (
-                    <MenuOption onClick={goToSucursales} $active={active}>
-                      <Building2 size={16} />
-                      <span>Administrar sucursales</span>
-                    </MenuOption>
-                  )}
-                </Menu.Item>
-
-                <Menu.Item>
-                  {({ active }) => (
-                    <MenuOption onClick={goToTrabajadores} $active={active}>
-                      <Users size={16} />
-                      <span>Administrar trabajadores</span>
-                    </MenuOption>
-                  )}
-                </Menu.Item>
-
-                <Menu.Item>
-                  {({ active }) => (
-                    <MenuOption onClick={goToRoles} $active={active}>
-                      <Users size={16} />
-                      <span>Administrar roles</span>
-                    </MenuOption>
-                  )}
-                </Menu.Item>
+                {(role === "Técnico en sistemas" ||
+                  role === "Gerente General" ||
+                  role === "Gerente Operaciones") && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToSucursales} $active={active}>
+                        <Building2 size={16} />
+                        <span>Administrar sucursales</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
+                {(role === "Técnico en sistemas" ||
+                  role === "Gerente General" ||
+                  role === "Gerente Operaciones" ||
+                  role === "Administrador sucursal") && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToTrabajadores} $active={active}>
+                        <Users size={16} />
+                        <span>Administrar trabajadores</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
+                {(role === "Técnico en sistemas" ||
+                  role === "Gerente General" ||
+                  role === "Gerente Operaciones") && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToRoles} $active={active}>
+                        <Users size={16} />
+                        <span>Administrar roles</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
 
                 <Menu.Item>
                   {({ active }) => (
