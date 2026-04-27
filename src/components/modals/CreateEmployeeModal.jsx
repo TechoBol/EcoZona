@@ -32,7 +32,7 @@ export default function CreateEmployeeModal({
 
     if (!form.name) e.name = "Nombre requerido";
     if (!form.lastName) e.lastName = "Apellido requerido";
-    if (!form.password) e.password = "Contraseña requerido";
+    if (!form.email) e.email = "Email requerido";
     if (!form.roleId) e.roleId = "Rol requerido";
 
     setErrors(e);
@@ -61,7 +61,9 @@ export default function CreateEmployeeModal({
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
-          {errors.name && <span style={{ color: "red" }}>{errors.name}</span>}
+          {errors.name && (
+            <span style={{ color: "red", fontSize: 12 }}>{errors.name}</span>
+          )}
 
           <ModalInput
             placeholder="Apellido"
@@ -69,7 +71,9 @@ export default function CreateEmployeeModal({
             onChange={(e) => setForm({ ...form, lastName: e.target.value })}
           />
           {errors.lastName && (
-            <span style={{ color: "red" }}>{errors.lastName}</span>
+            <span style={{ color: "red", fontSize: 12 }}>
+              {errors.lastName}
+            </span>
           )}
 
           <ModalInput
@@ -77,7 +81,9 @@ export default function CreateEmployeeModal({
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
-
+          {errors.email && (
+            <span style={{ color: "red", fontSize: 12 }}>{errors.email}</span>
+          )}
           <ModalInput
             placeholder="Contraseña"
             value={form.password}

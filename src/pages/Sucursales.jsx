@@ -97,7 +97,7 @@ export default function Sucursales() {
           ),
         }
       : null,
-  ].filter(Boolean); // 🔥 clave
+  ].filter(Boolean); 
 
   return (
     <Wrapper>
