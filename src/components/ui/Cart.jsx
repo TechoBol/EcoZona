@@ -239,3 +239,22 @@ export const ActionsColumn = styled.div`
   align-items: center;
   justify-content: space-between;
 `;
+
+export const ProductPriceRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+`;
+
+export const PriceDivider = styled.span`
+  color: ${theme.colors.textSecondary};
+  font-size: 13px;
+  opacity: 0.5;
+`;
+
+export const ProductSubtotal = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+  color: ${theme.colors.text};
+`;

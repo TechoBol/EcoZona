@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProduct } from "../../hooks/useProduct";
 import { useForm } from "@mantine/form";
+import Beep from "../../assets/sounds/Beep.mp3";
 
 import {
   Wrapper,
@@ -43,7 +44,16 @@ function ProductForm() {
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  // 🔥 estado real de imagen S3
+
+  /* Sonido Beep al escanear*/
+  const beepRef = useRef(null);
+
+  useEffect(() => {
+    beepRef.current = new Audio(Beep);
+  }, []);
+
+
+  // estado real de imagen S3
   const [s3Image, setS3Image] = useState(null);
   const [imageDeleted, setImageDeleted] = useState(false);
 
@@ -275,6 +285,8 @@ function ProductForm() {
         <ScannerOverlay>
           <BarcodeReader
             onDetected={(code) => {
+              beepRef.current.currentTime = 0;
+              beepRef.current.play().catch(() => { });
               form.setFieldValue("barcode", code);
               setScanning(false);
             }}

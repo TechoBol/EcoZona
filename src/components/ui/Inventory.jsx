@@ -139,7 +139,7 @@ export const ScanButton = styled.div`
   cursor: pointer;
 `;
 
-/* ScrollArea — único componente nuevo */
+/* ScrollArea */
 export const ScrollArea = styled.div`
   flex: 1;
   overflow-y: auto;
@@ -178,6 +178,10 @@ export const Card = styled.div`
     props.$error &&
     `
     animation: shake 0.25s;
+  `}
+  ${(props) => props.$outOfStock && `
+    opacity: 0.5;
+    filter: grayscale(10%);
   `}
 
   @keyframes shake {

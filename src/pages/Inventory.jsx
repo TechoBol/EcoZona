@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useInventory from "../hooks/useInventory";
 import Beep from "../assets/sounds/Beep.mp3";
+import { useLoginStore } from "../components/store/loginStore";
 
 import {
   Wrapper,
@@ -37,6 +38,7 @@ import MultiBarcodeReader from "../components/Scanner/MultiBarcodeReader";
 
 function Inventory() {
   const navigate = useNavigate();
+  const { location } = useLoginStore();
   const addToCart = useCartStore((state) => state.addToCart);
 
   const { products, search, setSearch, onFilterTextBoxChanged } =
@@ -186,7 +188,7 @@ function Inventory() {
       <Header>
         {menuOpen && <Overlay onClick={() => setMenuOpen(false)} />}
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
-        <Title>Inventario</Title>
+        <Title>{location?.name || "Inventario"}</Title>
         <AddProductButton onClick={() => navigate("/product")}>
           <Plus size={18} />
         </AddProductButton>
@@ -214,6 +216,7 @@ function Inventory() {
                 data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
+                $outOfStock={stock === 0}
                 onMouseDown={() => handleMouseDown(product)}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}

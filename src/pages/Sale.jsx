@@ -105,7 +105,7 @@ export default function Sales() {
 
       <Content>
         <Actions>
-          {/* 🔥 aquí NO hay botón crear porque la venta viene de otro flujo */}
+          {/* aquí NO hay botón crear porque la venta viene de otro flujo */}
         </Actions>
 
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>
