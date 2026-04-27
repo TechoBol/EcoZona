@@ -35,7 +35,7 @@ import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 
 import BarcodeReader from "../components/Scanner/BarcodeReader";
-import MultiBarCodeReader from "../components/Scanner/MultiBarCodeReader";
+import MultiBarcodeReader from "../components/Scanner/MultiBarcodeReader";
 
 function Inventory() {
   const navigate = useNavigate();
@@ -43,6 +43,7 @@ function Inventory() {
   const { data: locations } = useSucursales();
 
   const addToCart = useCartStore((state) => state.addToCart);
+
   const { products, search, setSearch, onFilterTextBoxChanged } =
     useInventory();
 
@@ -51,21 +52,31 @@ function Inventory() {
   const [scanning, setScanning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // 🔥 NUEVO: selector de sucursal
+  const [scanCartMode, setScanCartMode] = useState(false);
+  const [scannedProducts, setScannedProducts] = useState([]);
+  const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
+
+  // 🔥 SUCURSAL
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [openLocations, setOpenLocations] = useState(false);
 
-  // 🔥 DEFAULT sucursal 1
+  const allowedRoles = ["Gerente General", "Gerente Operativo"];
+  const canChangeLocation = allowedRoles.includes(role);
+
   useEffect(() => {
     if (!locations.length) return;
 
-    const defaultLoc = locations.find((l) => l.id === 1) || locations[0];
+    if (canChangeLocation) {
+      const defaultLoc = locations.find((l) => l.id === 1) || locations[0];
+      setSelectedLocation(defaultLoc);
+    } else {
+      const userLoc = locations.find((l) => l.id === location?.id);
+      setSelectedLocation(userLoc || locations[0]);
+    }
+  }, [locations, role, location]);
 
-    setSelectedLocation(defaultLoc);
-  }, [locations]);
-
+  // 🔊 BEEP
   const beepRef = useRef(null);
-
   useEffect(() => {
     beepRef.current = new Audio(Beep);
   }, []);
@@ -76,6 +87,7 @@ function Inventory() {
     beepRef.current.play().catch(() => {});
   };
 
+  // ⏱ LONG PRESS
   const pressTimer = useRef(null);
 
   const handleMouseDown = (product) => {
@@ -107,6 +119,7 @@ function Inventory() {
     return product.inventories?.[0]?.quantity || 0;
   };
 
+  // 🛒 SELECCIÓN
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -134,7 +147,7 @@ function Inventory() {
     navigate("/cart");
   };
 
-  // 🔥 IMÁGENES
+  // 📷 IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -161,19 +174,47 @@ function Inventory() {
     loadImages();
   }, [products]);
 
-  const allowedRoles = [
-    "Gerente General",
-    "Gerente Operativo",
-  ];
+  // 📡 SCANNER
+  const handleBarcodeDetected = (code) => {
+    const cleanCode = code.trim();
+    const now = Date.now();
 
-  const canChangeLocation = allowedRoles.includes(role);
+    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) {
+      return;
+    }
+
+    setLastScanned({ code: cleanCode, time: now });
+
+    const found = products.find(
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+    );
+
+    if (!found) return;
+
+    playBeep();
+
+    if (scanCartMode) {
+      setScannedProducts((prev) => {
+        const exists = prev.find((p) => p.id === found.id);
+        if (exists) {
+          return prev.map((p) =>
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
+          );
+        }
+        return [...prev, { ...found, quantity: 1 }];
+      });
+      return;
+    }
+
+    setSearch(cleanCode);
+    setScanning(false);
+  };
 
   return (
     <Wrapper>
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
 
-        {/* 🔥 CLICK PARA CAMBIAR SUCURSAL */}
         <Title
           onClick={() => {
             if (!canChangeLocation) return;
@@ -196,8 +237,8 @@ function Inventory() {
         )}
       </Header>
 
-      {/* 🔥 SELECTOR DE SUCURSAL */}
-      {openLocations && (
+      {/* SELECTOR */}
+      {openLocations && canChangeLocation && (
         <div
           style={{
             position: "absolute",
@@ -207,22 +248,17 @@ function Inventory() {
             background: "white",
             borderRadius: 12,
             padding: 10,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.2)",
             zIndex: 1000,
           }}
         >
           {locations.map((loc) => (
             <div
               key={loc.id}
-              style={{
-                padding: 10,
-                cursor: "pointer",
-                borderBottom: "1px solid #eee",
-              }}
               onClick={() => {
                 setSelectedLocation(loc);
                 setOpenLocations(false);
               }}
+              style={{ padding: 10, cursor: "pointer" }}
             >
               {loc.name}
             </div>
@@ -249,6 +285,7 @@ function Inventory() {
             return (
               <Card
                 key={product.id}
+                data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
                 $outOfStock={stock === 0}
@@ -279,12 +316,105 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
+      {!canChangeLocation && (
+        <BottomActions>
+          <ScannerButton
+            onClick={async () => {
+              if (beepRef.current) {
+                try {
+                  await beepRef.current.play();
+                  beepRef.current.pause();
+                  beepRef.current.currentTime = 0;
+                } catch {}
+              }
 
-      <BottomActions>
-        <AddToCartButton onClick={handleGoToCart}>
-          Ir al carrito ({selectedProducts.length})
-        </AddToCartButton>
-      </BottomActions>
+              setScanCartMode(true);
+              setScannedProducts([]);
+              setScanning(true);
+            }}
+          >
+            <ScanLine size={22} />
+          </ScannerButton>
+
+          <AddToCartButton onClick={handleGoToCart}>
+            Ir al carrito ({selectedProducts.length})
+          </AddToCartButton>
+        </BottomActions>
+      )}
+
+      {scanning && (
+        <ScannerOverlay>
+          <div style={{ position: "relative", width: "100%", height: "100%" }}>
+            {scanCartMode ? (
+              <MultiBarcodeReader
+                onDetected={handleBarcodeDetected}
+                onClose={() => {
+                  setScanning(false);
+                  setScanCartMode(false);
+                  setScannedProducts([]);
+                }}
+              />
+            ) : (
+              <BarcodeReader
+                onDetected={handleBarcodeDetected}
+                onClose={() => setScanning(false)}
+              />
+            )}
+
+            {/* 🔥 BOTONES */}
+            {scanCartMode ? (
+              <button
+                onClick={() => {
+                  scannedProducts.forEach((p) => {
+                    for (let i = 0; i < (p.quantity || 1); i++) {
+                      addToCart(p);
+                    }
+                  });
+
+                  setScanning(false);
+                  setScanCartMode(false);
+                  navigate("/cart");
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: 30,
+                  left: 20,
+                  right: 20,
+                  height: 50,
+                  borderRadius: 30,
+                  border: "none",
+                  background: "#F20C1F",
+                  color: "#fff",
+                  fontWeight: "600",
+                }}
+              >
+                Añadir {scannedProducts.length} productos
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setScanning(false);
+                  navigate("/cart");
+                }}
+                style={{
+                  position: "absolute",
+                  bottom: 30,
+                  left: 20,
+                  right: 20,
+                  height: 50,
+                  borderRadius: 30,
+                  border: "none",
+                  background: "#111",
+                  color: "#fff",
+                  fontWeight: "600",
+                }}
+              >
+                Ir al carrito
+              </button>
+            )}
+          </div>
+        </ScannerOverlay>
+      )}
     </Wrapper>
   );
 }

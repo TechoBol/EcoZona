@@ -65,7 +65,6 @@ export default function Employees() {
       headerName: "Ubicación",
       width: 200,
     },
-
     canEdit
       ? {
           field: "actions",
@@ -77,11 +76,46 @@ export default function Employees() {
           align: "center",
           headerAlign: "center",
           renderCell: (params) => (
-            <div style={{ display: "flex", gap: 16 }}>{/* botones */}</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 16,
+                marginTop: "10px",
+                width: "100%",
+              }}
+            >
+              <Edit
+                size={18}
+                style={{ cursor: "pointer", color: "#22c55e" }}
+                onClick={() => {
+                  setForm({
+                    name: params.row.name,
+                    lastName: params.row.lastName,
+                    email: params.row.email || "",
+                    roleId: params.row.role?.id || "",
+                    locationId: params.row.location?.id || "",
+                  });
+
+                  setEditId(params.row.id);
+                  setIsEdit(true);
+                  setOpen(true);
+                }}
+              />
+
+              <Delete
+                style={{ cursor: "pointer", color: "#e53935" }}
+                onClick={() => {
+                  setDeleteId(params.row.id);
+                  setOpenDelete(true);
+                }}
+              />
+            </div>
           ),
         }
       : null,
-  ].filter(Boolean); // 🔥 CLAVE
+  ].filter(Boolean);
 
   return (
     <Wrapper>
