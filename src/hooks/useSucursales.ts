@@ -29,7 +29,6 @@ export const useSucursales = () => {
 
   const createLocation = async (values: any) => {
     const newLocation = await createLocationService(values, token);
-
     setData((prev) => [...prev, newLocation]);
     getLocations();
     return newLocation;
