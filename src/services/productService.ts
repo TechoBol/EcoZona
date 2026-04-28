@@ -12,12 +12,13 @@ export const createProductService = async (data: Product, token: string) => {
       body: JSON.stringify(data),
     },
   );
+  const resData = await response.json(); 
 
   if (!response.ok) {
-    throw new Error("Error creating product");
+    throw new Error(resData.message || "Error creating product");
   }
 
-  return response.json();
+  return resData;
 };
 
 export const updateProductService = async (id: any, data: any, token: any) => {
@@ -33,7 +34,11 @@ export const updateProductService = async (id: any, data: any, token: any) => {
     },
   );
 
-  if (!res.ok) throw new Error("Error actualizando producto");
+ const resData = await res.json(); 
 
-  return res.json();
+  if (!res.ok) {
+    throw new Error(resData.message || "Error acutalizar producto");
+  }
+
+  return resData;
 };

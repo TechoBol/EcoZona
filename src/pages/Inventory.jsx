@@ -61,7 +61,7 @@ function Inventory() {
   const [openLocations, setOpenLocations] = useState(false);
 
   const allowedRoles = ["Gerente General", "Gerente Operaciones"];
-  const canChangeLocation = allowedRoles.includes(role);
+  const canChangeLocation = true//allowedRoles.includes(role);
 
   useEffect(() => {
     if (!locations.length) return;
@@ -316,7 +316,7 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
-      {!canChangeLocation && (
+      {canChangeLocation && (
         <BottomActions>
           <ScannerButton
             onClick={async () => {
