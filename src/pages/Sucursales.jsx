@@ -14,6 +14,7 @@ import { BackButton } from "../components/ui/Product";
 import { useNavigate } from "react-router-dom";
 
 import { useLoginStore } from "../components/store/loginStore";
+import socket from "../services/SocketIOConnection";
 
 export default function Sucursales() {
   const { data, createLocation, deleteLocation, updateLocation } =
@@ -173,10 +174,11 @@ export default function Sucursales() {
         setForm={setForm}
         isEdit={isEdit}
         onSubmit={async (data) => {
+          let newLocation;
           if (isEdit) {
-            await updateLocation(editId, data);
+            newLocation = await updateLocation(editId, data);
           } else {
-            await createLocation(data);
+            newLocation = await createLocation(data);
           }
 
           setForm({
@@ -184,7 +186,7 @@ export default function Sucursales() {
             abbreviation: "",
             type: "BRANCH",
           });
-
+          socket.emit("createLocation", newLocation);
           setIsEdit(false);
           setOpen(false);
         }}
