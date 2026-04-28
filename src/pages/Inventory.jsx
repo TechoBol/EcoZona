@@ -361,7 +361,7 @@ function Inventory() {
               />
             )}
 
-            {/* 🔥 BOTONES */}
+            {/* BOTONES */}
             {scanCartMode ? (
               <button
                 onClick={() => {

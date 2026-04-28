@@ -24,16 +24,14 @@ function BarcodeReader({ onDetected, onClose }) {
         await html5QrCode.start(
           backCamera.id,
           {
-            fps: 30, // 🔥 MÁXIMA VELOCIDAD
-            qrbox: { width: 9999, height: 9999 }, // 🔥 TODA LA PANTALLA
+            fps: 30,
+            qrbox: { width: 9999, height: 9999 },
             aspectRatio: 1.777,
 
             videoConstraints: {
               facingMode: "environment",
               width: { ideal: 1920 },
               height: { ideal: 1080 },
-
-              // 🔥 CONFIG PRO
               focusMode: "continuous",
               exposureMode: "continuous",
               whiteBalanceMode: "continuous",
@@ -43,24 +41,20 @@ function BarcodeReader({ onDetected, onClose }) {
           (decodedText) => {
             if (!scannedRef.current) {
               scannedRef.current = true;
-
               navigator.vibrate?.(200);
-
               stopScanner();
-
               onDetected(decodedText);
               onClose();
             }
           },
-
           () => {
-            // ignoramos errores (modo agresivo)
+            // ignoramos errores
           }
         );
 
         isRunningRef.current = true;
 
-        // 🔍 AUTO ZOOM AGRESIVO
+        // AUTO ZOOM
         setTimeout(() => {
           try {
             const track = html5QrCode.getRunningTrack();
@@ -105,7 +99,7 @@ function BarcodeReader({ onDetected, onClose }) {
         }}
       />
 
-      {/* 🎯 PUNTO CENTRAL (tipo supermercado) */}
+      {/* PUNTO CENTRAL */}
       <div
         style={{
           position: "absolute",

@@ -171,12 +171,12 @@ export default function Sucursales() {
         }}
         form={form}
         setForm={setForm}
-        isEdit={isEdit} // 🔥 nuevo
+        isEdit={isEdit}
         onSubmit={async (data) => {
           if (isEdit) {
-            await updateLocation(editId, data); // 🔥 UPDATE
+            await updateLocation(editId, data);
           } else {
-            await createLocation(data); // 🔥 CREATE
+            await createLocation(data);
           }
 
           setForm({

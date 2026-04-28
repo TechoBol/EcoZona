@@ -49,7 +49,7 @@ export const updateLocationService = async (id: any, data: any, token: any) => {
   );
 
   if (!response.ok) {
-    throw new Error("Error updating location");
+    throw new Error("No se pudo actualizar la ubicación");
   }
 
   return response.json();

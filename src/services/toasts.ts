@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
-/* 🔧 CONFIG BASE */
+/* CONFIG BASE */
 const baseConfig = {
   duration: 4000,
   position: "bottom-right" as const,

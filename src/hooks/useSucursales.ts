@@ -34,9 +34,8 @@ export const useSucursales = () => {
     try {
       setLoading(true);
 
-      await updateLocationService(id, values, token); // 🔥 ahora sí con id
-
-      await getLocations(); // 🔄 refresca tabla
+      await updateLocationService(id, values, token);
+      await getLocations();
     } catch (error) {
       console.error("Error updating location", error);
     } finally {

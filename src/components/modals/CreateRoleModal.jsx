@@ -23,7 +23,6 @@ export default function CreateRoleModal({
     maxEmployeesAllowed: "",
   });
 
-  //ESC para cerrar
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -33,7 +32,6 @@ export default function CreateRoleModal({
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // Limpiar errores al abrir
   useEffect(() => {
     if (open) {
       setErrors({
@@ -74,7 +72,6 @@ export default function CreateRoleModal({
     onSubmit(form);
   };
 
-  // Cerrar limpiando errores
   const handleClose = () => {
     setErrors({
       name: "",

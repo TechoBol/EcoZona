@@ -15,7 +15,7 @@ export const createProductService = async (data: Product, token: string) => {
   const resData = await response.json(); 
 
   if (!response.ok) {
-    throw new Error(resData.message || "Error creating product");
+    throw new Error(resData.message || "No se pudo crear el producto");
   }
 
   return resData;
@@ -37,7 +37,7 @@ export const updateProductService = async (id: any, data: any, token: any) => {
  const resData = await res.json(); 
 
   if (!res.ok) {
-    throw new Error(resData.message || "Error acutalizar producto");
+    throw new Error(resData.message || "No se pudo actualizar el producto");
   }
 
   return resData;

@@ -30,10 +30,10 @@ export default function CreateEmployeeModal({
   const validate = () => {
     let e = {};
 
-    if (!form.name) e.name = "Nombre requerido";
-    if (!form.lastName) e.lastName = "Apellido requerido";
-    if (!form.email) e.email = "Email requerido";
-    if (!form.roleId) e.roleId = "Rol requerido";
+    if (!form.name) e.name = "Ingresa el nombre";
+    if (!form.lastName) e.lastName = "Ingresa el apellido";
+    if (!form.email) e.email = "Ingresa el correo";
+    if (!form.roleId) e.roleId = "Selecciona un rol";
 
     setErrors(e);
     return Object.keys(e).length === 0;

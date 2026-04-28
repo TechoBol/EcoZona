@@ -19,7 +19,7 @@ const useInventory = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Para escáner
+  // ESCANNER
   const [scannerBuffer, setScannerBuffer] = useState("");
 
   const fetchProducts = async () => {
@@ -62,7 +62,6 @@ const useInventory = () => {
     let timeout: any;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignorar teclas especiales
       if (e.key === "Shift" || e.key === "Control" || e.key === "Alt") return;
 
       if (e.key === "Enter") {
@@ -78,11 +77,7 @@ const useInventory = () => {
         setScannerBuffer("");
         return;
       }
-
-      // Acumular caracteres
       setScannerBuffer((prev) => prev + e.key);
-
-      // Resetear buffer si pasa mucho tiempo (para evitar mezcla)
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         setScannerBuffer("");
@@ -110,9 +105,8 @@ const useInventory = () => {
       });
     });
 
-    // Cuando llega una venta, recargar productos frescos del backend
     socket.on("cartProduct", () => {
-      fetchProducts(); // ✅ más simple y siempre correcto
+      fetchProducts();
     });
 
     return () => {

@@ -13,7 +13,7 @@ export const createSaleService = async (data: any, token: string) => {
   );
 
   if (!response.ok) {
-    throw new Error("Error creating product");
+    throw new Error("No se pudo realizar la venta");
   }
 
   return response.json();

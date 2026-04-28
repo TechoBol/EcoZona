@@ -48,7 +48,7 @@ export const useCart = () => {
         { type: "application/pdf" }
       );
 
-      // 🔥 4. Subir a S3
+      // 4. Subir a S3
       const pdfKey = await uploadPDF(file, venta.sale.code);
 
       console.log("PDF subido:", pdfKey);

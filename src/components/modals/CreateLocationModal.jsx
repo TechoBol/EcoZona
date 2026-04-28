@@ -24,7 +24,6 @@ export default function CreateLocationModal({
     abbreviation: "",
   });
 
-  // ESC para cerrar
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === "Escape") onClose();
@@ -34,7 +33,6 @@ export default function CreateLocationModal({
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
-  // Limpiar errores cuando se abre
   useEffect(() => {
     if (open) {
       setErrors({
@@ -87,8 +85,8 @@ export default function CreateLocationModal({
         </CloseButton>
 
         <ModalTitle>
-  {isEdit ? "Editar sucursal" : "Nueva sucursal"}
-</ModalTitle>
+          {isEdit ? "Editar sucursal" : "Nueva sucursal"}
+        </ModalTitle>
 
         <FormGroup>
           <div>
@@ -137,9 +135,9 @@ export default function CreateLocationModal({
           </ModalSelect>
         </FormGroup>
 
-       <SaveButton onClick={handleSubmit}>
-  {isEdit ? "Actualizar" : "Guardar"}
-</SaveButton>
+        <SaveButton onClick={handleSubmit}>
+          {isEdit ? "Actualizar" : "Guardar"}
+        </SaveButton>
       </ModalContent>
     </ModalOverlay>
   );

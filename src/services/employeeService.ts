@@ -8,7 +8,7 @@ export const getEmployeesService = async (token: string) => {
     },
   });
 
-  if (!res.ok) throw new Error("Error getting employees");
+  if (!res.ok) throw new Error("Error al cargar los empleados.");
   return res.json();
 };
 
@@ -22,7 +22,7 @@ export const createEmployeeService = async (data: any, token: string) => {
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) throw new Error("Error creating employee");
+  if (!res.ok) throw new Error("No se pudo crear el empleado.");
   return res.json();
 };
 
@@ -40,7 +40,7 @@ export const updateEmployeeService = async (
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) throw new Error("Error updating employee");
+  if (!res.ok) throw new Error("No se pudo actualizar la información del empleado");
   return res.json();
 };
 
@@ -52,6 +52,6 @@ export const deleteEmployeeService = async (id: number, token: string) => {
     },
   });
 
-  if (!res.ok) throw new Error("Error deleting employee");
+  if (!res.ok) throw new Error("Error al eliminar el empleado");
   return res.json();
 };
