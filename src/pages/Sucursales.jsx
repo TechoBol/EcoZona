@@ -33,8 +33,8 @@ export default function Sucursales() {
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   // COLUMNAS
-  const canEdit =
-    role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const canEdit = true
+    //role === "Administrador sucursal" || role === "Técnico en sistemas";
 
   const columns = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 160 },
