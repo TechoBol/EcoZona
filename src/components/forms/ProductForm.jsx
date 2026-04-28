@@ -45,14 +45,12 @@ function ProductForm() {
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-
   /* Sonido Beep al escanear*/
   const beepRef = useRef(null);
 
   useEffect(() => {
     beepRef.current = new Audio(Beep);
   }, []);
-
 
   // estado real de imagen S3
   const [s3Image, setS3Image] = useState(null);
@@ -100,10 +98,9 @@ function ProductForm() {
         !v || Number(v) <= 0
           ? "Precio inválido"
           : Number(v) < Number(values.price)
-            ? "No puede ser menor al precio base"
-            : null,
-      stock: (v) =>
-        v === "" || Number(v) < 0 ? "Stock inválido" : null,
+          ? "No puede ser menor al precio base"
+          : null,
+      stock: (v) => (v === "" || Number(v) < 0 ? "Stock inválido" : null),
     },
   });
 
@@ -148,11 +145,9 @@ function ProductForm() {
         stock: Number(values.stock),
         imageUrl: imageKey,
       };
-
-      // ✅ Renombrar a "result" para no pisar la variable "product" externa
       let result;
       if (isEdit) {
-        result = await updateProduct(product.id, payload); // usa el "product" externo
+        result = await updateProduct(product.id, payload);
         successToast("Producto actualizado");
       } else {
         result = await createProduct(payload);
@@ -160,14 +155,11 @@ function ProductForm() {
       }
 
       form.reset();
-      socket.emit("createProduct", result); // emite el resultado
+      socket.emit("createProduct", result);
       navigate("/inventory", { replace: true });
-
     } catch (err) {
       console.error(err);
-      errorToast(
-        isEdit ? "Error actualizando producto" : "Error creando producto",
-      );
+      errorToast(err.message || "Error inesperado");
     } finally {
       setLoading(false);
     }
@@ -192,7 +184,10 @@ function ProductForm() {
         </ContainerInput>
 
         <ContainerInput>
-          <Input placeholder="Descripción" {...form.getInputProps("description")} />
+          <Input
+            placeholder="Descripción"
+            {...form.getInputProps("description")}
+          />
         </ContainerInput>
 
         <ContainerInput>
@@ -205,15 +200,27 @@ function ProductForm() {
         </ContainerInput>
 
         <ContainerInput>
-          <Input type="number" placeholder="Precio" {...form.getInputProps("price")} />
+          <Input
+            type="number"
+            placeholder="Precio"
+            {...form.getInputProps("price")}
+          />
         </ContainerInput>
 
         <ContainerInput>
-          <Input type="number" placeholder="Precio venta" {...form.getInputProps("finalPrice")} />
+          <Input
+            type="number"
+            placeholder="Precio venta"
+            {...form.getInputProps("finalPrice")}
+          />
         </ContainerInput>
 
         <ContainerInput>
-          <Input type="number" placeholder="Stock" {...form.getInputProps("stock")} />
+          <Input
+            type="number"
+            placeholder="Stock"
+            {...form.getInputProps("stock")}
+          />
         </ContainerInput>
 
         {/* ================= IMAGE ================= */}
@@ -279,8 +286,8 @@ function ProductForm() {
           {loading
             ? "Guardando..."
             : isEdit
-              ? "Actualizar Producto"
-              : "Crear Producto"}
+            ? "Actualizar Producto"
+            : "Crear Producto"}
         </Button>
       </Form>
 
@@ -289,7 +296,7 @@ function ProductForm() {
           <BarcodeReader
             onDetected={(code) => {
               beepRef.current.currentTime = 0;
-              beepRef.current.play().catch(() => { });
+              beepRef.current.play().catch(() => {});
               form.setFieldValue("barcode", code);
               setScanning(false);
             }}

@@ -47,8 +47,8 @@ export default function Employees() {
   }));
   const { role } = useLoginStore();
 
-  const canEdit =
-    role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const canEdit = true
+    //role === "Administrador sucursal" || role === "Técnico en sistemas";
 
   const columns = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 150 },
