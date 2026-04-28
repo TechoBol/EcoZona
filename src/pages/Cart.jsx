@@ -98,7 +98,7 @@ const Cart = () => {
       return;
     }
 
-    // PASO 2B: Pago QR → pedir código de transacción
+    // PASO 2B: Pago QR
     if (confirmResult.isDenied) {
       await finalizarVenta({
         metodoPago: "Qr",
@@ -196,50 +196,73 @@ const Cart = () => {
       </Header>
 
       <ProductList>
-        {cartItems.map((item) => (
-          <ProductCard key={item.id}>
-            <ProductImage
-              src={imageUrls[item.id] || "https://via.placeholder.com/150"}
-              alt={item.name}
-            />
+        {cartItems.length === 0 ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              flex: 1,
+              height: "100%",
+              padding: "20px",
+              minHeight: "60vh",
+              color: "gray",
+              gap: "10px",
+            }}
+          >
+            <div style={{ fontSize: "50px" }}>🛒</div>
+            <h3 style={{ margin: 0 }}>Ups... el carrito está vacío</h3>
+            <p style={{ margin: 0, fontSize: "14px" }}>
+              Es hora de llenarlo. 🚀
+            </p>
+          </div>
+        ) :
+          cartItems.map((item) => (
+            <ProductCard key={item.id}>
+              <ProductImage
+                src={imageUrls[item.id] || "https://via.placeholder.com/150"}
+                alt={item.name}
+              />
 
-            <RightSection>
-              <TopRow>
-                <ProductText>
-                  <ProductName>{item.name}</ProductName>
-                  <ProductPriceRow>
-                    <ProductPrice>Bs {item.finalPrice}</ProductPrice>
-                    <PriceDivider>|</PriceDivider>
-                    <ProductSubtotal>Bs {(item.finalPrice * item.quantity).toFixed(2)}</ProductSubtotal>
-                  </ProductPriceRow>
-                </ProductText>
+              <RightSection>
+                <TopRow>
+                  <ProductText>
+                    <ProductName>{item.name}</ProductName>
+                    <ProductPriceRow>
+                      <ProductPrice>Bs {item.finalPrice}</ProductPrice>
+                      <PriceDivider>|</PriceDivider>
+                      <ProductSubtotal>Bs {(item.finalPrice * item.quantity).toFixed(2)}</ProductSubtotal>
+                    </ProductPriceRow>
+                  </ProductText>
 
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "flex-end",
-                    gap: 6,
-                  }}
-                >
-                  <QuantityControls>
-                    <Button onClick={() => decreaseQty(item.id)}>
-                      <Minus size={18} />
-                    </Button>
-                    <QuantityText>{item.quantity}</QuantityText>
-                    <Button onClick={() => increaseQty(item.id)}>
-                      <Plus size={18} />
-                    </Button>
-                  </QuantityControls>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "flex-end",
+                      gap: 6,
+                    }}
+                  >
+                    <QuantityControls>
+                      <Button onClick={() => decreaseQty(item.id)}>
+                        <Minus size={18} />
+                      </Button>
+                      <QuantityText>{item.quantity}</QuantityText>
+                      <Button onClick={() => increaseQty(item.id)}>
+                        <Plus size={18} />
+                      </Button>
+                    </QuantityControls>
 
-                  <DeleteButton onClick={() => removeItem(item.id)}>
-                    <Trash2 size={18} />
-                  </DeleteButton>
-                </div>
-              </TopRow>
-            </RightSection>
-          </ProductCard>
-        ))}
+                    <DeleteButton onClick={() => removeItem(item.id)}>
+                      <Trash2 size={18} />
+                    </DeleteButton>
+                  </div>
+                </TopRow>
+              </RightSection>
+            </ProductCard>
+          ))}
       </ProductList>
 
       <Footer>
