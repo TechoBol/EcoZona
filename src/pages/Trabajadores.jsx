@@ -16,6 +16,7 @@ import { useRoles } from "../hooks/useRoles";
 import { useSucursales } from "../hooks/useSucursales";
 import { useLoginStore } from "../components/store/loginStore";
 import { FiltersRow, FilterInput } from "../components/ui/Location";
+import socket from "../services/SocketIOConnection";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -216,12 +217,13 @@ export default function Employees() {
         roles={roles}
         locations={locations}
         onSubmit={async (data) => {
+          let newEmployee;
           if (isEdit) {
-            await updateEmployee(editId, data);
+             newEmployee = await updateEmployee(editId, data);
           } else {
-            await createEmployee(data);
+             newEmployee = await createEmployee(data);
           }
-
+          socket.emit("createEmployee", newEmployee);
           setOpen(false);
           setIsEdit(false);
         }}

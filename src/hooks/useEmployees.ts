@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
+import socket from "../services/SocketIOConnection";
 
 import {
   getEmployeesService,
@@ -24,19 +25,50 @@ export const useEmployees = () => {
   };
 
   const createEmployee = async (values: any) => {
-    await createEmployeeService(values, token);
+    const newEmployee = await createEmployeeService(values, token);
+    setData((prev) => [...prev, newEmployee]);
     getEmployees();
+    return newEmployee;
   };
 
   const updateEmployee = async (id: number, values: any) => {
-    await updateEmployeeService(id, values, token);
+    const updateEmployee = await updateEmployeeService(id, values, token);
     getEmployees();
+    return updateEmployee;
   };
 
   const deleteEmployee = async (id: number) => {
     await deleteEmployeeService(id, token);
+    socket.emit("deleteEmployee", id);
     getEmployees();
   };
+
+useEffect(() => {
+    socket.on("employeeUpdated", (employee) => {
+      setData((prev) => {
+        const exists = prev.some((emp) => emp.id === employee.id);
+
+        if (exists) {
+          return prev.map((emp) =>
+            emp.id === employee.id ? employee : emp
+          );
+        }
+
+        return [...prev, employee];
+      });
+    });
+
+    socket.on("employeeRemoved", (employeeId) => {
+      setData((prev) =>
+        prev.filter((emp) => emp.id !== employeeId)
+      );
+    });
+
+    return () => {
+      socket.off("employeeUpdated");
+      socket.off("employeeRemoved");
+    };
+  }, []);
 
   useEffect(() => {
     getEmployees();
