@@ -18,6 +18,7 @@ import {
 } from "../components/ui/Location";
 
 import { BackButton } from "../components/ui/Product";
+import socket from "../services/SocketIOConnection";
 
 export default function Roles() {
   const navigate = useNavigate();
@@ -166,10 +167,11 @@ export default function Roles() {
         setForm={setForm}
         isEdit={isEdit}
         onSubmit={async (data) => {
+          let newRole;
           if (isEdit) {
-            await updateRole(editId, data);
+            newRole = await updateRole(editId, data);
           } else {
-            await createRole(data);
+            newRole =await createRole(data);
           }
 
           setForm({
@@ -177,7 +179,8 @@ export default function Roles() {
             description: "",
             maxEmployeesAllowed: 1,
           });
-
+          console.log(newRole);
+          socket.emit("createRole", newRole);
           setIsEdit(false);
           setOpen(false);
         }}
