@@ -8,6 +8,17 @@ export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
+  @media (min-width: 900px) {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    grid-template-columns: 1fr 380px;
+    grid-template-areas:
+      "header header"
+      "list   summary";
+    gap: 0 24px;
+    padding: 20px 60px;
+  }
 `;
 
 export const Header = styled.div`
@@ -17,6 +28,10 @@ export const Header = styled.div`
   justify-content: center;
   padding: 10px 0;
   flex-shrink: 0;
+
+  @media (min-width: 900px) {
+    grid-area: header;
+  }
 `;
 
 export const BackButton = styled.button`
@@ -52,6 +67,11 @@ export const ProductList = styled.div`
   gap: 12px;
   margin-top: 15px;
   padding-right: 4px;
+
+  @media (min-width: 900px) {
+    grid-area: list;
+    margin-top: 0;
+  }
 `;
 
 export const DiscountInput = styled.input`
@@ -195,6 +215,16 @@ export const Footer = styled.div`
   flex-shrink: 0;
   padding-top: 15px;
   border-top: 1px solid #eee;
+
+  @media (min-width: 900px) {
+    grid-area: summary;
+    align-self: start;
+    margin-top: 15px;
+    border: 1px solid #eee;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
 `;
 
 export const SummaryRow = styled.div`

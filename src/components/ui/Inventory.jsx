@@ -114,6 +114,14 @@ export const LogoutButton = styled.button`
 export const SearchBar = styled.div`
   position: relative;
   margin-bottom: 12px;
+
+  @media (min-width: 900px) {
+    max-width: 500px;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 20px;
+  }
 `;
 
 export const SearchInput = styled.input`
@@ -152,6 +160,10 @@ export const ProductsGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 15px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(5, 1fr);
+  }
 `;
 
 /* Card */
@@ -166,7 +178,7 @@ export const Card = styled.div`
 
   border: 2px solid
     ${(props) =>
-      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
+    props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -286,6 +298,16 @@ export const BottomActions = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
+
+  @media (min-width: 900px) {
+    left: 10%;
+    right: 10%;
+  }
+
+  @media (min-width: 1400px) {
+    left: 35%;
+    right: 35%;
+  }
 `;
 
 /* + Button */
@@ -396,3 +418,4 @@ export const Overlay = styled.div`
 
   z-index: 40;
 `;
+
