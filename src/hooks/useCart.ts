@@ -7,7 +7,6 @@ import { generarPDF } from "../components/pdf/generarPDF";
 export const useCart = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const { token, location } = useLoginStore();
   const { uploadPDF } = useAmazonS3();
   const {fullName} = useLoginStore()

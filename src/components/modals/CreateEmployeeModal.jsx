@@ -20,6 +20,7 @@ export default function CreateEmployeeModal({
   isEdit,
   roles,
   locations,
+  isLoading,
 }) {
   const [errors, setErrors] = useState({});
 
@@ -122,7 +123,9 @@ export default function CreateEmployeeModal({
           </ModalSelect>
         </FormGroup>
 
-        <SaveButton onClick={handleSubmit}>Guardar</SaveButton>
+        <SaveButton onClick={handleSubmit} disabled={isLoading}>
+          {isLoading ? (isEdit ? "Actualizando..." : "Guardando...") : (isEdit ? "Actualizar" : "Guardar")}
+        </SaveButton>
       </ModalContent>
     </ModalOverlay>
   );

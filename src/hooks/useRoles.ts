@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
+import { successToast, errorToast } from "../services/toasts";
+import socket from "../services/SocketIOConnection";
+import { useNavigate } from "react-router-dom";
 
 import {
   getRolesService,
@@ -7,12 +10,11 @@ import {
   updateRoleService,
   deleteRoleService,
 } from "../services/roleService";
-import { useNavigate } from "react-router-dom";
-import socket from "../services/SocketIOConnection";
 
 export const useRoles = () => {
   const { token } = useLoginStore();
   const [roles, setRoles] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const goToRoles = () => {
@@ -24,22 +26,46 @@ export const useRoles = () => {
   };
 
   const createRole = async (data: any) => {
-    const newRole = await createRoleService(data, token);
-    setRoles((prev) => [...prev, newRole]);
-    getRoles();
-    return newRole;
+    setIsLoading(true);
+    try {
+      const newRole = await createRoleService(data, token);
+      setRoles((prev) => [...prev, newRole]);
+      getRoles();
+      successToast("Rol creado exitosamente");
+      return newRole;
+    } catch (error) {
+      errorToast("Error al crear el rol");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateRole = async (id: number, data: any) => {
-    const updatedRole = await updateRoleService(id, data, token);
-    getRoles();
-    return updatedRole;
+    setIsLoading(true);
+    try {
+      const updatedRole = await updateRoleService(id, data, token);
+      getRoles();
+      successToast("Rol actualizado");
+      return updatedRole;
+    } catch (error) {
+      errorToast("Error al actualizar el rol");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const deleteRole = async (id: number) => {
-    await deleteRoleService(id, token);
-    socket.emit("deleteRole", id);
-    getRoles();
+    setIsLoading(true);
+    try {
+      await deleteRoleService(id, token);
+      socket.emit("deleteRole", id);
+      getRoles();
+      successToast("Rol eliminado");
+    } catch (error) {
+      errorToast("Error al eliminar el rol");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -78,5 +104,6 @@ export const useRoles = () => {
     updateRole,
     deleteRole,
     goToRoles,
+    isLoading,
   };
 };

@@ -22,7 +22,7 @@ import socket from "../services/SocketIOConnection";
 
 export default function Roles() {
   const navigate = useNavigate();
-  const { roles, createRole, updateRole, deleteRole } = useRoles();
+  const { roles, createRole, updateRole, deleteRole, isLoading } = useRoles();
 
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -163,6 +163,7 @@ export default function Roles() {
           setOpen(false);
           setIsEdit(false);
         }}
+       
         form={form}
         setForm={setForm}
         isEdit={isEdit}
@@ -184,6 +185,7 @@ export default function Roles() {
           setIsEdit(false);
           setOpen(false);
         }}
+         isLoading={isLoading}
       />
 
       {/* DELETE */}

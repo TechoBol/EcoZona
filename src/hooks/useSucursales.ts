@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
 import socket from "../services/SocketIOConnection";
+import { successToast, errorToast } from "../services/toasts";
+import { useNavigate } from "react-router-dom";
 import {
   getLocationsService,
   createLocationService,
   deleteLocationService,
   updateLocationService,
 } from "../services/locationService";
-import { useNavigate } from "react-router-dom";
+
 
 export const useSucursales = () => {
   const { token } = useLoginStore();
   const navigate = useNavigate();
-
+  const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -28,18 +30,24 @@ export const useSucursales = () => {
   };
 
   const createLocation = async (values: any) => {
-    const newLocation = await createLocationService(values, token);
-    setData((prev) => [...prev, newLocation]);
-    getLocations();
-    return newLocation;
+    setIsLoading(true);
+    try {
+      const newLocation = await createLocationService(values, token);
+      setData((prev) => [...prev, newLocation]);
+      getLocations();
+      successToast("Sucursal creada");
+      return newLocation;
+    } catch (error) {
+      errorToast("Error al crear la sucursal");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const updateLocation = async (id: number, values: any) => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       const updatedLocation = await updateLocationService(id, values, token);
-
       await getLocations();
       return updatedLocation;
     } catch (error) {
@@ -50,11 +58,17 @@ export const useSucursales = () => {
   };
 
   const deleteLocation = async (id: number) => {
-    await deleteLocationService(id, token);
-
-    socket.emit("deleteLocation", id);
-
-    getLocations();
+    setIsLoading(true);
+    try {
+      await deleteLocationService(id, token);
+      socket.emit("deleteLocation", id);
+      getLocations();
+      successToast("Sucursal eliminada");
+    } catch (error) {
+      errorToast("Error al eliminar la sucursal");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -67,7 +81,6 @@ export const useSucursales = () => {
             loc.id === location.id ? location : loc
           );
         }
-
         return [...prev, location];
       });
     });
@@ -95,5 +108,6 @@ export const useSucursales = () => {
     createLocation,
     deleteLocation,
     updateLocation,
+    isLoading
   };
 };

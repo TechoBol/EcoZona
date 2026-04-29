@@ -18,6 +18,7 @@ export default function CreateLocationModal({
   form,
   setForm,
   isEdit,
+  isLoading,
 }) {
   const [errors, setErrors] = useState({
     name: "",
@@ -135,8 +136,8 @@ export default function CreateLocationModal({
           </ModalSelect>
         </FormGroup>
 
-        <SaveButton onClick={handleSubmit}>
-          {isEdit ? "Actualizar" : "Guardar"}
+        <SaveButton onClick={handleSubmit} disabled={isLoading}>
+          {isLoading ? (isEdit ? "Actualizando..." : "Guardando...") : (isEdit ? "Actualizar" : "Guardar")}
         </SaveButton>
       </ModalContent>
     </ModalOverlay>
