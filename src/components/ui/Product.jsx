@@ -301,3 +301,40 @@ export const BackButton = styled.button`
     opacity: 0.6;
   }
 `;
+
+export const Select = styled.select`
+  height: 45px;
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid #d9d9d9;
+
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+  background: ${theme.colors.background};
+  color: ${theme.colors.text};
+
+  transition: all 0.2s ease;
+  cursor: pointer;
+
+  /* quitar estilo default */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  /* flechita custom */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5H5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+
+  &:focus {
+    border-color: ${theme.colors.secondary};
+    box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
+  }
+
+  &:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+`;

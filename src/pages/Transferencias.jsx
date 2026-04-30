@@ -146,12 +146,10 @@ export default function Transfers() {
                 size={20}
                 onClick={() => handleViewDetail(params.row)}
                 style={{
-                  padding: "6px 10px",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#6366f1",
-                  color: "white",
                   cursor: "pointer",
+                  marginTop: "10px",
+                  color: "#f20707",
+                  marginRight: "10px",
                 }}
               />
             )}
