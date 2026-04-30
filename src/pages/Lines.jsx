@@ -22,13 +22,7 @@ import { BackButton } from "../components/ui/Product";
 export default function Lines() {
   const navigate = useNavigate();
 
-  const {
-    lines,
-    createLine,
-    updateLine,
-    deleteLine,
-    isLoading,
-  } = useLines();
+  const { lines, createLine, updateLine, deleteLine, isLoading } = useLines();
 
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
@@ -81,6 +75,7 @@ export default function Lines() {
       headerName: "Nombre",
       flex: 1,
       minWidth: 180,
+      disableColumnMenu: true,
     },
 
     {
@@ -92,31 +87,23 @@ export default function Lines() {
       disableColumnMenu: true,
 
       renderCell: (params) => {
-        const count =
-          params.row.brands?.length ?? 0;
+        const count = params.row.brands?.length ?? 0;
 
         return (
           <div
-            onClick={() =>
-              handleEdit(params.row)
-            }
+            onClick={() => handleEdit(params.row)}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 6,
               cursor: "pointer",
-              marginTop: 10,
               color: "#3d44c9",
               fontWeight: 600,
               fontSize: 13,
             }}
           >
             <Tag size={15} />
-
-            {count}{" "}
-            {count === 1
-              ? "marca"
-              : "marcas"}
+            {count} {count === 1 ? "marca" : "marcas"}
           </div>
         );
       },
@@ -134,8 +121,7 @@ export default function Lines() {
         <div
           style={{
             display: "flex",
-            justifyContent:
-              "center",
+            justifyContent: "center",
             alignItems: "center",
             gap: 26,
             width: "100%",
@@ -148,9 +134,7 @@ export default function Lines() {
               cursor: "pointer",
               color: "#22c55e",
             }}
-            onClick={() =>
-              handleEdit(params.row)
-            }
+            onClick={() => handleEdit(params.row)}
           />
 
           <Delete
@@ -159,9 +143,7 @@ export default function Lines() {
               color: "#e53935",
             }}
             onClick={() => {
-              setDeleteId(
-                params.row.id
-              );
+              setDeleteId(params.row.id);
               setOpenDelete(true);
             }}
           />
@@ -175,12 +157,9 @@ export default function Lines() {
       <Header>
         <BackButton
           onClick={() =>
-            navigate(
-              "/inventory",
-              {
-                replace: true,
-              }
-            )
+            navigate("/inventory", {
+              replace: true,
+            })
           }
         >
           <ArrowLeft size={22} />
@@ -191,77 +170,53 @@ export default function Lines() {
 
       <Content>
         <Actions>
-          <AddButton
-            onClick={handleNew}
-          >
-            + Nueva línea
-          </AddButton>
+          <AddButton onClick={handleNew}>+ Nueva línea</AddButton>
         </Actions>
 
         <div
           style={{
             height: 500,
-            background:
-              "white",
+            background: "white",
             borderRadius: 14,
           }}
         >
           <DataGrid
             rows={lines}
             columns={columns}
-            getRowId={(row) =>
-              row.id
-            }
-            pageSizeOptions={[
-              5,
-              10,
-              20,
-            ]}
+            getRowId={(row) => row.id}
+            pageSizeOptions={[5, 10, 20]}
             slots={{
-              toolbar:
-                GridToolbar,
+              toolbar: GridToolbar,
             }}
             slotProps={{
               toolbar: {
                 showQuickFilter: true,
-                quickFilterProps:
-                  {
-                    debounceMs: 300,
-                  },
+                quickFilterProps: {
+                  debounceMs: 300,
+                },
               },
             }}
             sx={{
-              border:
-                "1px solid #eee",
+              border: "1px solid #eee",
 
-              "& .MuiDataGrid-columnHeaders":
-                {
-                  backgroundColor:
-                    "#f8f9ff",
-                  fontWeight: 700,
-                },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f8f9ff",
+                fontWeight: 700,
+              },
 
-              "& .MuiDataGrid-toolbarContainer":
-                {
-                  padding:
-                    "10px",
-                },
+              "& .MuiDataGrid-toolbarContainer": {
+                padding: "10px",
+              },
 
-              "& .MuiInputBase-root":
-                {
-                  borderRadius:
-                    "12px",
-                  backgroundColor:
-                    "#f5f5f5",
-                  paddingLeft:
-                    "8px",
-                },
+              "& .MuiInputBase-root": {
+                borderRadius: "12px",
+                backgroundColor: "#f5f5f5",
+                paddingLeft: "8px",
+              },
 
-              "& .MuiDataGrid-columnHeaderTitle":
-                {
-                  fontWeight:
-                    "bold",
-                },
+              "& .MuiDataGrid-columnHeaderTitle": {
+                fontWeight: "bold",
+              },
             }}
           />
         </div>
@@ -274,18 +229,11 @@ export default function Lines() {
         setForm={setForm}
         isEdit={isEdit}
         isLoading={isLoading}
-        onSubmit={async (
-          data
-        ) => {
+        onSubmit={async (data) => {
           if (isEdit) {
-            await updateLine(
-              editId,
-              data
-            );
+            await updateLine(editId, data);
           } else {
-            await createLine(
-              data
-            );
+            await createLine(data);
           }
 
           handleClose();
@@ -294,19 +242,11 @@ export default function Lines() {
 
       <ConfirmDeleteModal
         open={openDelete}
-        onClose={() =>
-          setOpenDelete(
-            false
-          )
-        }
+        onClose={() => setOpenDelete(false)}
         onConfirm={async () => {
-          await deleteLine(
-            deleteId
-          );
+          await deleteLine(deleteId);
 
-          setOpenDelete(
-            false
-          );
+          setOpenDelete(false);
         }}
       />
     </Wrapper>

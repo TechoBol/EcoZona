@@ -38,12 +38,25 @@ export default function Roles() {
   });
 
   const columns = [
-    { field: "name", headerName: "Nombre", flex: 1, minWidth: 150 },
-    { field: "description", headerName: "Descripción", flex: 1, minWidth: 200 },
+    {
+      field: "name",
+      disableColumnMenu: true,
+      headerName: "Nombre",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "description",
+      disableColumnMenu: true,
+      headerName: "Descripción",
+      flex: 1,
+      minWidth: 200,
+    },
     {
       field: "maxEmployeesAllowed",
       headerName: "Máx empleados",
       width: 180,
+      disableColumnMenu: true,
     },
     {
       field: "actions",
@@ -70,8 +83,7 @@ export default function Roles() {
               setForm({
                 name: params.row.name,
                 description: params.row.description || "",
-                maxEmployeesAllowed:
-                  params.row.maxEmployeesAllowed || 1,
+                maxEmployeesAllowed: params.row.maxEmployeesAllowed || 1,
               });
 
               setEditId(params.row.id);
@@ -149,8 +161,8 @@ export default function Roles() {
                 paddingLeft: "8px",
               },
               "& .MuiDataGrid-columnHeaderTitle": {
-  fontWeight: "bold",
-}
+                fontWeight: "bold",
+              },
             }}
           />
         </div>
@@ -163,7 +175,6 @@ export default function Roles() {
           setOpen(false);
           setIsEdit(false);
         }}
-       
         form={form}
         setForm={setForm}
         isEdit={isEdit}
@@ -172,7 +183,7 @@ export default function Roles() {
           if (isEdit) {
             newRole = await updateRole(editId, data);
           } else {
-            newRole =await createRole(data);
+            newRole = await createRole(data);
           }
 
           setForm({
@@ -185,7 +196,7 @@ export default function Roles() {
           setIsEdit(false);
           setOpen(false);
         }}
-         isLoading={isLoading}
+        isLoading={isLoading}
       />
 
       {/* DELETE */}

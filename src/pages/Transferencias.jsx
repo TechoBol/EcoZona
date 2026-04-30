@@ -89,30 +89,35 @@ export default function Transfers() {
       field: "transferCode",
       headerName: "Nº",
       width: 110,
+      disableColumnMenu: true,
     },
     {
       field: "products",
       headerName: "Productos",
       flex: 2,
       minWidth: 220,
+      disableColumnMenu: true,
     },
     {
       field: "fromLocation",
       headerName: "Origen",
       flex: 1,
       minWidth: 130,
+      disableColumnMenu: true,
     },
     {
       field: "toLocation",
       headerName: "Destino",
       flex: 1,
       minWidth: 130,
+      disableColumnMenu: true,
     },
     {
       field: "date",
       headerName: "Fecha",
       flex: 1,
       minWidth: 160,
+      disableColumnMenu: true,
     },
     {
       field: "status",
@@ -120,6 +125,7 @@ export default function Transfers() {
       flex: 1,
       minWidth: 140,
       align: "center",
+      disableColumnMenu: true,
 
       renderCell: (params) => {
         if (!params.value) return null;
@@ -136,6 +142,7 @@ export default function Transfers() {
       headerName: "Acciones",
       width: 180,
       align: "center",
+      disableColumnMenu: true,
 
       renderCell: (params) => {
         return (

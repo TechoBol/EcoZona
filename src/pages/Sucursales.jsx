@@ -34,14 +34,21 @@ export default function Sucursales() {
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   // COLUMNAS
-  const canEdit = true
-    //role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const canEdit = true;
+  //role === "Administrador sucursal" || role === "Técnico en sistemas";
 
   const columns = [
-    { field: "name", headerName: "Nombre", flex: 1, minWidth: 160 },
+    {
+      field: "name",
+      disableColumnMenu: true,
+      headerName: "Nombre",
+      flex: 1,
+      minWidth: 160,
+    },
     {
       field: "type",
       headerName: "Tipo",
+      disableColumnMenu: true,
       flex: 1,
       minWidth: 130,
       renderCell: ({ value }) => {
@@ -50,7 +57,13 @@ export default function Sucursales() {
         return value;
       },
     },
-    { field: "abbreviation", headerName: "Abrev.", flex: 1, minWidth: 120 },
+    {
+      field: "abbreviation",
+      disableColumnMenu: true,
+      headerName: "Abrev.",
+      flex: 1,
+      minWidth: 120,
+    },
 
     canEdit
       ? {
@@ -98,7 +111,7 @@ export default function Sucursales() {
           ),
         }
       : null,
-  ].filter(Boolean); 
+  ].filter(Boolean);
 
   return (
     <Wrapper>
