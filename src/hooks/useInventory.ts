@@ -14,7 +14,7 @@ const useInventory = () => {
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Scanner buffer
+  // ESCANNER
   const [scannerBuffer, setScannerBuffer] = useState("");
 
   //////////////////////////////
@@ -65,7 +65,7 @@ const useInventory = () => {
     let timeout: any;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (["Shift", "Control", "Alt"].includes(e.key)) return;
+      if (e.key === "Shift" || e.key === "Control" || e.key === "Alt") return;
 
       if (e.key === "Enter") {
         if (scannerBuffer) {
@@ -83,9 +83,7 @@ const useInventory = () => {
         setScannerBuffer("");
         return;
       }
-
       setScannerBuffer((prev) => prev + e.key);
-
       clearTimeout(timeout);
       timeout = setTimeout(() => {
         setScannerBuffer("");

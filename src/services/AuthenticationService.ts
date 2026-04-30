@@ -1,6 +1,6 @@
 import { errorToast } from "./toasts";
 
-/* 🔐 LOGIN */
+/* LOGIN */
 export const logInAuth = async (email: string, password: string) => {
   try {
     const response = await fetch(
@@ -15,7 +15,7 @@ export const logInAuth = async (email: string, password: string) => {
     );
 
     if (!response.ok) {
-      errorToast("Usuario o contraseña incorrectos");
+      errorToast("Correo o contraseña incorrectos.");
       return null;
     }
 

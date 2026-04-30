@@ -197,7 +197,6 @@ export default function Sales() {
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
         </FiltersRow>
-
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={filteredRows}

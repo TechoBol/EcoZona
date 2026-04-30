@@ -56,7 +56,7 @@ function Inventory() {
   const [scannedProducts, setScannedProducts] = useState([]);
   const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
 
-  // 🔥 SUCURSAL
+  // SUCURSAL
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [openLocations, setOpenLocations] = useState(false);
 
@@ -75,7 +75,7 @@ function Inventory() {
     }
   }, [locations, role, location]);
 
-  // 🔊 BEEP
+  // BEEP
   const beepRef = useRef(null);
   useEffect(() => {
     beepRef.current = new Audio(Beep);
@@ -87,7 +87,7 @@ function Inventory() {
     beepRef.current.play().catch(() => {});
   };
 
-  // ⏱ LONG PRESS
+  // LONG PRESS
   const pressTimer = useRef(null);
 
   const handleMouseDown = (product) => {
@@ -107,7 +107,7 @@ function Inventory() {
   const handleTouchEnd = () => clearTimeout(pressTimer.current);
   const handleTouchMove = () => clearTimeout(pressTimer.current);
 
-  // 🔥 STOCK DINÁMICO
+  // STOCK DINÁMICO
   const getStock = (product) => {
     if (product.stockBySucursal && selectedLocation) {
       const found = product.stockBySucursal.find(
@@ -119,7 +119,7 @@ function Inventory() {
     return product.inventories?.[0]?.quantity || 0;
   };
 
-  // 🛒 SELECCIÓN
+  // SELECCIÓN
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -147,7 +147,7 @@ function Inventory() {
     navigate("/cart");
   };
 
-  // 📷 IMÁGENES
+  // IMÁGENES
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -174,7 +174,7 @@ function Inventory() {
     loadImages();
   }, [products]);
 
-  // 📡 SCANNER
+  // SCANNER
   const handleBarcodeDetected = (code) => {
     const cleanCode = code.trim();
     const now = Date.now();
@@ -361,7 +361,7 @@ function Inventory() {
               />
             )}
 
-            {/* 🔥 BOTONES */}
+            {/* BOTONES */}
             {scanCartMode ? (
               <button
                 onClick={() => {

@@ -15,7 +15,7 @@ export const useProduct = () => {
   const s3 = useAmazonS3();
   const optimizeImage = async (file: File) => {
     const options = {
-      maxSizeMB: 0.3, // 🔥 máximo 300KB
+      maxSizeMB: 0.3,
       maxWidthOrHeight: 800,
       useWebWorker: true,
     };
@@ -27,9 +27,8 @@ export const useProduct = () => {
   const subirArchivo = async (file: File, barcode: string) => {
     const fileName = `${barcode}`;
 
-    // 🔥 optimizar antes de subir
+  // OPTIMIZAR IMAGEN ANTES DE SUBIR
     const optimizedFile = await optimizeImage(file);
-
     const key = await s3.uploadProductImage(optimizedFile, fileName);
     return key;
   };

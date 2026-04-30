@@ -31,14 +31,9 @@ function MultiBarCodeReader({ onDetected, onClose }) {
 
           (decodedText) => {
             if (scannedRef.current) return;
-
             scannedRef.current = true;
-
             navigator.vibrate?.(100);
-
             onDetected(decodedText);
-
-            // 🔥 permite escanear otra vez
             setTimeout(() => {
               scannedRef.current = false;
             }, 800);

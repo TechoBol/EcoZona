@@ -7,7 +7,6 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 export const useAmazonS3 = () => {
-  // ✅ Se crea una sola vez, sincrónicamente, sin useEffect
   const s3Ref = useRef<S3Client>(
     new S3Client({
       region: "us-east-1",
@@ -41,7 +40,7 @@ export const useAmazonS3 = () => {
       },
     });
 
-    if (!response.ok) throw new Error("Error subiendo PDF");
+    if (!response.ok) throw new Error("Error al subir el PDF");
 
     return key;
   };
@@ -92,7 +91,7 @@ export const useAmazonS3 = () => {
       headers: { "Content-Type": file.type },
     });
 
-    if (!response.ok) throw new Error("Error subiendo imagen");
+    if (!response.ok) throw new Error("Error al subir la imagen");
 
     return key;
   };

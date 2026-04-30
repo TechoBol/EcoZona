@@ -45,14 +45,14 @@ function ProductForm() {
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  /* Sonido Beep al escanear*/
+  /* SONIDO BEEP AL ESCANEAR*/
   const beepRef = useRef(null);
 
   useEffect(() => {
     beepRef.current = new Audio(Beep);
   }, []);
 
-  // estado real de imagen S3
+  // ESTADO DE IMAGEN S3
   const [s3Image, setS3Image] = useState(null);
   const [imageDeleted, setImageDeleted] = useState(false);
 
@@ -91,16 +91,16 @@ function ProductForm() {
     validateInputOnChange: true,
 
     validate: {
-      name: (v) => (!v.trim() ? "El nombre es obligatorio" : null),
-      barcode: (v) => (!v.trim() ? "El código es obligatorio" : null),
-      price: (v) => (!v || Number(v) <= 0 ? "Precio inválido" : null),
+      name: (v) => (!v.trim() ? "Ingresa el nombre" : null),
+      barcode: (v) => (!v.trim() ? "Ingresa el código" : null),
+      price: (v) => (!v || Number(v) <= 0 ? "Ingresa un precio válido" : null),
       finalPrice: (v, values) =>
         !v || Number(v) <= 0
-          ? "Precio inválido"
+          ? "Ingresa un precio válido"
           : Number(v) < Number(values.price)
-          ? "No puede ser menor al precio base"
+          ? "El precio final no puede ser menor que el precio base."
           : null,
-      stock: (v) => (v === "" || Number(v) < 0 ? "Stock inválido" : null),
+      stock: (v) => (v === "" || Number(v) < 0 ? "Ingresa una cantidad válida" : null),
     },
   });
 
@@ -223,7 +223,7 @@ function ProductForm() {
           />
         </ContainerInput>
 
-        {/* ================= IMAGE ================= */}
+        {/* IMAGE */}
         <ContainerInput style={{ flexDirection: "column" }}>
           {!form.values.imageFile && (
             <div style={{ display: "flex", gap: "10px" }}>
