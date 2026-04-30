@@ -11,11 +11,12 @@ import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
 import { Wrapper, Header, Title, Content } from "../components/ui/Location";
 
 import { Actions, AddButton } from "../components/ui/Location";
-
 import { BackButton } from "../components/ui/Product";
 import { useRoles } from "../hooks/useRoles";
 import { useSucursales } from "../hooks/useSucursales";
 import { useLoginStore } from "../components/store/loginStore";
+import { FiltersRow, FilterInput } from "../components/ui/Location";
+import socket from "../services/SocketIOConnection";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ export default function Employees() {
 
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
     name: "",
@@ -40,15 +42,27 @@ export default function Employees() {
     password: "",
   });
 
-  const rows = (data || []).map((emp) => ({
-    ...emp,
-    roleName: emp.role?.name || "",
-    locationName: emp.location?.name || "",
-  }));
+  const rows = (data || [])
+    .map((emp) => ({
+      ...emp,
+      roleName: emp.role?.name || "",
+      locationName: emp.location?.name || "",
+    }))
+    .filter((emp) => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return (
+        emp.name?.toLowerCase().includes(q) ||
+        emp.lastName?.toLowerCase().includes(q) ||
+        emp.email?.toLowerCase().includes(q) ||
+        emp.roleName?.toLowerCase().includes(q) ||
+        emp.locationName?.toLowerCase().includes(q)
+      );
+    });
   const { role } = useLoginStore();
 
   const canEdit = true
-    //role === "Administrador sucursal" || role === "Técnico en sistemas";
+  //role === "Administrador sucursal" || role === "Técnico en sistemas";
 
   const columns = [
     { field: "name", headerName: "Nombre", flex: 1, minWidth: 150 },
@@ -67,53 +81,53 @@ export default function Employees() {
     },
     canEdit
       ? {
-          field: "actions",
-          headerName: "Acciones",
-          width: 140,
-          sortable: false,
-          filterable: false,
-          disableColumnMenu: true,
-          align: "center",
-          headerAlign: "center",
-          renderCell: (params) => (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                gap: 16,
-                marginTop: "10px",
-                width: "100%",
+        field: "actions",
+        headerName: "Acciones",
+        width: 140,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        align: "center",
+        headerAlign: "center",
+        renderCell: (params) => (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 16,
+              marginTop: "10px",
+              width: "100%",
+            }}
+          >
+            <Edit
+              size={18}
+              style={{ cursor: "pointer", color: "#22c55e" }}
+              onClick={() => {
+                setForm({
+                  name: params.row.name,
+                  lastName: params.row.lastName,
+                  email: params.row.email || "",
+                  roleId: params.row.role?.id || "",
+                  locationId: params.row.location?.id || "",
+                });
+
+                setEditId(params.row.id);
+                setIsEdit(true);
+                setOpen(true);
               }}
-            >
-              <Edit
-                size={18}
-                style={{ cursor: "pointer", color: "#22c55e" }}
-                onClick={() => {
-                  setForm({
-                    name: params.row.name,
-                    lastName: params.row.lastName,
-                    email: params.row.email || "",
-                    roleId: params.row.role?.id || "",
-                    locationId: params.row.location?.id || "",
-                  });
+            />
 
-                  setEditId(params.row.id);
-                  setIsEdit(true);
-                  setOpen(true);
-                }}
-              />
-
-              <Delete
-                style={{ cursor: "pointer", color: "#e53935" }}
-                onClick={() => {
-                  setDeleteId(params.row.id);
-                  setOpenDelete(true);
-                }}
-              />
-            </div>
-          ),
-        }
+            <Delete
+              style={{ cursor: "pointer", color: "#e53935" }}
+              onClick={() => {
+                setDeleteId(params.row.id);
+                setOpenDelete(true);
+              }}
+            />
+          </div>
+        ),
+      }
       : null,
   ].filter(Boolean);
 
@@ -147,7 +161,13 @@ export default function Employees() {
             </AddButton>
           )}
         </Actions>
-
+        <FiltersRow>
+          <FilterInput
+            placeholder="Buscar por nombre, email, rol..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </FiltersRow>
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={rows}
@@ -197,12 +217,13 @@ export default function Employees() {
         roles={roles}
         locations={locations}
         onSubmit={async (data) => {
+          let newEmployee;
           if (isEdit) {
-            await updateEmployee(editId, data);
+             newEmployee = await updateEmployee(editId, data);
           } else {
-            await createEmployee(data);
+             newEmployee = await createEmployee(data);
           }
-
+          socket.emit("createEmployee", newEmployee);
           setOpen(false);
           setIsEdit(false);
         }}

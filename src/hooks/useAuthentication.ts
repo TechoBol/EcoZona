@@ -16,7 +16,7 @@ const useAuthentication = () => {
   const signIn = async (email: string, password: string) => {
     // VALIDACIÓN
     if (!email || !password) {
-      errorToast("Completa todos los campos");
+      errorToast("Ingresa tu correo y contraseña.");
       return;
     }
 
@@ -39,7 +39,7 @@ const useAuthentication = () => {
       changeLogInState();
 
       // TOAST
-      successToast("Bienvenido");
+      successToast("¡Bienvenido!");
 
       // REDIRECCIÓN
       navigate("/Inventory");

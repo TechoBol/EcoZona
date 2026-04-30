@@ -7,7 +7,6 @@ import { generarPDF } from "../components/pdf/generarPDF";
 export const useCart = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
   const { token, location } = useLoginStore();
   const { uploadPDF } = useAmazonS3();
   const {fullName} = useLoginStore()
@@ -48,7 +47,7 @@ export const useCart = () => {
         { type: "application/pdf" }
       );
 
-      // 🔥 4. Subir a S3
+      // 4. Subir a S3
       const pdfKey = await uploadPDF(file, venta.sale.code);
 
       console.log("PDF subido:", pdfKey);

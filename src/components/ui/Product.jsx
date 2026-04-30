@@ -15,6 +15,7 @@ export const Header = styled.div`
   align-items: center;
   justify-content: center; /* centra el título */
   padding: 10px 0;
+  margin-bottom: 25px;
 `;
 
 /* Title */
