@@ -44,7 +44,9 @@ export default function Sales() {
   const rows = (data || []).map((sale) => ({
     ...sale,
     date: sale.date ? new Date(sale.date) : null,
-    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""}`.trim(),
+    employeeName: `${sale.employee?.name || ""} ${
+      sale.employee?.lastName || ""
+    }`.trim(),
     locationName: sale.location?.name || "",
   }));
 
@@ -70,20 +72,45 @@ export default function Sales() {
 
   useEffect(() => {
     const total = filteredRows.reduce(
-      (sum, row) => sum + Number(row.total || 0), 0
+      (sum, row) => sum + Number(row.total || 0),
+      0,
     );
     setFilteredTotal(total);
   }, [filteredRows]);
 
   const columns = [
-    { field: "code", headerName: "Código", width: 130 },
-    { field: "employeeName", headerName: "Empleado", flex: 1, minWidth: 180 },
-    { field: "locationName", headerName: "Sucursal", flex: 1, minWidth: 160 },
-    { field: "typeSale", headerName: "Tipo venta", flex: 1, minWidth: 160 },
+    {
+      field: "code",
+      disableColumnMenu: true,
+      headerName: "Código",
+      width: 130,
+    },
+    {
+      field: "employeeName",
+      disableColumnMenu: true,
+      headerName: "Empleado",
+      flex: 1,
+      minWidth: 180,
+    },
+    {
+      field: "locationName",
+      disableColumnMenu: true,
+      headerName: "Sucursal",
+      flex: 1,
+      minWidth: 160,
+    },
+    {
+      field: "typeSale",
+      disableColumnMenu: true,
+      headerName: "Tipo venta",
+      flex: 1,
+      minWidth: 160,
+    },
     {
       field: "total",
       headerName: "Total",
       width: 140,
+      disableColumnMenu: true,
       renderCell: (params) => (
         <span style={{ fontWeight: 600 }}>
           Bs {Number(params.value || 0).toFixed(2)}
@@ -94,6 +121,7 @@ export default function Sales() {
       field: "date",
       headerName: "Fecha",
       width: 180,
+      disableColumnMenu: true,
       type: "dateTime",
     },
     {
@@ -184,7 +212,12 @@ export default function Sales() {
               }}
             />
           </LocalizationProvider>
-          <ClearButton onClick={() => { setStartDate(null); setEndDate(null); }}>
+          <ClearButton
+            onClick={() => {
+              setStartDate(null);
+              setEndDate(null);
+            }}
+          >
             <FaTrash size={18} />
           </ClearButton>
         </DatePickerWrapper>

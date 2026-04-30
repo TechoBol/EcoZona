@@ -61,73 +61,93 @@ export default function Employees() {
     });
   const { role } = useLoginStore();
 
-  const canEdit = true
+  const canEdit = true;
   //role === "Administrador sucursal" || role === "Técnico en sistemas";
 
   const columns = [
-    { field: "name", headerName: "Nombre", flex: 1, minWidth: 150 },
-    { field: "lastName", headerName: "Apellido", flex: 1, minWidth: 150 },
-    { field: "email", headerName: "Email", flex: 1, minWidth: 200 },
+    {
+      field: "name",
+      disableColumnMenu: true,
+      headerName: "Nombre",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "lastName",
+      disableColumnMenu: true,
+      headerName: "Apellido",
+      flex: 1,
+      minWidth: 150,
+    },
+    {
+      field: "email",
+      disableColumnMenu: true,
+      headerName: "Email",
+      flex: 1,
+      minWidth: 200,
+    },
 
     {
       field: "roleName",
+      disableColumnMenu: true,
       headerName: "Rol",
       width: 200,
     },
     {
       field: "locationName",
+      disableColumnMenu: true,
       headerName: "Ubicación",
       width: 200,
     },
     canEdit
       ? {
-        field: "actions",
-        headerName: "Acciones",
-        width: 140,
-        sortable: false,
-        filterable: false,
-        disableColumnMenu: true,
-        align: "center",
-        headerAlign: "center",
-        renderCell: (params) => (
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              gap: 16,
-              marginTop: "10px",
-              width: "100%",
-            }}
-          >
-            <Edit
-              size={18}
-              style={{ cursor: "pointer", color: "#22c55e" }}
-              onClick={() => {
-                setForm({
-                  name: params.row.name,
-                  lastName: params.row.lastName,
-                  email: params.row.email || "",
-                  roleId: params.row.role?.id || "",
-                  locationId: params.row.location?.id || "",
-                });
-
-                setEditId(params.row.id);
-                setIsEdit(true);
-                setOpen(true);
+          field: "actions",
+          headerName: "Acciones",
+          width: 140,
+          sortable: false,
+          filterable: false,
+          disableColumnMenu: true,
+          align: "center",
+          headerAlign: "center",
+          renderCell: (params) => (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 16,
+                marginTop: "10px",
+                width: "100%",
               }}
-            />
+            >
+              <Edit
+                size={18}
+                style={{ cursor: "pointer", color: "#22c55e" }}
+                onClick={() => {
+                  setForm({
+                    name: params.row.name,
+                    lastName: params.row.lastName,
+                    email: params.row.email || "",
+                    roleId: params.row.role?.id || "",
+                    locationId: params.row.location?.id || "",
+                  });
 
-            <Delete
-              style={{ cursor: "pointer", color: "#e53935" }}
-              onClick={() => {
-                setDeleteId(params.row.id);
-                setOpenDelete(true);
-              }}
-            />
-          </div>
-        ),
-      }
+                  setEditId(params.row.id);
+                  setIsEdit(true);
+                  setOpen(true);
+                }}
+              />
+
+              <Delete
+                style={{ cursor: "pointer", color: "#e53935" }}
+                onClick={() => {
+                  setDeleteId(params.row.id);
+                  setOpenDelete(true);
+                }}
+              />
+            </div>
+          ),
+        }
       : null,
   ].filter(Boolean);
 
@@ -219,9 +239,9 @@ export default function Employees() {
         onSubmit={async (data) => {
           let newEmployee;
           if (isEdit) {
-             newEmployee = await updateEmployee(editId, data);
+            newEmployee = await updateEmployee(editId, data);
           } else {
-             newEmployee = await createEmployee(data);
+            newEmployee = await createEmployee(data);
           }
           socket.emit("createEmployee", newEmployee);
           setOpen(false);
