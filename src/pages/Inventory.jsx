@@ -61,7 +61,7 @@ function Inventory() {
   const [openLocations, setOpenLocations] = useState(false);
 
   const allowedRoles = ["Gerente General", "Gerente Operaciones"];
-  const canChangeLocation = true//allowedRoles.includes(role);
+  const canChangeLocation = allowedRoles.includes(role);
 
   useEffect(() => {
     if (!locations.length) return;

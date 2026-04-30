@@ -100,9 +100,7 @@ export default function CreateLocationModal({
               }}
             />
             {errors.name && (
-              <span style={{ color: "red", fontSize: 12 }}>
-                {errors.name}
-              </span>
+              <span style={{ color: "red", fontSize: 12 }}>{errors.name}</span>
             )}
           </div>
 
@@ -113,7 +111,7 @@ export default function CreateLocationModal({
               onChange={(e) => {
                 setForm({
                   ...form,
-                  abbreviation: e.target.value,
+                  abbreviation: e.target.value.toUpperCase(),
                 });
                 setErrors({ ...errors, abbreviation: "" });
               }}
@@ -127,9 +125,7 @@ export default function CreateLocationModal({
 
           <ModalSelect
             value={form.type}
-            onChange={(e) =>
-              setForm({ ...form, type: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, type: e.target.value })}
           >
             <option value="BRANCH">Sucursal</option>
             <option value="WAREHOUSE">Almacén</option>

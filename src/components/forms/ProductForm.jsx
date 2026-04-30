@@ -22,6 +22,7 @@ import {
   BackButton,
   BarcodeWrapper,
   ScanButton,
+  Select,
 } from "../../components/ui/Product";
 
 import { ArrowLeft, ScanLine, X } from "lucide-react";
@@ -29,6 +30,7 @@ import { errorToast, successToast } from "../../services/toasts";
 import BarcodeReader from "../Scanner/BarcodeReader";
 import { useAmazonS3 } from "../../hooks/useAmazonS3";
 import socket from "../../services/SocketIOConnection";
+import { useLines } from "../../hooks/useLine";
 
 function ProductForm() {
   const navigate = useNavigate();
@@ -86,6 +88,8 @@ function ProductForm() {
       price: product?.price ?? "",
       finalPrice: product?.finalPrice ?? "",
       stock: product?.inventories?.[0]?.quantity ?? "",
+      lineId: product?.lineId ?? "",
+      brandName: product?.brandName ?? "",
     },
 
     validateInputOnChange: true,
@@ -100,7 +104,8 @@ function ProductForm() {
           : Number(v) < Number(values.price)
           ? "El precio final no puede ser menor que el precio base."
           : null,
-      stock: (v) => (v === "" || Number(v) < 0 ? "Ingresa una cantidad válida" : null),
+      stock: (v) =>
+        v === "" || Number(v) < 0 ? "Ingresa una cantidad válida" : null,
     },
   });
 
@@ -125,17 +130,15 @@ function ProductForm() {
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
-
       let imageKey = product?.imageUrl || null;
 
       if (values.imageFile) {
         imageKey = await subirArchivo(values.imageFile, values.barcode);
       }
-
       if (imageDeleted && !values.imageFile) {
         imageKey = null;
       }
-
+      
       const payload = {
         name: values.name,
         description: values.description,
@@ -144,6 +147,8 @@ function ProductForm() {
         finalPrice: Number(values.finalPrice),
         stock: Number(values.stock),
         imageUrl: imageKey,
+        lineId: Number(values.lineId),
+        brandName: values.brandName,
       };
       let result;
       if (isEdit) {
@@ -164,6 +169,23 @@ function ProductForm() {
       setLoading(false);
     }
   });
+
+  const { lines } = useLines();
+  const [brands, setBrands] = useState([]);
+  useEffect(() => {
+    const selectedLine = lines?.find(
+      (l) => l.id === Number(form.values.lineId),
+    );
+
+    if (selectedLine) {
+      setBrands(selectedLine.brands || []);
+    } else {
+      setBrands([]);
+    }
+
+    // resetear marca cuando cambia línea
+    form.setFieldValue("brandId", "");
+  }, [form.values.lineId, lines]);
 
   // =========================
   // UI
@@ -198,7 +220,30 @@ function ProductForm() {
             </ScanButton>
           </BarcodeWrapper>
         </ContainerInput>
+        <ContainerInput>
+          <Select {...form.getInputProps("lineId")}>
+            <option value="">Selecciona una línea</option>
+            {lines?.map((line) => (
+              <option key={line.id} value={line.id}>
+                {line.name}
+              </option>
+            ))}
+          </Select>
+        </ContainerInput>
 
+        <ContainerInput>
+          <Select
+            {...form.getInputProps("brandName")}
+            disabled={!form.values.lineId}
+          >
+            <option value="">Selecciona una marca</option>
+            {brands.map((brand) => (
+              <option key={brand} value={brand}>
+                {brand}
+              </option>
+            ))}
+          </Select>
+        </ContainerInput>
         <ContainerInput>
           <Input
             type="number"

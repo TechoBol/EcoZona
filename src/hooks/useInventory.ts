@@ -2,33 +2,30 @@ import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
 import { getProducts } from "../services/InventoryService";
 import socket from "../services/SocketIOConnection";
-interface Product {
-  id: string;
-  name: string;
-  barcode?: string;
-  price: number;
-  stock?: number;
-  image?: string;
-}
+import { useInventoryStore } from "../components/store/inventoryStore";
 
 const useInventory = () => {
   const { token } = useLoginStore();
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  // 🔥 GLOBAL STORE
+  const { products, setProducts } = useInventoryStore();
+
+  const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   // ESCANNER
   const [scannerBuffer, setScannerBuffer] = useState("");
 
+  //////////////////////////////
+  // 🔥 FETCH
+  //////////////////////////////
   const fetchProducts = async () => {
     setIsLoading(true);
 
     try {
       const data = await getProducts(token);
-      setProducts(data);
-      setFilteredProducts(data);
+      setProducts(data); // 🔥 GLOBAL
     } catch (error) {
       console.error("Error al obtener productos:", error);
     } finally {
@@ -36,7 +33,9 @@ const useInventory = () => {
     }
   };
 
-  /* FILTRO */
+  //////////////////////////////
+  // 🔎 FILTRO
+  //////////////////////////////
   useEffect(() => {
     if (!search) {
       setFilteredProducts(products);
@@ -44,20 +43,24 @@ const useInventory = () => {
     }
 
     const filtered = products.filter(
-      (product) =>
+      (product: any) =>
         (product.name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (product.barcode || "").toLowerCase().includes(search.toLowerCase()),
+        (product.barcode || "").toLowerCase().includes(search.toLowerCase())
     );
 
     setFilteredProducts(filtered);
   }, [search, products]);
 
-  /* INPUT NORMAL */
+  //////////////////////////////
+  // ⌨ INPUT
+  //////////////////////////////
   const onFilterTextBoxChanged = (e: any) => {
     setSearch(e.target.value);
   };
 
-  /* ESCÁNER GLOBAL */
+  //////////////////////////////
+  // 📡 SCANNER GLOBAL
+  //////////////////////////////
   useEffect(() => {
     let timeout: any;
 
@@ -67,7 +70,10 @@ const useInventory = () => {
       if (e.key === "Enter") {
         if (scannerBuffer) {
           setSearch(scannerBuffer);
-          const found = products.find((p) => p.barcode === scannerBuffer);
+
+          const found = products.find(
+            (p: any) => p.barcode === scannerBuffer
+          );
 
           if (found) {
             console.log("Producto escaneado:", found);
@@ -91,16 +97,29 @@ const useInventory = () => {
     };
   }, [scannerBuffer, products]);
 
+  //////////////////////////////
+  // 🚀 INIT
+  //////////////////////////////
   useEffect(() => {
-    fetchProducts();
+    if (!products.length) {
+      fetchProducts(); // 🔥 evita recarga innecesaria
+    }
   }, []);
 
+  //////////////////////////////
+  // 🔌 SOCKET
+  //////////////////////////////
   useEffect(() => {
     socket.on("newProduct", (producto) => {
-      setProducts((prev) => {
+      setProducts((prev: any[]) => {
         const exists = prev.some((p) => p.id === producto.id);
-        if (exists)
-          return prev.map((p) => (p.id === producto.id ? producto : p));
+
+        if (exists) {
+          return prev.map((p) =>
+            p.id === producto.id ? producto : p
+          );
+        }
+
         return [...prev, producto];
       });
     });
@@ -115,8 +134,12 @@ const useInventory = () => {
     };
   }, []);
 
+  //////////////////////////////
+  // 📤 RETURN
+  //////////////////////////////
   return {
     products: filteredProducts,
+    allProducts: products, 
     search,
     setSearch,
     isLoading,
