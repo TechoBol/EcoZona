@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
-import { getLinesService, createLineService, updateLineService, deleteLineService} from "../services/lineService";
+import {
+  getLinesService,
+  createLineService,
+  updateLineService,
+  deleteLineService,
+  addBrandService,
+  updateBrandService,
+  deleteBrandService,
+} from "../services/lineService";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketIOConnection";
 import { successToast, errorToast } from "../services/toasts";
@@ -26,7 +34,7 @@ export const useLines = () => {
       getLines();
       successToast("Línea creada exitosamente");
       return newLine;
-    } catch (error) {
+    } catch {
       errorToast("Error al crear la línea");
     } finally {
       setIsLoading(false);
@@ -40,7 +48,7 @@ export const useLines = () => {
       getLines();
       successToast("Línea actualizada");
       return updatedLine;
-    } catch (error) {
+    } catch {
       errorToast("Error al actualizar la línea");
     } finally {
       setIsLoading(false);
@@ -54,8 +62,53 @@ export const useLines = () => {
       socket.emit("deleteLine", id);
       getLines();
       successToast("Línea eliminada");
-    } catch (error) {
+    } catch {
       errorToast("Error al eliminar la línea");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const addBrand = async (lineId: number, name: string) => {
+    setIsLoading(true);
+    try {
+      const updated = await addBrandService(lineId, name, token);
+      if (updated?.message) throw new Error(updated.message);
+      setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
+      successToast("Marca agregada");
+      return updated;
+    } catch (error: any) {
+      errorToast(error.message || "Error al agregar la marca");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateBrand = async (lineId: number, oldName: string, newName: string) => {
+    setIsLoading(true);
+    try {
+      const updated = await updateBrandService(lineId, oldName, newName, token);
+      if (updated?.message) throw new Error(updated.message);
+      setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
+      successToast("Marca actualizada");
+      return updated;
+    } catch (error: any) {
+      errorToast(error.message || "Error al actualizar la marca");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteBrand = async (lineId: number, name: string) => {
+    setIsLoading(true);
+    try {
+      const updated = await deleteBrandService(lineId, name, token);
+      if (updated?.message) throw new Error(updated.message);
+      setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
+      successToast("Marca eliminada");
+      return updated;
+    } catch (error: any) {
+      errorToast(error.message || "Error al eliminar la marca");
     } finally {
       setIsLoading(false);
     }
@@ -65,10 +118,9 @@ export const useLines = () => {
     socket.on("lineUpdated", (line) => {
       setLines((prev) => {
         const exists = prev.some((l) => l.id === line.id);
-        if (exists) {
-          return prev.map((l) => l.id === line.id ? line : l);
-        }
-        return [...prev, line];
+        return exists
+          ? prev.map((l) => (l.id === line.id ? line : l))
+          : [...prev, line];
       });
     });
 
@@ -91,6 +143,9 @@ export const useLines = () => {
     createLine,
     updateLine,
     deleteLine,
+    addBrand,
+    updateBrand,
+    deleteBrand,
     goToLines,
     isLoading,
   };
