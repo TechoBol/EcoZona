@@ -316,7 +316,7 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
-      {canChangeLocation && (
+      
         <BottomActions>
           <ScannerButton
             onClick={async () => {
@@ -340,7 +340,7 @@ function Inventory() {
             Ir al carrito ({selectedProducts.length})
           </AddToCartButton>
         </BottomActions>
-      )}
+      
 
       {scanning && (
         <ScannerOverlay>
