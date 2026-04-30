@@ -27,6 +27,11 @@ import {
   ScannerButton,
   AddToCartButton,
   ScannerOverlay,
+  FilterRow,
+  FilterChip,
+  FilterChipActive,
+  ChevronSep,
+  ChipX,
 } from "../components/ui/Inventory";
 
 import { ScanLine, Plus } from "lucide-react";
@@ -44,8 +49,13 @@ function Inventory() {
 
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const { products, search, setSearch, onFilterTextBoxChanged } =
-    useInventory();
+  const {
+    products,
+    allProducts,
+    search,
+    setSearch,
+    onFilterTextBoxChanged,
+  } = useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
@@ -56,13 +66,18 @@ function Inventory() {
   const [scannedProducts, setScannedProducts] = useState([]);
   const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
 
-  // SUCURSAL
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [openLocations, setOpenLocations] = useState(false);
+
+  const [selectedLine, setSelectedLine] = useState(null);
+  const [selectedBrand, setSelectedBrand] = useState(null);
 
   const allowedRoles = ["Gerente General", "Gerente Operaciones"];
   const canChangeLocation = allowedRoles.includes(role);
 
+  ///////////////////////////////////////
+  // SUCURSAL
+  ///////////////////////////////////////
   useEffect(() => {
     if (!locations.length) return;
 
@@ -75,8 +90,11 @@ function Inventory() {
     }
   }, [locations, role, location]);
 
+  ///////////////////////////////////////
   // BEEP
+  ///////////////////////////////////////
   const beepRef = useRef(null);
+
   useEffect(() => {
     beepRef.current = new Audio(Beep);
   }, []);
@@ -87,12 +105,14 @@ function Inventory() {
     beepRef.current.play().catch(() => {});
   };
 
+  ///////////////////////////////////////
   // LONG PRESS
+  ///////////////////////////////////////
   const pressTimer = useRef(null);
 
   const handleMouseDown = (product) => {
     pressTimer.current = setTimeout(() => {
-      navigate(`/product/edit`, { state: product });
+      navigate("/product/edit", { state: product });
     }, 700);
   };
 
@@ -100,26 +120,29 @@ function Inventory() {
 
   const handleTouchStart = (product) => {
     pressTimer.current = setTimeout(() => {
-      navigate(`/product/edit`, { state: product });
+      navigate("/product/edit", { state: product });
     }, 700);
   };
 
   const handleTouchEnd = () => clearTimeout(pressTimer.current);
   const handleTouchMove = () => clearTimeout(pressTimer.current);
 
-  // STOCK DINÁMICO
+  ///////////////////////////////////////
+  // STOCK
+  ///////////////////////////////////////
   const getStock = (product) => {
     if (product.stockBySucursal && selectedLocation) {
       const found = product.stockBySucursal.find(
-        (s) => s.locationId === selectedLocation.id,
+        (s) => s.locationId === selectedLocation.id
       );
       return found?.quantity || 0;
     }
-
     return product.inventories?.[0]?.quantity || 0;
   };
 
-  // SELECCIÓN
+  ///////////////////////////////////////
+  // CARRITO
+  ///////////////////////////////////////
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
@@ -130,13 +153,11 @@ function Inventory() {
 
   const handleClick = (product) => {
     const stock = getStock(product);
-
     if (stock === 0) {
       setErrorProductId(product.id);
       setTimeout(() => setErrorProductId(null), 400);
       return;
     }
-
     toggleSelect(product);
   };
 
@@ -147,7 +168,9 @@ function Inventory() {
     navigate("/cart");
   };
 
+  ///////////////////////////////////////
   // IMÁGENES
+  ///////////////////////////////////////
   const [imageUrls, setImageUrls] = useState({});
   const { getFileUrl } = useAmazonS3();
 
@@ -156,37 +179,53 @@ function Inventory() {
 
     const loadImages = async () => {
       const urls = {};
-
       for (const product of products) {
         if (!product.imageUrl) continue;
         if (imageUrls[product.id]) continue;
-
         try {
           urls[product.id] = await getFileUrl(product.imageUrl);
         } catch {
           urls[product.id] = null;
         }
       }
-
       setImageUrls((prev) => ({ ...prev, ...urls }));
     };
 
     loadImages();
   }, [products]);
 
+  ///////////////////////////////////////
+  // FILTROS DINÁMICOS
+  ///////////////////////////////////////
+  const lines = [
+    ...new Map(
+      allProducts
+        .filter((p) => p.line)
+        .map((p) => [p.line.id, p.line])
+    ).values(),
+  ];
+
+  const brands = selectedLine?.brands || [];
+
+  const visibleProducts = products.filter((product) => {
+    if (selectedLine && product.lineId !== selectedLine.id) return false;
+    if (selectedBrand && product.brandName !== selectedBrand) return false;
+    return true;
+  });
+
+  ///////////////////////////////////////
   // SCANNER
+  ///////////////////////////////////////
   const handleBarcodeDetected = (code) => {
     const cleanCode = code.trim();
     const now = Date.now();
 
-    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) {
-      return;
-    }
+    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
 
     setLastScanned({ code: cleanCode, time: now });
 
     const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase()
     );
 
     if (!found) return;
@@ -198,7 +237,7 @@ function Inventory() {
         const exists = prev.find((p) => p.id === found.id);
         if (exists) {
           return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p
           );
         }
         return [...prev, { ...found, quantity: 1 }];
@@ -220,10 +259,7 @@ function Inventory() {
             if (!canChangeLocation) return;
             setOpenLocations(!openLocations);
           }}
-          style={{
-            cursor: canChangeLocation ? "pointer" : "default",
-            opacity: canChangeLocation ? 1 : 0.7,
-          }}
+          style={{ cursor: canChangeLocation ? "pointer" : "default" }}
         >
           {selectedLocation?.name || "Inventario"}
         </Title>
@@ -237,20 +273,9 @@ function Inventory() {
         )}
       </Header>
 
-      {/* SELECTOR */}
+      {/* SUCURSALES */}
       {openLocations && canChangeLocation && (
-        <div
-          style={{
-            position: "absolute",
-            top: 70,
-            left: 20,
-            right: 20,
-            background: "white",
-            borderRadius: 12,
-            padding: 10,
-            zIndex: 1000,
-          }}
-        >
+        <div>
           {locations.map((loc) => (
             <div
               key={loc.id}
@@ -258,7 +283,6 @@ function Inventory() {
                 setSelectedLocation(loc);
                 setOpenLocations(false);
               }}
-              style={{ padding: 10, cursor: "pointer" }}
             >
               {loc.name}
             </div>
@@ -266,6 +290,7 @@ function Inventory() {
         </div>
       )}
 
+      {/* SEARCH */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."
@@ -277,15 +302,61 @@ function Inventory() {
         </ScanButton>
       </SearchBar>
 
+      {/* FILTRO BREADCRUMB */}
+      <FilterRow>
+        {!selectedLine ? (
+          lines.map((line, i) => (
+            <FilterChip
+              key={line.id}
+              style={{ animationDelay: `${i * 45}ms` }}
+              onClick={() => {
+                setSelectedLine(line);
+                setSelectedBrand(null);
+                setSearch("");
+              }}
+            >
+              {line.name}
+            </FilterChip>
+          ))
+        ) : (
+          <>
+            <FilterChipActive
+              onClick={() => {
+                setSelectedLine(null);
+                setSelectedBrand(null);
+              }}
+            >
+              {selectedLine.name}
+              <ChipX>✕</ChipX>
+            </FilterChipActive>
+
+            <ChevronSep>›</ChevronSep>
+
+            {brands.map((brand, i) => (
+              <FilterChip
+                key={brand}
+                $active={selectedBrand === brand}
+                style={{ animationDelay: `${i * 45}ms` }}
+                onClick={() =>
+                  setSelectedBrand(selectedBrand === brand ? null : brand)
+                }
+              >
+                {brand}
+                {selectedBrand === brand && <ChipX>✕</ChipX>}
+              </FilterChip>
+            ))}
+          </>
+        )}
+      </FilterRow>
+
+      {/* PRODUCTOS */}
       <ScrollArea>
         <ProductsGrid>
-          {products.map((product) => {
+          {visibleProducts.map((product) => {
             const stock = getStock(product);
-
             return (
               <Card
                 key={product.id}
-                data-found={product.barcode === search}
                 $selected={isSelected(product.id)}
                 $error={errorProductId === product.id}
                 $outOfStock={stock === 0}
@@ -297,15 +368,11 @@ function Inventory() {
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
-                  src={
-                    imageUrls[product.id] || "https://via.placeholder.com/150"
-                  }
+                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
                 />
-
                 <ProductInfo>
                   <ProductName>{product.name}</ProductName>
                   <ProductCode>{product.barcode}</ProductCode>
-
                   <ProductFooter>
                     <Price>Bs {product.finalPrice}</Price>
                     <Stock>Cant: {stock}</Stock>
@@ -316,103 +383,32 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
-      
-        <BottomActions>
-          <ScannerButton
-            onClick={async () => {
-              if (beepRef.current) {
-                try {
-                  await beepRef.current.play();
-                  beepRef.current.pause();
-                  beepRef.current.currentTime = 0;
-                } catch {}
-              }
 
-              setScanCartMode(true);
-              setScannedProducts([]);
-              setScanning(true);
-            }}
-          >
-            <ScanLine size={22} />
-          </ScannerButton>
+      {/* FOOTER */}
+      <BottomActions>
+        <ScannerButton onClick={() => setScanning(true)}>
+          <ScanLine size={22} />
+        </ScannerButton>
 
-          <AddToCartButton onClick={handleGoToCart}>
-            Ir al carrito ({selectedProducts.length})
-          </AddToCartButton>
-        </BottomActions>
-      
+        <AddToCartButton onClick={handleGoToCart}>
+          Ir al carrito ({selectedProducts.length})
+        </AddToCartButton>
+      </BottomActions>
 
+      {/* MODAL SCANNER */}
       {scanning && (
         <ScannerOverlay>
-          <div style={{ position: "relative", width: "100%", height: "100%" }}>
-            {scanCartMode ? (
-              <MultiBarCodeReader
-                onDetected={handleBarcodeDetected}
-                onClose={() => {
-                  setScanning(false);
-                  setScanCartMode(false);
-                  setScannedProducts([]);
-                }}
-              />
-            ) : (
-              <BarcodeReader
-                onDetected={handleBarcodeDetected}
-                onClose={() => setScanning(false)}
-              />
-            )}
-
-            {/* BOTONES */}
-            {scanCartMode ? (
-              <button
-                onClick={() => {
-                  scannedProducts.forEach((p) => {
-                    for (let i = 0; i < (p.quantity || 1); i++) {
-                      addToCart(p);
-                    }
-                  });
-
-                  setScanning(false);
-                  setScanCartMode(false);
-                  navigate("/cart");
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: 30,
-                  left: 20,
-                  right: 20,
-                  height: 50,
-                  borderRadius: 30,
-                  border: "none",
-                  background: "#F20C1F",
-                  color: "#fff",
-                  fontWeight: "600",
-                }}
-              >
-                Añadir {scannedProducts.length} productos
-              </button>
-            ) : (
-              <button
-                onClick={() => {
-                  setScanning(false);
-                  navigate("/cart");
-                }}
-                style={{
-                  position: "absolute",
-                  bottom: 30,
-                  left: 20,
-                  right: 20,
-                  height: 50,
-                  borderRadius: 30,
-                  border: "none",
-                  background: "#111",
-                  color: "#fff",
-                  fontWeight: "600",
-                }}
-              >
-                Ir al carrito
-              </button>
-            )}
-          </div>
+          {scanCartMode ? (
+            <MultiBarCodeReader
+              onDetected={handleBarcodeDetected}
+              onClose={() => setScanning(false)}
+            />
+          ) : (
+            <BarcodeReader
+              onDetected={handleBarcodeDetected}
+              onClose={() => setScanning(false)}
+            />
+          )}
         </ScannerOverlay>
       )}
     </Wrapper>

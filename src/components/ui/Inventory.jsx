@@ -3,12 +3,12 @@ import { theme } from "./Theme";
 
 /* Wrapper */
 export const Wrapper = styled.div`
-  height: 100dvh; 
-  background: ${theme.colors.background};;
+  height: 100dvh;
+  background: ${theme.colors.background};
   padding: 20px;
   display: flex;
   flex-direction: column;
-  overflow: hidden; 
+  overflow: hidden;
 `;
 
 /* Header */
@@ -36,11 +36,9 @@ export const ProfileButton = styled.div`
   height: 36px;
   border-radius: 30px;
   background: transparent;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   cursor: pointer;
 
   &:hover {
@@ -59,11 +57,9 @@ export const Dropdown = styled.div`
   position: absolute;
   right: 0;
   margin-top: 10px;
-
   background: ${theme.colors.background};
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-
   overflow: hidden;
   min-width: 180px;
   z-index: 50;
@@ -91,7 +87,6 @@ export const Role = styled.p`
 export const LogoutButton = styled.button`
   width: 100%;
   padding: 10px 12px;
-
   display: flex;
   align-items: center;
   gap: 8px;
@@ -128,14 +123,11 @@ export const SearchInput = styled.input`
   width: 100%;
   height: 40px;
   padding: 0 40px 0 15px;
-
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.2);
   background: ${theme.colors.background};
-
   font-size: 13px;
   outline: none;
-
   box-sizing: border-box;
 `;
 
@@ -178,7 +170,7 @@ export const Card = styled.div`
 
   border: 2px solid
     ${(props) =>
-    props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
+      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -187,27 +179,20 @@ export const Card = styled.div`
     `
     animation: shake 0.25s;
   `}
-  ${(props) => props.$outOfStock && `
+
+  ${(props) =>
+    props.$outOfStock &&
+    `
     opacity: 0.5;
     filter: grayscale(10%);
   `}
 
   @keyframes shake {
-    0% {
-      transform: translateX(0);
-    }
-    25% {
-      transform: translateX(-4px);
-    }
-    50% {
-      transform: translateX(4px);
-    }
-    75% {
-      transform: translateX(-3px);
-    }
-    100% {
-      transform: translateX(0);
-    }
+    0%   { transform: translateX(0); }
+    25%  { transform: translateX(-4px); }
+    50%  { transform: translateX(4px); }
+    75%  { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
   }
 `;
 
@@ -217,11 +202,9 @@ export const MenuOption = styled.button`
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 10px 12px;
   border: none;
   background: ${({ $active }) => ($active ? "#f2f2f2" : "transparent")};
-
   font-size: 13px;
   cursor: pointer;
 
@@ -236,8 +219,6 @@ export const ProductImage = styled.img`
   height: 140px;
   object-fit: cover;
   margin: -12px -12px 0 -12px;
-
-  /* Bloquear menú contextual en móvil */
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -294,7 +275,6 @@ export const BottomActions = styled.div`
   bottom: 20px;
   left: 20px;
   right: 20px;
-
   display: flex;
   align-items: center;
   gap: 12px;
@@ -314,108 +294,153 @@ export const BottomActions = styled.div`
 export const AddProductButton = styled.button`
   width: 40px;
   height: 40px;
-
   border-radius: 50%;
   background: transparent;
   color: ${theme.colors.text};
   border: none;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   cursor: pointer;
 
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &:hover {
-    opacity: 0.9;
-  }
+  &:active { transform: scale(0.95); }
+  &:hover  { opacity: 0.9; }
 `;
 
-/* Escanner Button */
+/* Scanner Button */
 export const ScannerButton = styled.button`
   width: 52px;
   height: 52px;
-
   border-radius: 50%;
   background: ${theme.colors.secondary};
   color: ${theme.colors.background};
-
   border: 2px solid ${theme.colors.secondary};
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   cursor: pointer;
-
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &:hover {
-    opacity: 0.9;
-  }
+  &:active { transform: scale(0.95); }
+  &:hover  { opacity: 0.9; }
 `;
 
 /* Principal Button */
 export const AddToCartButton = styled.button`
   flex: 1;
   height: 52px;
-
   background: ${theme.colors.primary};
   color: ${theme.colors.background};
-
   border: none;
   border-radius: 30px;
-
   font-size: 16px;
   font-weight: 600;
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   gap: 10px;
-
   cursor: pointer;
-
   box-shadow: 0 4px 10px rgba(61, 68, 201, 0.25);
 
-  &:active {
-    transform: scale(0.98);
-  }
+  &:active { transform: scale(0.98); }
 `;
 
 /* Scanner Overlay */
 export const ScannerOverlay = styled.div`
   position: fixed;
   inset: 0;
-
   background: rgba(0, 0, 0, 0.9);
   backdrop-filter: blur(4px);
-
   display: flex;
   justify-content: center;
   align-items: center;
-
   z-index: 9999;
 `;
 
 export const Overlay = styled.div`
   position: fixed;
   inset: 0;
-
   background: rgba(0, 0, 0, 0.2);
-
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-
   z-index: 40;
 `;
 
+/* ── Filter Breadcrumb ── */
+
+export const FilterRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 2px 10px 2px;
+  margin-bottom: 8px;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+export const FilterChip = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid
+    ${({ $active }) => ($active ? theme.colors.primary : "rgba(0,0,0,0.15)")};
+  background: ${({ $active }) =>
+    $active ? theme.colors.primary : "transparent"};
+  color: ${({ $active }) => ($active ? "#fff" : theme.colors.text)};
+  font-size: 13px;
+  font-weight: ${({ $active }) => ($active ? "600" : "500")};
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  animation: chipIn 0.25s ease both;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
+
+  @keyframes chipIn {
+    from { opacity: 0; transform: translateY(6px) scale(0.92); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  &:active { transform: scale(0.95); }
+
+  &:hover {
+    border-color: ${theme.colors.primary};
+    color: ${({ $active }) => ($active ? "#fff" : theme.colors.primary)};
+  }
+`;
+
+export const FilterChipActive = styled(FilterChip)`
+  background: ${theme.colors.primary};
+  border-color: ${theme.colors.primary};
+  color: #fff;
+  font-weight: 600;
+
+  &:hover {
+    opacity: 0.85;
+    color: #fff;
+  }
+`;
+
+export const ChevronSep = styled.span`
+  font-size: 18px;
+  color: ${theme.colors.textSecondary};
+  flex-shrink: 0;
+  user-select: none;
+  animation: chevronIn 0.2s ease both;
+
+  @keyframes chevronIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+`;
+
+export const ChipX = styled.span`
+  font-size: 11px;
+  opacity: 0.7;
+  margin-left: 2px;
+`;

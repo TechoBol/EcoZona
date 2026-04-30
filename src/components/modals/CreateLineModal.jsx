@@ -78,12 +78,12 @@ export default function CreateLineModal({
 
     if (brands.includes(trimmed)) return;
 
-    setBrands([...brands, trimmed]);
+    setBrands((prev) => [...prev, trimmed]);
     setNewBrand("");
   };
 
   const handleDeleteBrand = (brand) => {
-    setBrands(brands.filter((b) => b !== brand));
+    setBrands((prev) => prev.filter((b) => b !== brand));
   };
 
   const handleEditBrand = (oldBrand) => {
@@ -365,3 +365,4 @@ export default function CreateLineModal({
     </ModalOverlay>
   );
 }
+
