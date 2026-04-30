@@ -11,6 +11,7 @@ import Sucursales from "./pages/Sucursales";
 import Trabajadores from "./pages/Trabajadores";
 import Roles from "./pages/Roles";
 import Sales from "./pages/Sale";
+import Lines from "./pages/Lines";
 
 function App() {
   const { isLoggedIn, role } = useLoginStore();
@@ -32,11 +33,12 @@ function App() {
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/product/edit" element={<Product />} />
-            <Route path="/product" element={<Product/>} />
-            <Route path="/sucursales" element={<Sucursales/>} />
-            <Route path="/trabajadores" element={<Trabajadores/>} />
-            <Route path="/roles" element={<Roles/>} />
-            <Route path="/reports" element={<Sales/>} />
+            <Route path="/product" element={<Product />} />
+            <Route path="/sucursales" element={<Sucursales />} />
+            <Route path="/trabajadores" element={<Trabajadores />} />
+            <Route path="/roles" element={<Roles />} />
+            <Route path="/reports" element={<Sales />} />
+            <Route path="/lines" element={<Lines />} />
           </>
         )}
 
