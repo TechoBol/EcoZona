@@ -116,13 +116,14 @@ export const ModalSelect = styled.select`
   width: 100%;
   border-radius: 14px;
   border: 1px solid #e0e0e0;
-  padding: 0 12px;
-  font-size: 14px;
+  padding: 0 14px;
+  font-size: 15px; // 🔥 un poco más grande
+  font-weight: 500;
   background: ${theme.colors.background};
   cursor: pointer;
+
   &:focus {
     border-color: ${theme.colors.text};
-    background: ${theme.colors.background};
   }
 `;
 
@@ -229,4 +230,114 @@ export const ClearButton = styled.button`
   transition: all 0.2s ease;
   &:hover { opacity: 0.9; }
   &:active { transform: scale(0.97); }
+`;
+
+//////////////////////////////////////////
+// 🔹 ITEM ROW
+//////////////////////////////////////////
+export const ItemRow = styled.div`
+  display: flex;
+  gap: 10px;
+  align-items: center;
+
+  ${ModalSelect} {
+    flex: 1;
+    min-width: 0; // 🔥 CLAVE (sin esto flex falla en muchos casos)
+  }
+`;
+
+//////////////////////////////////////////
+// 🔹 STOCK TEXT
+//////////////////////////////////////////
+export const StockText = styled.span`
+  font-size: 12px;
+  min-width: 55px; // 🔥 más compacto
+  text-align: right;
+  color: ${theme.colors.textSecondary};
+`;
+
+//////////////////////////////////////////
+// 🔹 DELETE BUTTON
+//////////////////////////////////////////
+export const DeleteButton = styled.button`
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #e74c3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+`;
+
+//////////////////////////////////////////
+// 🔹 ADD ITEM BUTTON
+//////////////////////////////////////////
+export const AddItemButton = styled.button`
+  height: 44px;
+  border-radius: 14px;
+  border: 1px dashed #ccc;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  color: ${theme.colors.text};
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+`;
+
+//////////////////////////////////////////
+// 🔹 SMALL INPUT (CANTIDAD)
+//////////////////////////////////////////
+export const SmallInput = styled(ModalInput)`
+  width: 70px;
+  text-align: center;
+  padding: 0;
+`;
+
+export const StatusBadge = styled.div`
+  padding: 0px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  text-transform: uppercase;
+  height: 40px;
+  ${({ status }) => {
+    switch (status) {
+      case "PENDING":
+        return `
+          background: #fff4e5;
+          color: #f39c12;
+        `;
+      case "APPROVED":
+        return `
+          background: #e8f8f0;
+          color: #27ae60;
+        `;
+      case "REJECTED":
+        return `
+          background: #fdecea;
+          color: #e74c3c;
+        `;
+      default:
+        return `
+          background: #eef2ff;
+          color: #5b6cff;
+        `;
+    }
+  }}
 `;

@@ -2,7 +2,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useLoginStore } from "../store/loginStore";
 import useAuthentication from "../../hooks/useAuthentication";
-import { LogOut, Building2, Users, User, ShoppingCart } from "lucide-react";
+import { LogOut, Building2, Users, User, ShoppingCart, Truck, ListPlusIcon } from "lucide-react";
 
 import {
   ProfileButton,
@@ -18,6 +18,7 @@ import { useSucursales } from "../../hooks/useSucursales";
 import { useEmployees } from "../../hooks/useEmployees";
 import { useRoles } from "../../hooks/useRoles";
 import { useSales } from "../../hooks/useSale";
+import { useTransfers } from "../../hooks/useTransfers";
 
 const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
@@ -27,6 +28,7 @@ const UserMenu = () => {
   const { goToTrabajadores } = useEmployees();
   const { goToRoles } = useRoles();
   const { goToSales } = useSales();
+  const { goToTransfer } = useTransfers();
 
   const initial = fullName ? fullName.charAt(0).toUpperCase() : "?";
   const canEdit =
@@ -131,7 +133,14 @@ const UserMenu = () => {
                     )}
                   </Menu.Item>
                 )}
-
+                <Menu.Item>
+                  {({ active }) => (
+                    <MenuOption onClick={goToTransfer} $active={active}>
+                      <Truck size={16} />
+                      <span>Transferencias</span>
+                    </MenuOption>
+                  )}
+                </Menu.Item>
                 <Menu.Item>
                   {({ active }) => (
                     <MenuOption onClick={goToSales} $active={active}>

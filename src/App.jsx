@@ -11,6 +11,7 @@ import Sucursales from "./pages/Sucursales";
 import Trabajadores from "./pages/Trabajadores";
 import Roles from "./pages/Roles";
 import Sales from "./pages/Sale";
+import Transfers from "./pages/Transferencias";
 
 function App() {
   const { isLoggedIn, role } = useLoginStore();
@@ -37,6 +38,7 @@ function App() {
             <Route path="/trabajadores" element={<Trabajadores/>} />
             <Route path="/roles" element={<Roles/>} />
             <Route path="/reports" element={<Sales/>} />
+            <Route path="/transfer" element={<Transfers/>} />
           </>
         )}
 
