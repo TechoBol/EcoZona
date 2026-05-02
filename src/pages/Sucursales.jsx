@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit } from "lucide-react";
-
+import UserMenu from "../components/menus/UserMenu";
 import { useSucursales } from "../hooks/useSucursales";
 import CreateLocationModal from "../components/modals/CreateLocationModal";
 
@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useLoginStore } from "../components/store/loginStore";
 import socket from "../services/SocketIOConnection";
+import { usePermissions } from "../hooks/usePermissions";
 
 export default function Sucursales() {
   const { data, createLocation, deleteLocation, updateLocation } =
@@ -33,10 +34,12 @@ export default function Sucursales() {
   const [openDelete, setOpenDelete] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   // COLUMNAS
-  const canEdit = true;
-  //role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const permissions = usePermissions();
 
+  const canEdit = permissions.canManageBranches && !permissions.isReadOnly;
+  
   const columns = [
     {
       field: "name",
@@ -116,9 +119,7 @@ export default function Sucursales() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory", { replace: true })}>
-          <ArrowLeft size={22} />
-        </BackButton>
+      <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Sucursales</Title>
       </Header>
 

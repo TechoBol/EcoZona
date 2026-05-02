@@ -1,3 +1,5 @@
+
+
 import {
   CloseButton,
   FormGroup,
@@ -11,8 +13,8 @@ import {
   AddItemButton,
   SmallInput,
 } from "../ui/Location";
-
 import { FaTrash } from "react-icons/fa";
+import { errorToast, successToast } from "../../services/toasts";
 
 export default function CreateTransferModal({
   open,
@@ -25,22 +27,14 @@ export default function CreateTransferModal({
 }) {
   if (!open) return null;
 
-  //////////////////////////////////////////
-  // 🧠 STOCK POR SUCURSAL (solo informativo)
-  //////////////////////////////////////////
   const getStock = (product) => {
     if (!product?.inventories) return 0;
-
     const found = product.inventories.find(
       (inv) => inv.locationId === location?.id,
     );
-
     return found?.quantity || 0;
   };
 
-  //////////////////////////////////////////
-  // ➕ AGREGAR ITEM
-  //////////////////////////////////////////
   const addItem = () => {
     setForm({
       ...form,
@@ -48,9 +42,6 @@ export default function CreateTransferModal({
     });
   };
 
-  //////////////////////////////////////////
-  // ❌ ELIMINAR
-  //////////////////////////////////////////
   const removeItem = (index) => {
     setForm({
       ...form,
@@ -58,35 +49,23 @@ export default function CreateTransferModal({
     });
   };
 
-  //////////////////////////////////////////
-  // 🔄 UPDATE
-  //////////////////////////////////////////
   const updateItem = (index, field, value) => {
     const newItems = [...form.items];
 
     if (field === "productId") {
-      // 🚫 evitar duplicados
       const exists = newItems.some(
         (i, idx) => i.productId === value && idx !== index,
       );
       if (exists) return;
-
-      newItems[index] = {
-        productId: value,
-        quantity: 1,
-      };
+      newItems[index] = { productId: value, quantity: 1 };
     }
 
     if (field === "quantity") {
-      let qty = value;
-
-      // permitir vacío mientras escribe
       if (value === "") {
         newItems[index].quantity = "";
       } else {
-        qty = Number(value);
+        let qty = Number(value);
         if (qty < 1) qty = 1;
-
         newItems[index].quantity = qty;
       }
     }
@@ -94,47 +73,41 @@ export default function CreateTransferModal({
     setForm({ ...form, items: newItems });
   };
 
-  //////////////////////////////////////////
-  // ✅ VALIDACIÓN (YA NO DEPENDE DEL STOCK)
-  //////////////////////////////////////////
   const isValid =
     form.items.length > 0 &&
-    form.items.every((i) => {
-      return i.productId && i.quantity > 0;
-    });
+    form.items.every((i) => i.productId && i.quantity > 0);
 
-  //////////////////////////////////////////
-  // 🚀 SUBMIT
-  //////////////////////////////////////////
-  const handleSubmit = () => {
-    const cleanItems = form.items
-      .filter((i) => i.productId && i.quantity > 0)
-      .map((i) => ({
-        productId: i.productId,
-        quantity: i.quantity,
-      }));
+  const handleSubmit = async () => {
+    try {
+      const cleanItems = form.items
+        .filter((i) => i.productId && i.quantity > 0)
+        .map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+        }));
 
-    onSubmit({
-      items: cleanItems,
-    });
+      await onSubmit({ items: cleanItems });
+
+      successToast("Solicitud creada con éxito");
+      onClose();
+    } catch (error) {
+      errorToast("Error al crear la solicitud");
+    }
   };
 
   return (
     <ModalOverlay onClick={onClose}>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>✖</CloseButton>
-
         <ModalTitle>Solicitar productos</ModalTitle>
 
         <FormGroup>
           {form.items.map((item, index) => {
             const product = inventory.find((p) => p.id === item.productId);
-
             const stock = getStock(product);
 
             return (
               <ItemRow key={index}>
-                {/* PRODUCTO */}
                 <ModalSelect
                   value={item.productId}
                   onChange={(e) =>
@@ -142,8 +115,6 @@ export default function CreateTransferModal({
                   }
                 >
                   <option value="">Producto</option>
-
-                  {/* 🔥 YA NO FILTRA POR STOCK */}
                   {inventory.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}{" "}
@@ -154,7 +125,6 @@ export default function CreateTransferModal({
                   ))}
                 </ModalSelect>
 
-                {/* CANTIDAD */}
                 <SmallInput
                   type="number"
                   value={item.quantity}
@@ -164,7 +134,6 @@ export default function CreateTransferModal({
                   }
                 />
 
-                {/* DELETE */}
                 <DeleteButton onClick={() => removeItem(index)}>
                   <FaTrash />
                 </DeleteButton>

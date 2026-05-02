@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { theme } from "../ui/Theme";
 import {
   ModalOverlay,
   ModalContent,
@@ -9,13 +10,8 @@ import {
   CloseButton,
 } from "../ui/Location";
 
-import {
-  X,
-  Plus,
-  Pencil,
-  Trash2,
-  Check,
-} from "lucide-react";
+import { X, Plus, Pencil, Trash2, Check } from "lucide-react";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function CreateLineModal({
   open,
@@ -34,6 +30,9 @@ export default function CreateLineModal({
   const [editingBrand, setEditingBrand] = useState(null);
   const [editValue, setEditValue] = useState("");
 
+  const permissions = usePermissions();
+  const canManage = permissions.canManageLinesAdmin;
+
   useEffect(() => {
     if (open) {
       setErrors({ name: "" });
@@ -50,7 +49,6 @@ export default function CreateLineModal({
     };
 
     window.addEventListener("keydown", handleEsc);
-
     return () => window.removeEventListener("keydown", handleEsc);
   }, []);
 
@@ -67,15 +65,14 @@ export default function CreateLineModal({
     }
 
     setErrors(newErrors);
-
     return valid;
   };
 
   const handleAddBrand = () => {
+    if (!canManage) return;
+
     const trimmed = newBrand.trim();
-
     if (!trimmed) return;
-
     if (brands.includes(trimmed)) return;
 
     setBrands((prev) => [...prev, trimmed]);
@@ -83,23 +80,24 @@ export default function CreateLineModal({
   };
 
   const handleDeleteBrand = (brand) => {
+    if (!canManage) return;
     setBrands((prev) => prev.filter((b) => b !== brand));
   };
 
   const handleEditBrand = (oldBrand) => {
-    const trimmed = editValue.trim();
+    if (!canManage) return;
 
+    const trimmed = editValue.trim();
     if (!trimmed) return;
 
-    setBrands(
-      brands.map((b) => (b === oldBrand ? trimmed : b))
-    );
+    setBrands(brands.map((b) => (b === oldBrand ? trimmed : b)));
 
     setEditingBrand(null);
     setEditValue("");
   };
 
   const handleSubmit = () => {
+    if (!canManage) return;
     if (!validate()) return;
 
     onSubmit({
@@ -130,17 +128,18 @@ export default function CreateLineModal({
           <X size={18} />
         </CloseButton>
 
-        <ModalTitle>
-          {isEdit ? "Editar línea" : "Nueva línea"}
-        </ModalTitle>
+        <ModalTitle>{isEdit ? "Editar línea" : "Nueva línea"}</ModalTitle>
 
-        {/* Nombre línea */}
+        {/* Nombre */}
         <FormGroup>
           <div>
             <ModalInput
               placeholder="Nombre de la línea"
               value={form.name}
+              disabled={!canManage}
               onChange={(e) => {
+                if (!canManage) return;
+
                 setForm({
                   ...form,
                   name: e.target.value,
@@ -154,19 +153,14 @@ export default function CreateLineModal({
             />
 
             {errors.name && (
-              <span
-                style={{
-                  color: "red",
-                  fontSize: 12,
-                }}
-              >
+              <span style={{ color: "red", fontSize: 12 }}>
                 {errors.name}
               </span>
             )}
           </div>
         </FormGroup>
 
-        {/* Sección marcas */}
+        {/* Marcas */}
         <div style={{ marginTop: 20 }}>
           <p
             style={{
@@ -182,35 +176,49 @@ export default function CreateLineModal({
           <div
             style={{
               display: "flex",
-              gap: 8,
+              gap: 10,
               marginBottom: 14,
+              alignItems: "stretch",
             }}
           >
             <ModalInput
               placeholder="Agregar marca"
               value={newBrand}
-              onChange={(e) =>
-                setNewBrand(e.target.value)
-              }
+              onChange={(e) => setNewBrand(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter")
-                  handleAddBrand();
+                if (e.key === "Enter") handleAddBrand();
+              }}
+              style={{
+                flex: 1,
+                marginBottom: 0,
+                height: 48,
+                boxSizing: "border-box",
               }}
             />
 
-            <SaveButton
+            <button
               type="button"
               onClick={handleAddBrand}
+              disabled={!canManage}
               style={{
-                width: 46,
-                height: 46,
-                padding: 0,
+                width: 48,
+                height: 48,
+                minWidth: 48,
+                border: "none",
+                borderRadius: 14,
+                background: theme.colors.background,
+                color: theme.colors.primary,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
                 flexShrink: 0,
-                borderRadius: 12,
+                boxShadow: theme.colors.secondary,
+                transition: "all 0.2s ease",
               }}
             >
               <Plus size={18} />
-            </SaveButton>
+            </button>
           </div>
 
           {/* Lista */}
@@ -253,22 +261,13 @@ export default function CreateLineModal({
                       <ModalInput
                         autoFocus
                         value={editValue}
-                        onChange={(e) =>
-                          setEditValue(
-                            e.target.value
-                          )
-                        }
-                        style={{
-                          flex: 1,
-                          marginBottom: 0,
-                        }}
+                        disabled={!canManage}
+                        onChange={(e) => setEditValue(e.target.value)}
+                        style={{ flex: 1, marginBottom: 0 }}
                         onKeyDown={(e) => {
-                          if (
-                            e.key === "Enter"
-                          ) {
-                            handleEditBrand(
-                              brand
-                            );
+                          if (!canManage) return;
+                          if (e.key === "Enter") {
+                            handleEditBrand(brand);
                           }
                         }}
                       />
@@ -276,68 +275,50 @@ export default function CreateLineModal({
                       <Check
                         size={18}
                         style={{
-                          cursor: "pointer",
+                          cursor: canManage ? "pointer" : "default",
                           color: "#22c55e",
+                          opacity: !canManage ? 0.5 : 1,
                         }}
-                        onClick={() =>
-                          handleEditBrand(
-                            brand
-                          )
-                        }
+                        onClick={() => {
+                          if (!canManage) return;
+                          handleEditBrand(brand);
+                        }}
                       />
 
                       <X
                         size={18}
-                        style={{
-                          cursor: "pointer",
-                          color: "#999",
-                        }}
-                        onClick={() =>
-                          setEditingBrand(
-                            null
-                          )
-                        }
+                        style={{ cursor: "pointer", color: "#999" }}
+                        onClick={() => setEditingBrand(null)}
                       />
                     </>
                   ) : (
                     <>
-                      <span
-                        style={{
-                          flex: 1,
-                          fontSize: 14,
-                          fontWeight: 500,
-                        }}
-                      >
+                      <span style={{ flex: 1, fontSize: 14, fontWeight: 500 }}>
                         {brand}
                       </span>
 
                       <Pencil
                         size={16}
                         style={{
-                          cursor: "pointer",
+                          cursor: canManage ? "pointer" : "default",
                           color: "#22c55e",
+                          opacity: !canManage ? 0.5 : 1,
                         }}
                         onClick={() => {
-                          setEditingBrand(
-                            brand
-                          );
-                          setEditValue(
-                            brand
-                          );
+                          if (!canManage) return;
+                          setEditingBrand(brand);
+                          setEditValue(brand);
                         }}
                       />
 
                       <Trash2
                         size={16}
                         style={{
-                          cursor: "pointer",
+                          cursor: canManage ? "pointer" : "default",
                           color: "#e53935",
+                          opacity: !canManage ? 0.5 : 1,
                         }}
-                        onClick={() =>
-                          handleDeleteBrand(
-                            brand
-                          )
-                        }
+                        onClick={() => handleDeleteBrand(brand)}
                       />
                     </>
                   )}
@@ -348,21 +329,22 @@ export default function CreateLineModal({
         </div>
 
         {/* Guardar */}
-        <SaveButton
-          onClick={handleSubmit}
-          disabled={isLoading}
-          style={{ marginTop: 22 }}
-        >
-          {isLoading
-            ? isEdit
-              ? "Actualizando..."
-              : "Guardando..."
-            : isEdit
-            ? "Actualizar"
-            : "Guardar"}
-        </SaveButton>
+        {canManage && (
+          <SaveButton
+            onClick={handleSubmit}
+            disabled={isLoading}
+            style={{ marginTop: 22 }}
+          >
+            {isLoading
+              ? isEdit
+                ? "Actualizando..."
+                : "Guardando..."
+              : isEdit
+              ? "Actualizar"
+              : "Guardar"}
+          </SaveButton>
+        )}
       </ModalContent>
     </ModalOverlay>
   );
 }
-

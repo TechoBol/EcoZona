@@ -23,6 +23,14 @@ import {
   BarcodeWrapper,
   ScanButton,
   Select,
+  Section,
+  SectionTitle,
+  Grid2,
+  Grid3,
+  ImageActions,
+  LeftColumn,
+  RightColumn,
+  ButtonRow,
 } from "../../components/ui/Product";
 
 import { ArrowLeft, ScanLine, X } from "lucide-react";
@@ -31,11 +39,12 @@ import BarcodeReader from "../Scanner/BarcodeReader";
 import { useAmazonS3 } from "../../hooks/useAmazonS3";
 import socket from "../../services/SocketIOConnection";
 import { useLines } from "../../hooks/useLine";
+import useInventory from "../../hooks/useInventory";
 
 function ProductForm() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { refresh } = useInventory();
   const product = location.state ?? null;
   const isEdit = !!product;
 
@@ -47,20 +56,15 @@ function ProductForm() {
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  /* SONIDO BEEP AL ESCANEAR*/
   const beepRef = useRef(null);
 
   useEffect(() => {
     beepRef.current = new Audio(Beep);
   }, []);
 
-  // ESTADO DE IMAGEN S3
   const [s3Image, setS3Image] = useState(null);
   const [imageDeleted, setImageDeleted] = useState(false);
 
-  // =========================
-  // LOAD IMAGE FROM S3
-  // =========================
   useEffect(() => {
     if (!product?.imageUrl) return;
 
@@ -76,9 +80,6 @@ function ProductForm() {
     loadImage();
   }, [product]);
 
-  // =========================
-  // FORM
-  // =========================
   const form = useForm({
     initialValues: {
       name: product?.name ?? "",
@@ -102,16 +103,13 @@ function ProductForm() {
         !v || Number(v) <= 0
           ? "Ingresa un precio válido"
           : Number(v) < Number(values.price)
-          ? "El precio final no puede ser menor que el precio base."
-          : null,
+            ? "El precio final no puede ser menor que el precio base."
+            : null,
       stock: (v) =>
         v === "" || Number(v) < 0 ? "Ingresa una cantidad válida" : null,
     },
   });
 
-  // =========================
-  // PREVIEW IMAGE LOGIC
-  // =========================
   const previewUrl = useMemo(() => {
     if (form.values.imageFile) {
       return URL.createObjectURL(form.values.imageFile);
@@ -124,9 +122,6 @@ function ProductForm() {
     return null;
   }, [form.values.imageFile, s3Image, imageDeleted]);
 
-  // =========================
-  // SUBMIT
-  // =========================
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
@@ -135,10 +130,11 @@ function ProductForm() {
       if (values.imageFile) {
         imageKey = await subirArchivo(values.imageFile, values.barcode);
       }
+
       if (imageDeleted && !values.imageFile) {
         imageKey = null;
       }
-      
+
       const payload = {
         name: values.name,
         description: values.description,
@@ -150,7 +146,9 @@ function ProductForm() {
         lineId: Number(values.lineId),
         brandName: values.brandName,
       };
+
       let result;
+
       if (isEdit) {
         result = await updateProduct(product.id, payload);
         successToast("Producto actualizado");
@@ -158,12 +156,11 @@ function ProductForm() {
         result = await createProduct(payload);
         successToast("Producto creado");
       }
-
       form.reset();
       socket.emit("createProduct", result);
+      refresh()
       navigate("/inventory", { replace: true });
     } catch (err) {
-      console.error(err);
       errorToast(err.message || "Error inesperado");
     } finally {
       setLoading(false);
@@ -172,10 +169,9 @@ function ProductForm() {
 
   const { lines } = useLines();
   const [brands, setBrands] = useState([]);
+
   useEffect(() => {
-    const selectedLine = lines?.find(
-      (l) => l.id === Number(form.values.lineId),
-    );
+    const selectedLine = lines?.find((l) => l.id === Number(form.values.lineId));
 
     if (selectedLine) {
       setBrands(selectedLine.brands || []);
@@ -183,157 +179,210 @@ function ProductForm() {
       setBrands([]);
     }
 
-    // resetear marca cuando cambia línea
-    form.setFieldValue("brandId", "");
+    form.setFieldValue("brandName", "");
   }, [form.values.lineId, lines]);
 
-  // =========================
-  // UI
-  // =========================
   return (
     <Wrapper>
       <Header>
         <BackButton onClick={() => navigate("/inventory", { replace: true })}>
-          <ArrowLeft size={22} />
+          <ArrowLeft size={20} />
         </BackButton>
+
         <Title>{isEdit ? "Editar Producto" : "Crear Producto"}</Title>
       </Header>
 
       <Form onSubmit={handleSubmit}>
-        <ContainerInput>
-          <Input placeholder="Nombre" {...form.getInputProps("name")} />
-          {form.errors.name && <ErrorText>{form.errors.name}</ErrorText>}
-        </ContainerInput>
 
-        <ContainerInput>
-          <Input
-            placeholder="Descripción"
-            {...form.getInputProps("description")}
-          />
-        </ContainerInput>
+        {/* ================= COLUMNA IZQUIERDA ================= */}
+        <LeftColumn>
 
-        <ContainerInput>
-          <BarcodeWrapper>
-            <Input placeholder="Código" {...form.getInputProps("barcode")} />
-            <ScanButton type="button" onClick={() => setScanning(true)}>
-              <ScanLine size={18} />
-            </ScanButton>
-          </BarcodeWrapper>
-        </ContainerInput>
-        <ContainerInput>
-          <Select {...form.getInputProps("lineId")}>
-            <option value="">Selecciona una línea</option>
-            {lines?.map((line) => (
-              <option key={line.id} value={line.id}>
-                {line.name}
-              </option>
-            ))}
-          </Select>
-        </ContainerInput>
+          {/* INFORMACIÓN GENERAL */}
+          <Section>
+            <SectionTitle>Información general</SectionTitle>
 
-        <ContainerInput>
-          <Select
-            {...form.getInputProps("brandName")}
-            disabled={!form.values.lineId}
-          >
-            <option value="">Selecciona una marca</option>
-            {brands.map((brand) => (
-              <option key={brand} value={brand}>
-                {brand}
-              </option>
-            ))}
-          </Select>
-        </ContainerInput>
-        <ContainerInput>
-          <Input
-            type="number"
-            placeholder="Precio"
-            {...form.getInputProps("price")}
-          />
-        </ContainerInput>
-
-        <ContainerInput>
-          <Input
-            type="number"
-            placeholder="Precio venta"
-            {...form.getInputProps("finalPrice")}
-          />
-        </ContainerInput>
-
-        <ContainerInput>
-          <Input
-            type="number"
-            placeholder="Stock"
-            {...form.getInputProps("stock")}
-          />
-        </ContainerInput>
-
-        {/* IMAGE */}
-        <ContainerInput style={{ flexDirection: "column" }}>
-          {!form.values.imageFile && (
-            <div style={{ display: "flex", gap: "10px" }}>
-              <UploadBox>
-                🖼️ Elegir
-                <HiddenInput
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      form.setFieldValue("imageFile", file);
-                      setImageDeleted(false);
-                    }
-                  }}
+            <Grid2>
+              <ContainerInput>
+                <Input
+                  placeholder="Nombre del producto"
+                  {...form.getInputProps("name")}
                 />
-              </UploadBox>
+                {form.errors.name && <ErrorText>{form.errors.name}</ErrorText>}
+              </ContainerInput>
 
-              <UploadBox>
-                📸 Cámara
-                <HiddenInput
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      form.setFieldValue("imageFile", file);
-                      setImageDeleted(false);
-                    }
-                  }}
+              <ContainerInput>
+                <Input
+                  placeholder="Descripción"
+                  {...form.getInputProps("description")}
                 />
-              </UploadBox>
-            </div>
-          )}
+              </ContainerInput>
+            </Grid2>
 
-          {previewUrl && (
-            <PreviewContainer className={isClosing ? "closing" : ""}>
-              <PreviewImage src={previewUrl} />
+            <Grid2>
+              <ContainerInput>
+                <BarcodeWrapper>
+                  <Input
+                    placeholder="Código de barras"
+                    {...form.getInputProps("barcode")}
+                  />
+                  <ScanButton type="button" onClick={() => setScanning(true)}>
+                    <ScanLine size={18} />
+                  </ScanButton>
+                </BarcodeWrapper>
+                {form.errors.barcode && (
+                  <ErrorText>{form.errors.barcode}</ErrorText>
+                )}
+              </ContainerInput>
+            </Grid2>
+          </Section>
 
-              <RemoveButton
-                type="button"
-                onClick={() => {
-                  setIsClosing(true);
+          {/* COSTOS E INVENTARIO */}
+          <Section>
+            <SectionTitle>Costos e inventario</SectionTitle>
 
-                  setTimeout(() => {
-                    form.setFieldValue("imageFile", null);
-                    setImageDeleted(true);
-                    setIsClosing(false);
-                  }, 200);
-                }}
-              >
-                <X size={18} />
-              </RemoveButton>
-            </PreviewContainer>
-          )}
-        </ContainerInput>
+            <Grid3>
+              <ContainerInput>
+                <Input
+                  type="number"
+                  placeholder="Precio compra"
+                  {...form.getInputProps("price")}
+                />
+                {form.errors.price && <ErrorText>{form.errors.price}</ErrorText>}
+              </ContainerInput>
 
-        <Button type="submit" disabled={!form.isValid() || loading}>
-          {loading
-            ? "Guardando..."
-            : isEdit
-            ? "Actualizar Producto"
-            : "Crear Producto"}
-        </Button>
+              <ContainerInput>
+                <Input
+                  type="number"
+                  placeholder="Precio venta"
+                  {...form.getInputProps("finalPrice")}
+                />
+                {form.errors.finalPrice && (
+                  <ErrorText>{form.errors.finalPrice}</ErrorText>
+                )}
+              </ContainerInput>
+
+              <ContainerInput>
+                <Input
+                  type="number"
+                  placeholder="Stock inicial"
+                  {...form.getInputProps("stock")}
+                />
+                {form.errors.stock && <ErrorText>{form.errors.stock}</ErrorText>}
+              </ContainerInput>
+            </Grid3>
+          </Section>
+
+        </LeftColumn>
+
+        {/* ================= COLUMNA DERECHA ================= */}
+        <RightColumn>
+
+          {/* CLASIFICACIÓN */}
+          <Section>
+            <SectionTitle>Clasificación del producto</SectionTitle>
+
+            <Grid2>
+              <ContainerInput>
+                <Select {...form.getInputProps("lineId")}>
+                  <option value="">Selecciona una línea</option>
+                  {lines?.map((line) => (
+                    <option key={line.id} value={line.id}>
+                      {line.name}
+                    </option>
+                  ))}
+                </Select>
+              </ContainerInput>
+
+              <ContainerInput>
+                <Select
+                  {...form.getInputProps("brandName")}
+                  disabled={!form.values.lineId}
+                >
+                  <option value="">Selecciona una marca</option>
+                  {brands.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </Select>
+              </ContainerInput>
+            </Grid2>
+          </Section>
+
+          {/* IMAGEN */}
+          <Section>
+            <SectionTitle>Imagen del producto</SectionTitle>
+
+            {!form.values.imageFile && !previewUrl && (
+              <ImageActions>
+                <UploadBox>
+                  🖼️ Elegir imagen
+                  <HiddenInput
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        form.setFieldValue("imageFile", file);
+                        setImageDeleted(false);
+                      }
+                    }}
+                  />
+                </UploadBox>
+
+                <UploadBox>
+                  📸 Tomar foto
+                  <HiddenInput
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        form.setFieldValue("imageFile", file);
+                        setImageDeleted(false);
+                      }
+                    }}
+                  />
+                </UploadBox>
+              </ImageActions>
+            )}
+
+            {previewUrl && (
+              <PreviewContainer className={isClosing ? "closing" : ""}>
+                <PreviewImage src={previewUrl} />
+
+                <RemoveButton
+                  type="button"
+                  onClick={() => {
+                    setIsClosing(true);
+
+                    setTimeout(() => {
+                      form.setFieldValue("imageFile", null);
+                      setImageDeleted(true);
+                      setIsClosing(false);
+                    }, 200);
+                  }}
+                >
+                  <X size={18} />
+                </RemoveButton>
+              </PreviewContainer>
+            )}
+          </Section>
+
+        </RightColumn>
+
+        {/* ================= BOTÓN ================= */}
+        <ButtonRow>
+          <Button type="submit" disabled={!form.isValid() || loading}>
+            {loading
+              ? "Guardando..."
+              : isEdit
+                ? "Actualizar Producto"
+                : "Crear Producto"}
+          </Button>
+        </ButtonRow>
+
       </Form>
 
       {scanning && (
@@ -341,7 +390,7 @@ function ProductForm() {
           <BarcodeReader
             onDetected={(code) => {
               beepRef.current.currentTime = 0;
-              beepRef.current.play().catch(() => {});
+              beepRef.current.play().catch(() => { });
               form.setFieldValue("barcode", code);
               setScanning(false);
             }}

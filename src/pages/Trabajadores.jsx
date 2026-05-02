@@ -9,7 +9,7 @@ import CreateEmployeeModal from "../components/modals/CreateEmployeeModal";
 import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
 
 import { Wrapper, Header, Title, Content } from "../components/ui/Location";
-
+import UserMenu from "../components/menus/UserMenu";
 import { Actions, AddButton } from "../components/ui/Location";
 import { BackButton } from "../components/ui/Product";
 import { useRoles } from "../hooks/useRoles";
@@ -17,6 +17,7 @@ import { useSucursales } from "../hooks/useSucursales";
 import { useLoginStore } from "../components/store/loginStore";
 import { FiltersRow, FilterInput } from "../components/ui/Location";
 import socket from "../services/SocketIOConnection";
+import { usePermissions } from "../hooks/usePermissions";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function Employees() {
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState("");
@@ -61,9 +62,11 @@ export default function Employees() {
     });
   const { role } = useLoginStore();
 
-  const canEdit = true;
-  //role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const permissions = usePermissions();
 
+  const canEdit =
+    permissions.canManageEmployees && !permissions.isReadOnly;
+    
   const columns = [
     {
       field: "name",
@@ -154,9 +157,7 @@ export default function Employees() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Trabajadores</Title>
       </Header>
 

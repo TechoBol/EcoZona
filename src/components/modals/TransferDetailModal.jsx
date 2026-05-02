@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { X } from "lucide-react";
+
 import {
   ModalOverlay,
   ModalContent,
@@ -7,21 +9,32 @@ import {
   SaveButton,
   CloseButton,
   StatusBadge,
+  InfoRow,
+  InfoLabel,
+  InfoValue,
+  Section,
+  SectionTitle,
+  ProductsBox,
+  ProductItem,
+  ProductTop,
+  ProductMeta,
+  TotalContainer,
+  RejectTextarea,
+  ActionsRow,
 } from "../ui/Location";
 
-import { X } from "lucide-react";
+import { usePermissions } from "../../hooks/usePermissions";
+import { errorToast, successToast } from "../../services/toasts";
+
 const getStatusLabel = (status) => {
   switch (status) {
-    case "PENDING":
-      return "Pendiente";
-    case "APPROVED":
-      return "Aprobado";
-    case "REJECTED":
-      return "Rechazado";
-    default:
-      return status;
+    case "PENDING": return "Pendiente";
+    case "APPROVED": return "Aprobado";
+    case "REJECTED": return "Rechazado";
+    default: return status;
   }
 };
+
 export default function TransferDetailModal({
   open,
   onClose,
@@ -31,24 +44,43 @@ export default function TransferDetailModal({
 }) {
   const [reason, setReason] = useState("");
 
+  const permissions = usePermissions();
+
+  // 🔐 permisos
+  const canApproveReject = permissions.canApproveTransfers;
+
   if (!open || !transfer) return null;
 
-  const handleApprove = () => {
-    onApprove(transfer.id);
-    onClose();
+  const handleApprove = async () => {
+    try {
+      await onApprove(transfer.id);
+      successToast("Transferencia aprobada");
+      onClose();
+    } catch (error) {
+      errorToast(error?.response?.data?.message || error?.message || "Error al aprobar la transferencia");
+    }
   };
 
-  const handleReject = () => {
-    onReject(transfer.id, reason);
-    onClose();
+  const handleReject = async () => {
+    try {
+      await onReject(transfer.id, reason);
+      successToast("Transferencia rechazada");
+      onClose();
+    } catch (error) {
+      errorToast(error?.response?.data?.message || error?.message || "Error al rechazar la transferencia");
+    }
   };
+
+  // 💰 total
+  const total =
+    transfer.items?.reduce(
+      (acc, item) => acc + item.quantity * (item.product?.finalPrice || 0),
+      0,
+    ) || 0;
 
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent
-        style={{ width: 500 }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <ModalContent style={{ width: 500 }} onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>
           <X size={18} />
         </CloseButton>
@@ -56,77 +88,120 @@ export default function TransferDetailModal({
         <ModalTitle>Detalle de transferencia</ModalTitle>
 
         <FormGroup>
-          {/* 🔹 INFO GENERAL */}
-          <div>
-            <strong>Código:</strong>{" "}
-            {transfer.transferCode || `TR-${transfer.id}`}
-          </div>
+          <InfoRow>
+            <InfoLabel>Código:</InfoLabel>
+            <InfoValue>
+              {transfer.transferCode || `TR-${transfer.id}`}
+            </InfoValue>
+          </InfoRow>
 
-          <div>
-            <strong>Destino:</strong>{" "}
-            {transfer.toLocation?.name || "Sin destino"}
-          </div>
+          <InfoRow>
+            <InfoLabel>Origen:</InfoLabel>
+            <InfoValue>{transfer.fromLocation?.name || "Sin origen"}</InfoValue>
+          </InfoRow>
 
-          <div>
-            <strong>Fecha:</strong>{" "}
-            {new Date(transfer.createdAt).toLocaleString()}
-          </div>
+          <InfoRow>
+            <InfoLabel>Destino:</InfoLabel>
+            <InfoValue>{transfer.toLocation?.name || "Sin destino"}</InfoValue>
+          </InfoRow>
 
-          <div>
-            <strong>Estado:</strong>{" "}
+          <InfoRow>
+            <InfoLabel>Fecha solicitud:</InfoLabel>
+            <InfoValue>
+              {new Date(transfer.createdAt).toLocaleString()}
+            </InfoValue>
+          </InfoRow>
+
+          <InfoRow>
+            <InfoLabel>Estado:</InfoLabel>
             <StatusBadge status={transfer.status}>
               {getStatusLabel(transfer.status)}
             </StatusBadge>
-          </div>
+          </InfoRow>
 
-          {/* 🔹 PRODUCTOS */}
-          <div style={{ marginTop: 10 }}>
-            <strong>Productos:</strong>
-            <div
-              style={{
-                marginTop: 8,
-                border: "1px solid #eee",
-                borderRadius: 10,
-                padding: 10,
-                maxHeight: 150,
-                overflowY: "auto",
-              }}
-            >
+          <Section>
+            <SectionTitle>Información</SectionTitle>
+
+            <InfoRow>
+              <InfoLabel>Solicitado por:</InfoLabel>
+              <InfoValue>
+                {transfer.requestedBy
+                  ? `${transfer.requestedBy.name} ${transfer.requestedBy.lastName}`
+                  : "Desconocido"}
+              </InfoValue>
+            </InfoRow>
+
+            {transfer.approvedBy && (
+              <InfoRow>
+                <InfoLabel>Aprobado por:</InfoLabel>
+                <InfoValue>
+                  {`${transfer.approvedBy.name} ${transfer.approvedBy.lastName}`}
+                </InfoValue>
+              </InfoRow>
+            )}
+
+            {transfer.approvedAt && (
+              <InfoRow>
+                <InfoLabel>Fecha aprobación:</InfoLabel>
+                <InfoValue>
+                  {new Date(transfer.approvedAt).toLocaleString()}
+                </InfoValue>
+              </InfoRow>
+            )}
+            {transfer.rejectionReason && (
+              <InfoRow>
+                <InfoLabel>Motivo:</InfoLabel>
+                <InfoValue>{transfer.rejectionReason}</InfoValue>
+              </InfoRow>
+            )}
+          </Section>
+
+          {/* PRODUCTOS */}
+          <Section>
+            <SectionTitle>Productos</SectionTitle>
+
+            <ProductsBox>
               {transfer.items?.map((item) => (
-                <div
-                  key={item.id}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    padding: "4px 0",
-                  }}
-                >
-                  <span>{item.product.name}</span>
-                  <span>x{item.quantity}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+                <ProductItem key={item.id}>
+                  <ProductTop>
+                    <span>{item.product?.name}</span>
+                    <span>x{item.quantity}</span>
+                  </ProductTop>
 
-          {/* 🔹 RECHAZO */}
-          {transfer.status === "PENDING" && (
+                  <ProductMeta>
+                    {item.product?.brandName || "Sin marca"} •{" "}
+                    {item.product?.line?.name || "Sin línea"}
+                  </ProductMeta>
+
+                  <ProductMeta>Código: {item.product?.barcode}</ProductMeta>
+                </ProductItem>
+              ))}
+            </ProductsBox>
+          </Section>
+
+          {/* TOTAL */}
+          <TotalContainer>
+            <span>Total estimado</span>
+            <span>
+              Bs.{" "}
+              {transfer.items?.reduce(
+                (acc, item) =>
+                  acc + item.quantity * (item.product?.finalPrice || 0),
+                0,
+              )}
+            </span>
+          </TotalContainer>
+
+          {/* ACCIONES */}
+          {transfer.status === "PENDING" && canApproveReject && (
             <>
-              <textarea
+              <RejectTextarea
                 placeholder="Motivo de rechazo (opcional)"
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                style={{
-                  width: "100%",
-                  minHeight: 70,
-                  borderRadius: 10,
-                  border: "1px solid #ddd",
-                  padding: 10,
-                  fontSize: 13,
-                }}
               />
 
-              {/* 🔹 BOTONES */}
-              <div style={{ display: "flex", gap: 10 }}>
+              <ActionsRow>
                 <SaveButton
                   style={{ background: "#27ae60" }}
                   onClick={handleApprove}
@@ -140,7 +215,7 @@ export default function TransferDetailModal({
                 >
                   Rechazar
                 </SaveButton>
-              </div>
+              </ActionsRow>
             </>
           )}
         </FormGroup>

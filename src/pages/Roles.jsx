@@ -3,7 +3,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import UserMenu from "../components/menus/UserMenu";
 import { useRoles } from "../hooks/useRoles";
 import CreateRoleModal from "../components/modals/CreateRoleModal";
 import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
@@ -19,15 +19,18 @@ import {
 
 import { BackButton } from "../components/ui/Product";
 import socket from "../services/SocketIOConnection";
+import { usePermissions } from "../hooks/usePermissions";
 
 export default function Roles() {
   const navigate = useNavigate();
   const { roles, createRole, updateRole, deleteRole, isLoading } = useRoles();
 
+  const permissions = usePermissions();
+
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -37,11 +40,14 @@ export default function Roles() {
     maxEmployeesAllowed: 1,
   });
 
+  // 🔥 SOLO LEVEL 1 PUEDE EDITAR
+  const canEdit = permissions.canManageRoles && !permissions.isReadOnly;
+
   const columns = [
     {
       field: "name",
       disableColumnMenu: true,
-      headerName: "Nombre",
+      headerName: "Puesto",
       flex: 1,
       minWidth: 150,
     },
@@ -53,81 +59,87 @@ export default function Roles() {
       minWidth: 200,
     },
     {
-      field: "maxEmployeesAllowed",
-      headerName: "Máx empleados",
+      field: "level",
+      headerName: "Nivel permisos",
       width: 180,
       disableColumnMenu: true,
     },
-    {
-      field: "actions",
-      headerName: "Acciones",
-      width: 140,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
-      renderCell: (params) => (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 40,
-            marginTop: "10px",
-            width: "100%",
-          }}
-        >
-          <Edit
-            size={18}
-            style={{ cursor: "pointer", color: "#22c55e" }}
-            onClick={() => {
-              setForm({
-                name: params.row.name,
-                description: params.row.description || "",
-                maxEmployeesAllowed: params.row.maxEmployeesAllowed || 1,
-              });
 
-              setEditId(params.row.id);
-              setIsEdit(true);
-              setOpen(true);
-            }}
-          />
+    // 🔥 ACCIONES SOLO SI PUEDE EDITAR
+    canEdit
+      ? {
+          field: "actions",
+          headerName: "Acciones",
+          width: 140,
+          sortable: false,
+          filterable: false,
+          disableColumnMenu: true,
+          renderCell: (params) => (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: 40,
+                marginTop: "10px",
+                width: "100%",
+              }}
+            >
+              <Edit
+                size={18}
+                style={{ cursor: "pointer", color: "#22c55e" }}
+                onClick={() => {
+                  setForm({
+                    name: params.row.name,
+                    description: params.row.description || "",
+                    maxEmployeesAllowed:
+                      params.row.maxEmployeesAllowed || 1,
+                  });
 
-          <Delete
-            style={{ cursor: "pointer", color: "#e53935" }}
-            onClick={() => {
-              setDeleteId(params.row.id);
-              setOpenDelete(true);
-            }}
-          />
-        </div>
-      ),
-    },
-  ];
+                  setEditId(params.row.id);
+                  setIsEdit(true);
+                  setOpen(true);
+                }}
+              />
+
+              <Delete
+                style={{ cursor: "pointer", color: "#e53935" }}
+                onClick={() => {
+                  setDeleteId(params.row.id);
+                  setOpenDelete(true);
+                }}
+              />
+            </div>
+          ),
+        }
+      : null,
+  ].filter(Boolean);
 
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
+       <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Roles</Title>
       </Header>
 
       <Content>
         <Actions>
-          <AddButton
-            onClick={() => {
-              setForm({
-                name: "",
-                description: "",
-                maxEmployeesAllowed: 1,
-              });
-              setIsEdit(false);
-              setOpen(true);
-            }}
-          >
-            + Nuevo rol
-          </AddButton>
+          {/* 🔥 BOTÓN SOLO SI PUEDE EDITAR */}
+          {canEdit && (
+            <AddButton
+              onClick={() => {
+                setForm({
+                  name: "",
+                  description: "",
+                  maxEmployeesAllowed: 1,
+                });
+                setIsEdit(false);
+                setOpen(true);
+              }}
+            >
+              + Nuevo rol
+            </AddButton>
+          )}
         </Actions>
 
         <div style={{ height: 450, background: "white", borderRadius: 12 }}>
@@ -191,7 +203,7 @@ export default function Roles() {
             description: "",
             maxEmployeesAllowed: 1,
           });
-          console.log(newRole);
+
           socket.emit("createRole", newRole);
           setIsEdit(false);
           setOpen(false);

@@ -9,11 +9,11 @@ export const Wrapper = styled.div`
 `;
 
 export const Header = styled.div`
-  position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: center;
-  padding: 10px 0;
+  padding: 0 10px;
+  margin-bottom: 20px;
 `;
 
 export const Title = styled.h1`
@@ -340,4 +340,88 @@ export const StatusBadge = styled.div`
         `;
     }
   }}
+`;
+
+export const InfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: ${theme.colors.text};
+`;
+
+export const InfoLabel = styled.span`
+  font-weight: 600;
+`;
+
+export const InfoValue = styled.span`
+  color: ${theme.colors.textSecondary};
+  text-align: right;
+`;
+
+export const Section = styled.div`
+  margin-top: 10px;
+`;
+
+export const SectionTitle = styled.div`
+  font-weight: 600;
+  margin-bottom: 6px;
+`;
+
+export const ProductsBox = styled.div`
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 10px;
+  max-height: 180px;
+  overflow-y: auto;
+`;
+
+export const ProductItem = styled.div`
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const ProductTop = styled.div`
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+`;
+
+export const ProductMeta = styled.div`
+  font-size: 12px;
+  color: ${theme.colors.textSecondary};
+`;
+
+export const TotalContainer = styled.div`
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 16px;
+`;
+
+export const RejectTextarea = styled.textarea`
+  width: 100%;
+  min-height: 70px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 10px;
+  outline: none;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+  }
+`;
+
+export const ActionsRow = styled.div`
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
 `;

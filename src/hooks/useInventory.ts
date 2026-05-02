@@ -3,29 +3,36 @@ import { useLoginStore } from "../components/store/loginStore";
 import { getProducts } from "../services/InventoryService";
 import socket from "../services/SocketIOConnection";
 import { useInventoryStore } from "../components/store/inventoryStore";
+import { notificationToast } from "../services/toasts";
+import { useNavigate } from "react-router-dom";
 
 const useInventory = () => {
   const { token } = useLoginStore();
 
-  // 🔥 GLOBAL STORE
+  // GLOBAL STORE
   const { products, setProducts } = useInventoryStore();
 
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   // ESCANNER
   const [scannerBuffer, setScannerBuffer] = useState("");
 
+  const goToInventory = () => {
+    navigate("/inventory");
+  };
+
   //////////////////////////////
-  // 🔥 FETCH
+  // FETCH
   //////////////////////////////
   const fetchProducts = async () => {
     setIsLoading(true);
 
     try {
       const data = await getProducts(token);
-      setProducts(data); // 🔥 GLOBAL
+      setProducts(data);
     } catch (error) {
       console.error("Error al obtener productos:", error);
     } finally {
@@ -34,7 +41,7 @@ const useInventory = () => {
   };
 
   //////////////////////////////
-  // 🔎 FILTRO
+  // FILTRO
   //////////////////////////////
   useEffect(() => {
     if (!search) {
@@ -52,14 +59,14 @@ const useInventory = () => {
   }, [search, products]);
 
   //////////////////////////////
-  // ⌨ INPUT
+  // INPUT
   //////////////////////////////
   const onFilterTextBoxChanged = (e: any) => {
     setSearch(e.target.value);
   };
 
   //////////////////////////////
-  // 📡 SCANNER GLOBAL
+  // SCANNER GLOBAL
   //////////////////////////////
   useEffect(() => {
     let timeout: any;
@@ -98,11 +105,11 @@ const useInventory = () => {
   }, [scannerBuffer, products]);
 
   //////////////////////////////
-  // 🚀 INIT
+  // INIT
   //////////////////////////////
   useEffect(() => {
     if (!products.length) {
-      fetchProducts(); // 🔥 evita recarga innecesaria
+      fetchProducts();
     }
   }, []);
 
@@ -111,40 +118,36 @@ const useInventory = () => {
   //////////////////////////////
   useEffect(() => {
     socket.on("newProduct", (producto) => {
-      setProducts((prev: any[]) => {
-        const exists = prev.some((p) => p.id === producto.id);
-
-        if (exists) {
-          return prev.map((p) =>
-            p.id === producto.id ? producto : p
-          );
-        }
-
-        return [...prev, producto];
-      });
+      fetchProducts();
     });
 
     socket.on("cartProduct", () => {
       fetchProducts();
     });
 
+    socket.on("transfer", (mensaje) => {
+      notificationToast(mensaje)
+      fetchProducts();
+    });
+
     return () => {
       socket.off("newProduct");
       socket.off("cartProduct");
+      socket.off("transfer");
     };
   }, []);
 
   //////////////////////////////
-  // 📤 RETURN
+  // RETURN
   //////////////////////////////
   return {
     products: filteredProducts,
-    allProducts: products, 
     search,
     setSearch,
     isLoading,
     onFilterTextBoxChanged,
     refresh: fetchProducts,
+    goToInventory,
   };
 };
 

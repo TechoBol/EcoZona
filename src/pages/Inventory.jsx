@@ -41,17 +41,17 @@ import { useAmazonS3 } from "../hooks/useAmazonS3";
 
 import BarcodeReader from "../components/Scanner/BarcodeReader";
 import MultiBarCodeReader from "../components/Scanner/MultiBarCodeReader";
+import { usePermissions } from "../hooks/usePermissions";
 
 function Inventory() {
   const navigate = useNavigate();
-  const { location, role } = useLoginStore();
+  const { location, role, level } = useLoginStore();
   const { data: locations } = useSucursales();
 
   const addToCart = useCartStore((state) => state.addToCart);
 
   const {
     products,
-    allProducts,
     search,
     setSearch,
     onFilterTextBoxChanged,
@@ -72,8 +72,9 @@ function Inventory() {
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
 
-  const allowedRoles = ["Gerente General", "Gerente Operaciones"];
-  const canChangeLocation = allowedRoles.includes(role);
+  const permissions = usePermissions();
+  
+  const canChangeLocation = permissions.isAdmin;
 
   ///////////////////////////////////////
   // SUCURSAL
@@ -111,6 +112,7 @@ function Inventory() {
   const pressTimer = useRef(null);
 
   const handleMouseDown = (product) => {
+    if (!permissions.canEditProduct) return;
     pressTimer.current = setTimeout(() => {
       navigate("/product/edit", { state: product });
     }, 700);
@@ -119,6 +121,7 @@ function Inventory() {
   const handleMouseUp = () => clearTimeout(pressTimer.current);
 
   const handleTouchStart = (product) => {
+    if (!permissions.canEditProduct) return;
     pressTimer.current = setTimeout(() => {
       navigate("/product/edit", { state: product });
     }, 700);
@@ -133,7 +136,7 @@ function Inventory() {
   const getStock = (product) => {
     if (product.stockBySucursal && selectedLocation) {
       const found = product.stockBySucursal.find(
-        (s) => s.locationId === selectedLocation.id
+        (s) => s.locationId === selectedLocation.id,
       );
       return found?.quantity || 0;
     }
@@ -152,6 +155,7 @@ function Inventory() {
   };
 
   const handleClick = (product) => {
+    if (!permissions.canSell) return;
     const stock = getStock(product);
     if (stock === 0) {
       setErrorProductId(product.id);
@@ -199,7 +203,7 @@ function Inventory() {
   ///////////////////////////////////////
   const lines = [
     ...new Map(
-      allProducts
+      products
         .filter((p) => p.line)
         .map((p) => [p.line.id, p.line])
     ).values(),
@@ -225,7 +229,7 @@ function Inventory() {
     setLastScanned({ code: cleanCode, time: now });
 
     const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase()
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
     );
 
     if (!found) return;
@@ -237,7 +241,7 @@ function Inventory() {
         const exists = prev.find((p) => p.id === found.id);
         if (exists) {
           return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
           );
         }
         return [...prev, { ...found, quantity: 1 }];
@@ -264,9 +268,7 @@ function Inventory() {
           {selectedLocation?.name || "Inventario"}
         </Title>
 
-        {(role === "Administrador sucursal" ||
-          role === "Almacenero" ||
-          role === "Técnico en sistemas") && (
+        {permissions.canCreateProduct && (
           <AddProductButton onClick={() => navigate("/product")}>
             <Plus size={18} />
           </AddProductButton>
@@ -368,7 +370,9 @@ function Inventory() {
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
-                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+                  src={
+                    imageUrls[product.id] || "https://via.placeholder.com/150"
+                  }
                 />
                 <ProductInfo>
                   <ProductName>{product.name}</ProductName>
@@ -383,18 +387,19 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
-
       {/* FOOTER */}
       <BottomActions>
-        <ScannerButton onClick={() => setScanning(true)}>
-          <ScanLine size={22} />
-        </ScannerButton>
-
-        <AddToCartButton onClick={handleGoToCart}>
-          Ir al carrito ({selectedProducts.length})
-        </AddToCartButton>
+        {permissions.canSell && (
+          <>
+            <ScannerButton onClick={() => setScanning(true)}>
+              <ScanLine size={22} />
+            </ScannerButton>
+            <AddToCartButton onClick={handleGoToCart}>
+              Ir al carrito ({selectedProducts.length})
+            </AddToCartButton>
+          </>
+        )}
       </BottomActions>
-
       {/* MODAL SCANNER */}
       {scanning && (
         <ScannerOverlay>

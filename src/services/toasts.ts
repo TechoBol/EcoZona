@@ -1,4 +1,4 @@
-import toast from "react-hot-toast";
+
 import Swal from "sweetalert2";
 
 /* CONFIG BASE */
@@ -29,9 +29,20 @@ const errorToast = (message: string) => {
     icon: "error",
     toast: true,
     position: "top-end",
-    timer: 800,
+    timer: 2000,
     showConfirmButton: false,
   });
 };
 
-export { successToast, errorToast };
+const notificationToast = (message: string) => {
+  Swal.fire({
+    text: message,
+    icon: "info",
+    toast: true,
+    position: "top-end",
+    timer: 5000,
+    showConfirmButton: false,
+  });
+};
+
+export { successToast, errorToast , notificationToast };

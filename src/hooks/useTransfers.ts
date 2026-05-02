@@ -9,6 +9,9 @@ import {
 import { useNavigate } from "react-router-dom";
 import { generarTransferPDF } from "../components/pdf/generarTransferPDF";
 import { useAmazonS3 } from "./useAmazonS3";
+import socket from "../services/SocketIOConnection";
+import { notificationToast } from "../services/toasts";
+import { useNotificationStore } from "../components/store/notificationStore";
 
 export const useTransfers = () => {
   const { token } = useLoginStore();
@@ -38,7 +41,7 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
-
+    socket.emit("newTranfer", "Nueva transferencia " + transfer.transferCode +"  solicitada");
     await getTransfers();
   };
   const approveTransfer = async (id: number, fromLocationId: number) => {
@@ -55,17 +58,35 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
-    await getTransfers(); // refresca
+    socket.emit("newTranfer", "Transferencia " + transfer.transferCode +" aprovada");
+    await getTransfers();
   };
 
   const rejectTransfer = async (id: number) => {
-    await rejectTransferService(id, token);
+    const transfer = await rejectTransferService(id, token);
+    socket.emit("newTranfer", "Transferencia " + transfer.transferCode +"  rechazada");
     await getTransfers();
   };
+
+  useEffect(() => {
+    socket.on("transfer", (mensaje) => {
+      notificationToast(mensaje)
+      setTransferNotification(true);
+      getTransfers();
+    });
+
+    return () => {
+      socket.off("transfer");
+    };
+  }, []);
+
   useEffect(() => {
     getTransfers();
   }, []);
 
+  const setTransferNotification = useNotificationStore(
+    (state) => state.setTransferNotification,
+  );
   return {
     data,
     createTransfer,

@@ -3,11 +3,11 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import UserMenu from "../components/menus/UserMenu";
 import { useLines } from "../hooks/useLine";
 import CreateLineModal from "../components/modals/CreateLineModal";
 import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
-
+import { usePermissions } from "../hooks/usePermissions";
 import {
   Wrapper,
   Header,
@@ -28,9 +28,12 @@ export default function Lines() {
   const [openDelete, setOpenDelete] = useState(false);
 
   const [isEdit, setIsEdit] = useState(false);
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+
+  const permissions = usePermissions();
+  const canManage = permissions.canManageLinesAdmin;
 
   const [form, setForm] = useState({
     name: "",
@@ -88,7 +91,6 @@ export default function Lines() {
 
       renderCell: (params) => {
         const count = params.row.brands?.length ?? 0;
-
         return (
           <div
             onClick={() => handleEdit(params.row)}
@@ -108,7 +110,7 @@ export default function Lines() {
         );
       },
     },
-
+    canManage ? 
     {
       field: "actions",
       headerName: "Acciones",
@@ -149,22 +151,13 @@ export default function Lines() {
           />
         </div>
       ),
-    },
-  ];
+    }: null,
+  ].filter(Boolean);
 
   return (
     <Wrapper>
       <Header>
-        <BackButton
-          onClick={() =>
-            navigate("/inventory", {
-              replace: true,
-            })
-          }
-        >
-          <ArrowLeft size={22} />
-        </BackButton>
-
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Líneas</Title>
       </Header>
 
