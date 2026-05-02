@@ -9,6 +9,7 @@ import useInventory from "../hooks/useInventory";
 import CreateTransferModal from "../components/modals/CreateTransferModal";
 import { useLoginStore } from "../components/store/loginStore";
 import { usePermissions } from "../hooks/usePermissions";
+import UserMenu from "../components/menus/UserMenu";
 
 import {
   Wrapper,
@@ -53,6 +54,7 @@ export default function Transfers() {
   const canCreate = permissions.canCreateTransfers;
   const canApproveActions = permissions.canApproveTransfers;
 
+  const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("mine");
 
@@ -196,10 +198,7 @@ export default function Transfers() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
-
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Transferencias</Title>
       </Header>
 

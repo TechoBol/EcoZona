@@ -2,7 +2,7 @@ import { useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit } from "lucide-react";
-
+import UserMenu from "../components/menus/UserMenu";
 import { useSucursales } from "../hooks/useSucursales";
 import CreateLocationModal from "../components/modals/CreateLocationModal";
 
@@ -34,6 +34,7 @@ export default function Sucursales() {
   const [openDelete, setOpenDelete] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   // COLUMNAS
   const permissions = usePermissions();
 
@@ -118,9 +119,7 @@ export default function Sucursales() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory", { replace: true })}>
-          <ArrowLeft size={22} />
-        </BackButton>
+      <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Sucursales</Title>
       </Header>
 

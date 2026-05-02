@@ -3,7 +3,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import UserMenu from "../components/menus/UserMenu";
 import { useRoles } from "../hooks/useRoles";
 import CreateRoleModal from "../components/modals/CreateRoleModal";
 import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
@@ -30,7 +30,7 @@ export default function Roles() {
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
 
@@ -118,9 +118,7 @@ export default function Roles() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
+       <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Roles</Title>
       </Header>
 

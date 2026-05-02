@@ -9,9 +9,11 @@ import {
   User,
   ShoppingCart,
   Truck,
+  ListPlusIcon,
   Tag,
+  Bookmark,
 } from "lucide-react";
-
+import { MdOutlineInventory2 } from "react-icons/md";
 import {
   ProfileButton,
   Dropdown,
@@ -22,6 +24,7 @@ import {
   MenuOption,
 } from "../ui/Inventory";
 
+import useInventory from "../../hooks/useInventory";
 import { useSucursales } from "../../hooks/useSucursales";
 import { useEmployees } from "../../hooks/useEmployees";
 import { useRoles } from "../../hooks/useRoles";
@@ -37,6 +40,7 @@ const UserMenu = () => {
 
   const permissions = usePermissions();
 
+  const { goToInventory } = useInventory();
   const { goToSucursales } = useSucursales();
   const { goToTrabajadores } = useEmployees();
   const { goToRoles } = useRoles();
@@ -56,6 +60,7 @@ const UserMenu = () => {
           {/* OVERLAY */}
           {open && (
             <div
+              onClick={() => {}}
               style={{
                 position: "fixed",
                 inset: 0,
@@ -118,7 +123,14 @@ const UserMenu = () => {
                   <Name>{fullName}</Name>
                   <Role>{role}</Role>
                 </UserInfo>
-
+                <Menu.Item>
+                  {({ active }) => (
+                    <MenuOption onClick={goToInventory} $active={active}>
+                      <MdOutlineInventory2 size={16} />
+                      <span>Inventario</span>
+                    </MenuOption>
+                  )}
+                </Menu.Item>
                 {/* 🏢 SUCURSALES → solo level 1 */}
                 {permissions.canManageBranches && (
                   <Menu.Item>

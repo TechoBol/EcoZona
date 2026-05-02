@@ -4,6 +4,7 @@ import { getProducts } from "../services/InventoryService";
 import socket from "../services/SocketIOConnection";
 import { useInventoryStore } from "../components/store/inventoryStore";
 import { notificationToast } from "../services/toasts";
+import { useNavigate } from "react-router-dom";
 
 const useInventory = () => {
   const { token } = useLoginStore();
@@ -14,9 +15,14 @@ const useInventory = () => {
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   // ESCANNER
   const [scannerBuffer, setScannerBuffer] = useState("");
+
+  const goToInventory = () => {
+    navigate("/inventory");
+  };
 
   //////////////////////////////
   // FETCH
@@ -99,7 +105,7 @@ const useInventory = () => {
   }, [scannerBuffer, products]);
 
   //////////////////////////////
-  // 🚀 INIT
+  // INIT
   //////////////////////////////
   useEffect(() => {
     if (!products.length) {
@@ -141,6 +147,7 @@ const useInventory = () => {
     isLoading,
     onFilterTextBoxChanged,
     refresh: fetchProducts,
+    goToInventory,
   };
 };
 

@@ -9,11 +9,11 @@ export const Wrapper = styled.div`
 `;
 
 export const Header = styled.div`
-  position: relative;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: center;
-  padding: 10px 0;
+  padding: 0 10px;
+  margin-bottom: 20px;
 `;
 
 export const Title = styled.h1`
