@@ -1,340 +1,343 @@
-import styled, { createGlobalStyle } from "styled-components";
-import {theme} from "./Theme"
+import styled from "styled-components";
+import { theme } from "./Theme";
 
-/* Wrapper */
+/* ================= WRAPPER ================= */
 export const Wrapper = styled.div`
   min-height: 100dvh;
   background: ${theme.colors.background};
-  padding: 20px;
-`;
+  padding: 25px;
+  overflow-x: hidden;
 
-/* Header */
-export const Header = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center; /* centra el título */
-  padding: 10px 0;
-  margin-bottom: 25px;
-`;
-
-/* Title */
-export const Title = styled.h1`
-  font-size: 20px;
-  font-weight: 700;
-  text-align: center;
-  font-family: var(--font-title);
-`;
-
-/* Form */
-export const Form = styled.form`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-/* Container input */
-export const ContainerInput = styled.div`
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-`;
-
-/* Input */
-export const Input = styled.input`
-  height: 45px;
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid ${({ hasError }) =>
-    hasError ? "#ff4d4f" : "#d9d9d9"};
-
-  padding: 0 12px;
-  font-size: 14px;
-  outline: none;
-  background: ${theme.colors.background};
-
-  transition: all 0.2s ease;
-
-  &:focus {
-    border-color: ${theme.colors.secondary};;
-    box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
+  @media (max-width: 768px) {
+    padding: 10px;
   }
 `;
 
-/* Error Text */
+/* ================= HEADER ================= */
+export const Header = styled.div`
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  max-width: 1080px;
+  margin: 0 auto 28px auto;
+  padding: 8px 0;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    box-sizing: border-box;
+  }
+`;
+
+export const BackButton = styled.button`
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 10px;
+
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: ${theme.colors.text};
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    opacity: 0.9;
+  }
+
+  @media (max-width: 768px) {
+    left: 20px;
+  }
+`;
+
+export const Title = styled.h1`
+  font-size: 28px;
+  font-weight: 700;
+  font-family: var(--font-title);
+  color: ${theme.colors.text};
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
+`;
+
+/* ================= FORM CARD ================= */
+export const Form = styled.form`
+  max-width: 1080px;
+  margin: 0 auto;
+  background: ${theme.colors.background};
+  border-radius: 26px;
+  padding: 28px;
+  box-sizing: border-box;
+  width: 100%;
+
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 22px;
+  align-items: start;
+
+  @media (max-width: 992px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px;
+    border-radius: 18px;
+    gap: 12px;
+  }
+`;
+
+/* ================= COLUMNAS ================= */
+export const LeftColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  @media (max-width: 992px) {
+    gap: 14px;
+  }
+`;
+
+export const RightColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  @media (max-width: 992px) {
+    gap: 14px;
+  }
+`;
+
+/* ================= BUTTON ROW ================= */
+export const ButtonRow = styled.div`
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+`;
+
+/* ================= SECTION ================= */
+export const Section = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: ${theme.colors.background};
+
+  @media (max-width: 768px) {
+    padding: 14px;
+    gap: 12px;
+  }
+`;
+
+export const SectionTitle = styled.h3`
+  font-size: 15px;
+  font-weight: 700;
+  color: ${theme.colors.textSecondary};
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+/* ================= GRID ================= */
+export const Grid2 = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+`;
+
+export const Grid3 = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+`;
+
+/* ================= INPUT ================= */
+export const ContainerInput = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const Input = styled.input`
+  height: 52px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid
+    ${({ hasError }) =>
+      hasError ? theme.colors.error : "rgba(0,0,0,0.15)"};
+  padding: 0 16px;
+  font-size: 14px;
+  outline: none;
+  background: ${theme.colors.background};
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 3px rgba(61, 68, 201, 0.12);
+  }
+`;
+
+export const Select = styled.select`
+  height: 52px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  padding: 0 16px;
+  font-size: 14px;
+  outline: none;
+  background: ${theme.colors.background};
+  cursor: pointer;
+  appearance: none;
+  box-sizing: border-box;
+
+  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5H5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 3px rgba(61, 68, 201, 0.12);
+  }
+`;
+
 export const ErrorText = styled.span`
   color: ${theme.colors.error};
   font-size: 12px;
-  margin-top: 4px;
-  margin-left: 4px;
+  margin-top: 5px;
 `;
 
+/* ================= BARCODE ================= */
 export const BarcodeWrapper = styled.div`
   position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin: 0 auto;
 `;
 
 export const ScanButton = styled.button`
   position: absolute;
-  right: 12px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
-
-  width: 30px;
-  height: 30px;
-
   border: none;
   background: transparent;
-  color: ${theme.colors.secondary};;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
+  color: ${theme.colors.primary};
   cursor: pointer;
-  padding: 0;
-
-  z-index: 2;
-
-  &:hover {
-    opacity: 0.7;
-  }
-
-  &:active {
-    transform: translateY(-50%) scale(0.95);
-  }
 `;
-/* Button */
-export const Button = styled.button`
-  margin-top: 20px;
-  height: 50px;
-  border-radius: 30px;
 
-  background: ${theme.colors.primary};
-  color: ${theme.colors.background};
+/* ================= IMAGE ================= */
+export const ImageActions = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 
-  border: none;
-  font-size: 16px;
-  font-weight: 600;
-
-  cursor: pointer;
-
-  width: 100%;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  &:active {
-    transform: scale(0.98);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 `;
 
-/* Image Upload */
 export const UploadBox = styled.label`
-  width: 100%;
-  max-width: 400px;
-  margin-bottom: 10px;
-
-  border: 2px dashed #d9d9d9;
+  height: 70px;
+  border: 2px dashed rgba(0, 0, 0, 0.12);
   border-radius: 16px;
-  padding: 20px;
-
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-
   cursor: pointer;
+  font-size: 16px;
   background: ${theme.colors.background};
-
+  color: ${theme.colors.textSecondary};
   transition: all 0.2s ease;
 
   &:hover {
-    border-color: ${theme.colors.secondary};;
-    background: ${theme.colors.background};
+    border-color: ${theme.colors.primary};
+    background: rgba(61, 68, 201, 0.04);
   }
-`;
-
-export const UploadText = styled.span`
-  font-size: 14px;
-  color: ${theme.colors.text};
 `;
 
 export const HiddenInput = styled.input`
   display: none;
 `;
 
-/* Container */
 export const PreviewContainer = styled.div`
+  margin: 0 auto;
   position: relative;
   width: fit-content;
-  margin: 0 auto;
-
-  animation: fadeIn 0.25s ease;
-
-  &.closing {
-    animation: fadeOut 0.2s ease forwards;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-
-  @keyframes fadeOut {
-    from {
-      opacity: 1;
-      transform: scale(1);
-    }
-    to {
-      opacity: 0;
-      transform: scale(0.9);
-    }
-  }
 `;
 
-/* Image */
 export const PreviewImage = styled.img`
   width: 220px;
   height: 220px;
   object-fit: cover;
-  border-radius: 14px;
-  border: 1px solid #eee;
+  border-radius: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
 
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+  @media (max-width: 768px) {
+    width: 160px;
+    height: 160px;
+  }
 `;
 
-/* Delete Button */
 export const RemoveButton = styled.button`
   position: absolute;
-
-  top: -12px;
-  right: -12px;
-
+  top: -10px;
+  right: -10px;
   width: 34px;
   height: 34px;
-
   border-radius: 50%;
-  border: 2px solid white;
-
-  background: ${theme.colors.secondary};
-  color: ${theme.colors.background};
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  cursor: pointer;
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-
-  transition: all 0.2s ease;
-  animation: popIn 0.3s ease;
-
-  @keyframes popIn {
-    from {
-      transform: scale(0);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  &:hover {
-    background: #d9363e;
-    transform: scale(1.15);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-`;
-
-export const ScannerOverlay = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-
-  width: 100%;
-  height: 100vh;
-
-  background: ${theme.colors.text};
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  z-index: 9999;
-`;
-
-export const BackButton = styled.button`
-  position: absolute;
-  left: 0;
-  background: transparent;
   border: none;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
   cursor: pointer;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: ${theme.colors.text};
-
-  &:hover { 
-    opacity: 0.6;
-  }
 `;
 
-export const Select = styled.select`
-  height: 45px;
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid #d9d9d9;
-
-  padding: 0 12px;
-  font-size: 14px;
-  outline: none;
-  background: ${theme.colors.background};
-  color: ${theme.colors.text};
-
-  transition: all 0.2s ease;
+/* ================= SUBMIT ================= */
+export const Button = styled.button`
+  width: 320px;
+  max-width: 100%;
+  height: 56px;
+  border-radius: 30px;
+  border: none;
+  background: ${theme.colors.primary};
+  color: ${theme.colors.background};
+  font-size: 18px;
+  font-weight: 700;
   cursor: pointer;
-
-  /* quitar estilo default */
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-
-  /* flechita custom */
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%23666' height='20' viewBox='0 0 20 20' width='20' xmlns='http://www.w3.org/2000/svg'><path d='M5 7l5 5 5-5H5z'/></svg>");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-
-  &:focus {
-    border-color: ${theme.colors.secondary};
-    box-shadow: 0 0 0 2px rgba(64, 69, 148, 0.1);
-  }
+  box-shadow: 0 4px 10px rgba(61, 68, 201, 0.25);
 
   &:disabled {
-    background: #f5f5f5;
+    opacity: 0.6;
     cursor: not-allowed;
-    opacity: 0.7;
   }
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
+`;
+
+/* ================= SCANNER ================= */
+export const ScannerOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 9999;
 `;

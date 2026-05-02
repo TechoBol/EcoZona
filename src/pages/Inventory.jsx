@@ -50,8 +50,12 @@ function Inventory() {
 
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const { products, allProducts, search, setSearch, onFilterTextBoxChanged } =
-    useInventory();
+  const {
+    products,
+    search,
+    setSearch,
+    onFilterTextBoxChanged,
+  } = useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
@@ -199,7 +203,9 @@ function Inventory() {
   ///////////////////////////////////////
   const lines = [
     ...new Map(
-      allProducts.filter((p) => p.line).map((p) => [p.line.id, p.line]),
+      products
+        .filter((p) => p.line)
+        .map((p) => [p.line.id, p.line])
     ).values(),
   ];
 

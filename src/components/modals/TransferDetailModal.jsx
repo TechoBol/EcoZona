@@ -24,17 +24,14 @@ import {
 } from "../ui/Location";
 
 import { usePermissions } from "../../hooks/usePermissions";
+import { errorToast, successToast } from "../../services/toasts";
 
 const getStatusLabel = (status) => {
   switch (status) {
-    case "PENDING":
-      return "Pendiente";
-    case "APPROVED":
-      return "Aprobado";
-    case "REJECTED":
-      return "Rechazado";
-    default:
-      return status;
+    case "PENDING": return "Pendiente";
+    case "APPROVED": return "Aprobado";
+    case "REJECTED": return "Rechazado";
+    default: return status;
   }
 };
 
@@ -54,16 +51,24 @@ export default function TransferDetailModal({
 
   if (!open || !transfer) return null;
 
-  const handleApprove = () => {
-    if (!canApproveReject) return;
-    onApprove(transfer.id);
-    onClose();
+  const handleApprove = async () => {
+    try {
+      await onApprove(transfer.id);
+      successToast("Transferencia aprobada");
+      onClose();
+    } catch (error) {
+      errorToast("Error al aprobar la transferencia");
+    }
   };
 
-  const handleReject = () => {
-    if (!canApproveReject) return;
-    onReject(transfer.id, reason);
-    onClose();
+  const handleReject = async () => {
+    try {
+      await onReject(transfer.id, reason);
+      successToast("Transferencia rechazada");
+      onClose();
+    } catch (error) {
+      errorToast("Error al rechazar la transferencia");
+    }
   };
 
   // 💰 total
@@ -75,7 +80,7 @@ export default function TransferDetailModal({
 
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent style={{ width: 520 }} onClick={(e) => e.stopPropagation()}>
+      <ModalContent style={{ width: 500 }} onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>
           <X size={18} />
         </CloseButton>

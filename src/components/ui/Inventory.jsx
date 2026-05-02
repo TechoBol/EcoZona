@@ -380,6 +380,10 @@ export const FilterRow = styled.div`
   &::-webkit-scrollbar {
     display: none;
   }
+
+  @media (min-width: 900px) {
+    justify-content: center;
+  }
 `;
 
 export const FilterChip = styled.button`

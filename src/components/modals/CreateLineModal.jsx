@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { theme } from "../ui/Theme";
 import {
   ModalOverlay,
   ModalContent,
@@ -171,35 +172,53 @@ export default function CreateLineModal({
             Marcas asociadas
           </p>
 
-          {/* Agregar */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {/* Agregar marca */}
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              marginBottom: 14,
+              alignItems: "stretch",
+            }}
+          >
             <ModalInput
               placeholder="Agregar marca"
               value={newBrand}
-              disabled={!canManage}
               onChange={(e) => setNewBrand(e.target.value)}
               onKeyDown={(e) => {
-                if (!canManage) return;
                 if (e.key === "Enter") handleAddBrand();
+              }}
+              style={{
+                flex: 1,
+                marginBottom: 0,
+                height: 48,
+                boxSizing: "border-box",
               }}
             />
 
-            <SaveButton
+            <button
               type="button"
               onClick={handleAddBrand}
               disabled={!canManage}
               style={{
-                width: 46,
-                height: 46,
-                padding: 0,
+                width: 48,
+                height: 48,
+                minWidth: 48,
+                border: "none",
+                borderRadius: 14,
+                background: theme.colors.background,
+                color: theme.colors.primary,
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                cursor: "pointer",
                 flexShrink: 0,
-                borderRadius: 12,
-                opacity: !canManage ? 0.6 : 1,
-                cursor: !canManage ? "not-allowed" : "pointer",
+                boxShadow: theme.colors.secondary,
+                transition: "all 0.2s ease",
               }}
             >
               <Plus size={18} />
-            </SaveButton>
+            </button>
           </div>
 
           {/* Lista */}

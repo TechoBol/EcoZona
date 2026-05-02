@@ -9,6 +9,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { generarTransferPDF } from "../components/pdf/generarTransferPDF";
 import { useAmazonS3 } from "./useAmazonS3";
+import socket from "../services/SocketIOConnection";
 
 export const useTransfers = () => {
   const { token } = useLoginStore();
@@ -38,7 +39,7 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
-
+    socket.emit("newCartProduct", transfer);
     await getTransfers();
   };
   const approveTransfer = async (id: number, fromLocationId: number) => {
@@ -55,6 +56,7 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
+    socket.emit("newCartProduct", transfer);
     await getTransfers(); // refresca
   };
 
@@ -62,6 +64,17 @@ export const useTransfers = () => {
     await rejectTransferService(id, token);
     await getTransfers();
   };
+
+  useEffect(() => {
+    socket.on("cartProduct", () => {
+      getTransfers();
+    });
+
+    return () => {
+      socket.off("cartProduct");
+    };
+  }, []);
+
   useEffect(() => {
     getTransfers();
   }, []);
