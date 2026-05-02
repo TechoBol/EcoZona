@@ -58,7 +58,7 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
-    socket.emit("newTranfer", "Transferencia " + transfer.transferCode +" aprovada");
+    socket.emit("newTranfer", "Transferencia " + transfer.transferCode +" aprobada");
     await getTransfers();
   };
 
