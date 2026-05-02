@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
 import { createSaleService } from "../services/cartService";
 import { useAmazonS3 } from "./useAmazonS3";
-import { generarPDF } from "../components/pdf/generarPDF";
+import { generarPDF } from "../components/pdf/generarPDF.jsx";
 
 export const useCart = () => {
   const [loading, setLoading] = useState(false);
