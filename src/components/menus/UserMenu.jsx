@@ -2,8 +2,8 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useLoginStore } from "../store/loginStore";
 import useAuthentication from "../../hooks/useAuthentication";
-import { LogOut, Building2, Users, User, ShoppingCart, Truck, ListPlusIcon,Tag, Bookmark } from "lucide-react";
-
+import { LogOut, Building2, Users, User, ShoppingCart, Truck, ListPlusIcon, Tag, Bookmark } from "lucide-react";
+import { MdOutlineInventory2 } from "react-icons/md";
 import {
   ProfileButton,
   Dropdown,
@@ -14,6 +14,7 @@ import {
   MenuOption,
 } from "../ui/Inventory";
 
+import useInventory  from "../../hooks/useInventory";
 import { useSucursales } from "../../hooks/useSucursales";
 import { useEmployees } from "../../hooks/useEmployees";
 import { useRoles } from "../../hooks/useRoles";
@@ -25,6 +26,7 @@ const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
   const { logOut } = useAuthentication();
 
+  const { goToInventory } = useInventory();
   const { goToSucursales } = useSucursales();
   const { goToTrabajadores } = useEmployees();
   const { goToRoles } = useRoles();
@@ -53,7 +55,7 @@ const UserMenu = () => {
           {/* OVERLAY */}
           {open && (
             <div
-              onClick={() => {}}
+              onClick={() => { }}
               style={{
                 position: "fixed",
                 inset: 0,
@@ -103,6 +105,16 @@ const UserMenu = () => {
                   <Name>{fullName}</Name>
                   <Role>{role}</Role>
                 </UserInfo>
+
+                {/* INVENTARIO */}
+                <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToInventory} $active={active}>
+                        <MdOutlineInventory2 size={16} />
+                        <span>Inventario</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
 
                 {/* SUCURSALES */}
                 {isAdmin && (

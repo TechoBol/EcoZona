@@ -9,7 +9,7 @@ import CreateEmployeeModal from "../components/modals/CreateEmployeeModal";
 import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
 
 import { Wrapper, Header, Title, Content } from "../components/ui/Location";
-
+import UserMenu from "../components/menus/UserMenu";
 import { Actions, AddButton } from "../components/ui/Location";
 import { BackButton } from "../components/ui/Product";
 import { useRoles } from "../hooks/useRoles";
@@ -28,7 +28,7 @@ export default function Employees() {
   const [open, setOpen] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   const [search, setSearch] = useState("");
@@ -134,9 +134,7 @@ export default function Employees() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Trabajadores</Title>
       </Header>
 

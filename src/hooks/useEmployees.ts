@@ -16,7 +16,7 @@ export const useEmployees = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState([]);
 
-   const goToTrabajadores = () => {
+  const goToTrabajadores = () => {
     navigate("/trabajadores");
   };
   const getEmployees = async () => {
@@ -41,7 +41,7 @@ export const useEmployees = () => {
 
   const updateEmployee = async (id: number, values: any) => {
     setIsLoading(true);
-    try{
+    try {
       const updateEmployee = await updateEmployeeService(id, values, token);
       getEmployees();
       successToast("Trabajador actualizado");
@@ -49,9 +49,9 @@ export const useEmployees = () => {
     } catch (error) {
       errorToast("Error al actualizar el trabajador");
     } finally {
-      setIsLoading(false);  
+      setIsLoading(false);
     }
-    
+
   };
 
   const deleteEmployee = async (id: number) => {
@@ -69,7 +69,7 @@ export const useEmployees = () => {
     }
   };
 
-useEffect(() => {
+  useEffect(() => {
     socket.on("employeeUpdated", (employee) => {
       setData((prev) => {
         const exists = prev.some((emp) => emp.id === employee.id);

@@ -3,7 +3,7 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { Delete } from "@mui/icons-material";
 import { ArrowLeft, Edit, Tag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import UserMenu from "../components/menus/UserMenu";
 import { useLines } from "../hooks/useLine";
 import CreateLineModal from "../components/modals/CreateLineModal";
 import ConfirmDeleteModal from "../components/modals/ConfirmDeleteModal";
@@ -34,7 +34,7 @@ export default function Lines() {
   const [openDelete, setOpenDelete] = useState(false);
 
   const [isEdit, setIsEdit] = useState(false);
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
 
@@ -173,19 +173,7 @@ export default function Lines() {
   return (
     <Wrapper>
       <Header>
-        <BackButton
-          onClick={() =>
-            navigate(
-              "/inventory",
-              {
-                replace: true,
-              }
-            )
-          }
-        >
-          <ArrowLeft size={22} />
-        </BackButton>
-
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Líneas</Title>
       </Header>
 

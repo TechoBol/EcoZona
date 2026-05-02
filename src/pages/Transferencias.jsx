@@ -8,6 +8,7 @@ import { useTransfers } from "../hooks/useTransfers";
 import useInventory from "../hooks/useInventory";
 import CreateTransferModal from "../components/modals/CreateTransferModal";
 import { useLoginStore } from "../components/store/loginStore";
+import UserMenu from "../components/menus/UserMenu";
 
 import {
   Wrapper,
@@ -47,7 +48,7 @@ export default function Transfers() {
   const { products: inventory } = useInventory();
   const { location } = useLoginStore();
   const { getFileUrl } = useAmazonS3();
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("mine"); // 🔹 "mine" | "all"
 
@@ -189,10 +190,7 @@ export default function Transfers() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
-
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Transferencias</Title>
       </Header>
 

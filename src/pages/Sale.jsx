@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { BsFillFileEarmarkPdfFill } from "react-icons/bs";
 import { useSales } from "../hooks/useSale";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
+import UserMenu from "../components/menus/UserMenu";
+
 import {
   Wrapper,
   Header,
@@ -30,7 +32,7 @@ export default function Sales() {
   const navigate = useNavigate();
   const { data } = useSales();
   const { getFileUrl } = useAmazonS3();
-
+  const [menuOpen, setMenuOpen] = useState(false);
   const [filteredTotal, setFilteredTotal] = useState(0);
   const [globalFilter, setGlobalFilter] = useState("");
   const [startDate, setStartDate] = useState(null);
@@ -118,9 +120,7 @@ export default function Sales() {
   return (
     <Wrapper>
       <Header>
-        <BackButton onClick={() => navigate("/inventory")}>
-          <ArrowLeft size={22} />
-        </BackButton>
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Ventas</Title>
       </Header>
 
