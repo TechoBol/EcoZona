@@ -102,7 +102,7 @@ const useInventory = () => {
   //////////////////////////////
   useEffect(() => {
     if (!products.length) {
-      fetchProducts(); // 🔥 evita recarga innecesaria
+      fetchProducts();
     }
   }, []);
 
