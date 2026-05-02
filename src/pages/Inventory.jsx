@@ -51,7 +51,6 @@ function Inventory() {
 
   const {
     products,
-    allProducts,
     search,
     setSearch,
     onFilterTextBoxChanged,
@@ -199,7 +198,7 @@ function Inventory() {
   ///////////////////////////////////////
   const lines = [
     ...new Map(
-      allProducts
+      products
         .filter((p) => p.line)
         .map((p) => [p.line.id, p.line])
     ).values(),

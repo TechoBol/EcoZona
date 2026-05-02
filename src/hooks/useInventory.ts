@@ -7,7 +7,7 @@ import { useInventoryStore } from "../components/store/inventoryStore";
 const useInventory = () => {
   const { token } = useLoginStore();
 
-  // 🔥 GLOBAL STORE
+  // GLOBAL STORE
   const { products, setProducts } = useInventoryStore();
 
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
@@ -18,14 +18,14 @@ const useInventory = () => {
   const [scannerBuffer, setScannerBuffer] = useState("");
 
   //////////////////////////////
-  // 🔥 FETCH
+  // FETCH
   //////////////////////////////
   const fetchProducts = async () => {
     setIsLoading(true);
 
     try {
       const data = await getProducts(token);
-      setProducts(data); // 🔥 GLOBAL
+      setProducts(data);
     } catch (error) {
       console.error("Error al obtener productos:", error);
     } finally {
@@ -34,7 +34,7 @@ const useInventory = () => {
   };
 
   //////////////////////////////
-  // 🔎 FILTRO
+  // FILTRO
   //////////////////////////////
   useEffect(() => {
     if (!search) {
@@ -52,14 +52,14 @@ const useInventory = () => {
   }, [search, products]);
 
   //////////////////////////////
-  // ⌨ INPUT
+  // INPUT
   //////////////////////////////
   const onFilterTextBoxChanged = (e: any) => {
     setSearch(e.target.value);
   };
 
   //////////////////////////////
-  // 📡 SCANNER GLOBAL
+  // SCANNER GLOBAL
   //////////////////////////////
   useEffect(() => {
     let timeout: any;
@@ -111,17 +111,7 @@ const useInventory = () => {
   //////////////////////////////
   useEffect(() => {
     socket.on("newProduct", (producto) => {
-      setProducts((prev: any[]) => {
-        const exists = prev.some((p) => p.id === producto.id);
-
-        if (exists) {
-          return prev.map((p) =>
-            p.id === producto.id ? producto : p
-          );
-        }
-
-        return [...prev, producto];
-      });
+      fetchProducts();
     });
 
     socket.on("cartProduct", () => {
@@ -135,11 +125,10 @@ const useInventory = () => {
   }, []);
 
   //////////////////////////////
-  // 📤 RETURN
+  // RETURN
   //////////////////////////////
   return {
     products: filteredProducts,
-    allProducts: products, 
     search,
     setSearch,
     isLoading,
