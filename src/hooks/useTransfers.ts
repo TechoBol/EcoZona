@@ -61,7 +61,8 @@ export const useTransfers = () => {
   };
 
   const rejectTransfer = async (id: number) => {
-    await rejectTransferService(id, token);
+    const transfer = await rejectTransferService(id, token);
+    socket.emit("newCartProduct", transfer);
     await getTransfers();
   };
 
