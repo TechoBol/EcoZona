@@ -7,7 +7,7 @@ import { logInAuth } from "../services/AuthenticationService";
 const useAuthentication = () => {
   const navigate = useNavigate();
 
-  const { setFullName, setRole, changeLogInState, setToken, setLocation } =
+  const { setFullName, setRole, changeLogInState, setToken, setLocation, setLevel } =
     useLoginStore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -24,18 +24,17 @@ const useAuthentication = () => {
 
     try {
       const response = await logInAuth(email, password);
-
       // SI FALLA LOGIN
       if (!response) {
         return;
       }
-      console.log(response);
       // GUARDAR DATOS
       setFullName(`${response.name} ${response.lastName}`);
+      setLevel(response.userLevel);
       setToken(response.token);
       setRole(response.role);
+      setLevel(response.level);
       setLocation(response.location);
-      console.log(response);
       changeLogInState();
 
       // TOAST
@@ -55,6 +54,7 @@ const useAuthentication = () => {
   const logOut = () => {
     setFullName("");
     setRole("");
+    setLevel(0);
     setToken("");
     setLocation("");
 

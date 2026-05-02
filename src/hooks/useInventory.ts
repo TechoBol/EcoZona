@@ -113,13 +113,11 @@ const useInventory = () => {
     socket.on("newProduct", (producto) => {
       setProducts((prev: any[]) => {
         const exists = prev.some((p) => p.id === producto.id);
-
         if (exists) {
           return prev.map((p) =>
             p.id === producto.id ? producto : p
           );
         }
-
         return [...prev, producto];
       });
     });

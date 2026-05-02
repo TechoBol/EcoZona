@@ -88,7 +88,7 @@ export default function Sales() {
     {
       field: "employeeName",
       disableColumnMenu: true,
-      headerName: "Empleado",
+      headerName: "Trabajador",
       flex: 1,
       minWidth: 180,
     },

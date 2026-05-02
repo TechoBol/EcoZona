@@ -14,7 +14,7 @@ export const getProducts = async (token?: string) => {
     );
 
     if (!response.ok) {
-      errorToast("No se pudieron cargar los productos");
+      errorToast("Iniciar sesion de nuevo");
       return [];
     }
 

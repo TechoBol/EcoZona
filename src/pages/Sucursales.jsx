@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useLoginStore } from "../components/store/loginStore";
 import socket from "../services/SocketIOConnection";
+import { usePermissions } from "../hooks/usePermissions";
 
 export default function Sucursales() {
   const { data, createLocation, deleteLocation, updateLocation } =
@@ -34,9 +35,10 @@ export default function Sucursales() {
   const [isEdit, setIsEdit] = useState(false);
   const [editId, setEditId] = useState(null);
   // COLUMNAS
-  const canEdit = true;
-  //role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const permissions = usePermissions();
 
+  const canEdit = permissions.canManageBranches && !permissions.isReadOnly;
+  
   const columns = [
     {
       field: "name",

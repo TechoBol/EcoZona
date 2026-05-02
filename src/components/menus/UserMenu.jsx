@@ -2,7 +2,15 @@ import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 import { useLoginStore } from "../store/loginStore";
 import useAuthentication from "../../hooks/useAuthentication";
-import { LogOut, Building2, Users, User, ShoppingCart, Truck, ListPlusIcon,Tag, Bookmark } from "lucide-react";
+import {
+  LogOut,
+  Building2,
+  Users,
+  User,
+  ShoppingCart,
+  Truck,
+  Tag,
+} from "lucide-react";
 
 import {
   ProfileButton,
@@ -20,10 +28,13 @@ import { useRoles } from "../../hooks/useRoles";
 import { useSales } from "../../hooks/useSale";
 import { useTransfers } from "../../hooks/useTransfers";
 import { useLines } from "../../hooks/useLine";
+import { usePermissions } from "../../hooks/usePermissions";
 
 const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
   const { logOut } = useAuthentication();
+
+  const permissions = usePermissions();
 
   const { goToSucursales } = useSucursales();
   const { goToTrabajadores } = useEmployees();
@@ -32,20 +43,6 @@ const UserMenu = () => {
   const { goToTransfer } = useTransfers();
   const { goToLines } = useLines();
 
-  const initial = fullName ? fullName.charAt(0).toUpperCase() : "?";
-  const canEdit =
-    role === "Administrador sucursal" ||
-    role === "Técnico en sistemas" ||
-    role === "Gerente General" ||
-    role === "Gerente Operaciones";
-
-  const isAdmin =
-    role === "Técnico en sistemas" ||
-    role === "Gerente General" ||
-    role === "Gerente Operaciones";
-
-  const isAdminOrSucursal = isAdmin || role === "Administrador sucursal";
-
   return (
     <Menu as="div" style={{ position: "relative", display: "flex" }}>
       {({ open }) => (
@@ -53,7 +50,6 @@ const UserMenu = () => {
           {/* OVERLAY */}
           {open && (
             <div
-              onClick={() => {}}
               style={{
                 position: "fixed",
                 inset: 0,
@@ -104,8 +100,8 @@ const UserMenu = () => {
                   <Role>{role}</Role>
                 </UserInfo>
 
-                {/* SUCURSALES */}
-                {isAdmin && (
+                {/* 🏢 SUCURSALES → solo level 1 */}
+                {permissions.canManageBranches && (
                   <Menu.Item>
                     {({ active }) => (
                       <MenuOption onClick={goToSucursales} $active={active}>
@@ -116,8 +112,8 @@ const UserMenu = () => {
                   </Menu.Item>
                 )}
 
-                {/* TRABAJADORES */}
-                {isAdminOrSucursal && (
+                {/* 👤 TRABAJADORES → level 1 y 2 */}
+                {permissions.canManageEmployees && (
                   <Menu.Item>
                     {({ active }) => (
                       <MenuOption onClick={goToTrabajadores} $active={active}>
@@ -128,8 +124,8 @@ const UserMenu = () => {
                   </Menu.Item>
                 )}
 
-                {/* ROLES */}
-                {isAdmin && (
+                {/* 🧩 ROLES → solo level 1 */}
+                {permissions.canManageRoles && (
                   <Menu.Item>
                     {({ active }) => (
                       <MenuOption onClick={goToRoles} $active={active}>
@@ -139,17 +135,21 @@ const UserMenu = () => {
                     )}
                   </Menu.Item>
                 )}
-                <Menu.Item>
-                  {({ active }) => (
-                    <MenuOption onClick={goToTransfer} $active={active}>
-                      <Truck size={16} />
-                      <span>Transferencias</span>
-                    </MenuOption>
-                  )}
-                </Menu.Item>
 
-                {/* LÍNEAS */}
-                {isAdmin && (
+                {/* 🚚 TRANSFERENCIAS → level 1 y 2 */}
+                {permissions.canManageTransfers && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToTransfer} $active={active}>
+                        <Truck size={16} />
+                        <span>Transferencias</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
+
+                {/* 🏷️ LÍNEAS → level 1 y 2 */}
+                {permissions.canManageLines && (
                   <Menu.Item>
                     {({ active }) => (
                       <MenuOption onClick={goToLines} $active={active}>
@@ -160,17 +160,19 @@ const UserMenu = () => {
                   </Menu.Item>
                 )}
 
-                {/* VENTAS */}
-                <Menu.Item>
-                  {({ active }) => (
-                    <MenuOption onClick={goToSales} $active={active}>
-                      <ShoppingCart size={16} />
-                      <span>Administrar ventas</span>
-                    </MenuOption>
-                  )}
-                </Menu.Item>
+                {/* 💰 VENTAS → level 1,2,3 */}
+                {permissions.canManageSales && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToSales} $active={active}>
+                        <ShoppingCart size={16} />
+                        <span>Administrar ventas</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
 
-                {/* LOGOUT */}
+                {/* 🔓 LOGOUT → todos */}
                 <Menu.Item>
                   {({ active }) => (
                     <LogoutButton onClick={logOut} $active={active}>

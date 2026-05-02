@@ -29,7 +29,7 @@ const errorToast = (message: string) => {
     icon: "error",
     toast: true,
     position: "top-end",
-    timer: 800,
+    timer: 2000,
     showConfirmButton: false,
   });
 };

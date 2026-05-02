@@ -17,6 +17,7 @@ import { useSucursales } from "../hooks/useSucursales";
 import { useLoginStore } from "../components/store/loginStore";
 import { FiltersRow, FilterInput } from "../components/ui/Location";
 import socket from "../services/SocketIOConnection";
+import { usePermissions } from "../hooks/usePermissions";
 
 export default function Employees() {
   const navigate = useNavigate();
@@ -61,9 +62,11 @@ export default function Employees() {
     });
   const { role } = useLoginStore();
 
-  const canEdit = true;
-  //role === "Administrador sucursal" || role === "Técnico en sistemas";
+  const permissions = usePermissions();
 
+  const canEdit =
+    permissions.canManageEmployees && !permissions.isReadOnly;
+    
   const columns = [
     {
       field: "name",

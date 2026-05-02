@@ -15,7 +15,7 @@ import Transfers from "./pages/Transferencias";
 import Lines from "./pages/Lines";
 
 function App() {
-  const { isLoggedIn, role } = useLoginStore();
+  const { isLoggedIn } = useLoginStore();
 
   return (
     <>

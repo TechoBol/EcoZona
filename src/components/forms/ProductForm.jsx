@@ -31,11 +31,12 @@ import BarcodeReader from "../Scanner/BarcodeReader";
 import { useAmazonS3 } from "../../hooks/useAmazonS3";
 import socket from "../../services/SocketIOConnection";
 import { useLines } from "../../hooks/useLine";
+import useInventory from "../../hooks/useInventory";
 
 function ProductForm() {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { refresh } = useInventory();
   const product = location.state ?? null;
   const isEdit = !!product;
 
@@ -158,9 +159,9 @@ function ProductForm() {
         result = await createProduct(payload);
         successToast("Producto creado");
       }
-
       form.reset();
       socket.emit("createProduct", result);
+      refresh()
       navigate("/inventory", { replace: true });
     } catch (err) {
       console.error(err);

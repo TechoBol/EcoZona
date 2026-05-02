@@ -10,6 +10,7 @@ import {
   CloseButton,
 } from "../ui/Location";
 import { X } from "lucide-react";
+import { useLoginStore } from "../store/loginStore";
 
 export default function CreateEmployeeModal({
   open,
@@ -24,8 +25,21 @@ export default function CreateEmployeeModal({
 }) {
   const [errors, setErrors] = useState({});
 
+  const { level, location } = useLoginStore();
+  const lvl = Number(level);
+
   useEffect(() => {
-    if (open) setErrors({});
+    if (open) {
+      setErrors({});
+
+      // 🔥 Si es level 2 → forzar location del usuario
+      if (lvl === 2 && location?.id) {
+        setForm((prev) => ({
+          ...prev,
+          locationId: location.id,
+        }));
+      }
+    }
   }, [open]);
 
   const validate = () => {
@@ -85,12 +99,14 @@ export default function CreateEmployeeModal({
           {errors.email && (
             <span style={{ color: "red", fontSize: 12 }}>{errors.email}</span>
           )}
+
           <ModalInput
             placeholder="Contraseña"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
           />
 
+          {/* ROLES */}
           <ModalSelect
             value={form.roleId}
             onChange={(e) =>
@@ -105,6 +121,7 @@ export default function CreateEmployeeModal({
             ))}
           </ModalSelect>
 
+          {/* LOCATION */}
           <ModalSelect
             value={form.locationId || ""}
             onChange={(e) =>
@@ -113,6 +130,7 @@ export default function CreateEmployeeModal({
                 locationId: Number(e.target.value),
               })
             }
+            disabled={lvl === 2} // 🔥 aquí bloqueas cambio
           >
             <option value="">Sin sucursal</option>
             {locations.map((l) => (
@@ -124,7 +142,13 @@ export default function CreateEmployeeModal({
         </FormGroup>
 
         <SaveButton onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? (isEdit ? "Actualizando..." : "Guardando...") : (isEdit ? "Actualizar" : "Guardar")}
+          {isLoading
+            ? isEdit
+              ? "Actualizando..."
+              : "Guardando..."
+            : isEdit
+            ? "Actualizar"
+            : "Guardar"}
         </SaveButton>
       </ModalContent>
     </ModalOverlay>
