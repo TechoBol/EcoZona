@@ -34,4 +34,15 @@ const errorToast = (message: string) => {
   });
 };
 
-export { successToast, errorToast };
+const notificationToast = (message: string) => {
+  Swal.fire({
+    text: message,
+    icon: "info",
+    toast: true,
+    position: "top-end",
+    timer: 5000,
+    showConfirmButton: false,
+  });
+};
+
+export { successToast, errorToast , notificationToast };

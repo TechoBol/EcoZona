@@ -3,6 +3,7 @@ import { useLoginStore } from "../components/store/loginStore";
 import { getProducts } from "../services/InventoryService";
 import socket from "../services/SocketIOConnection";
 import { useInventoryStore } from "../components/store/inventoryStore";
+import { notificationToast } from "../services/toasts";
 
 const useInventory = () => {
   const { token } = useLoginStore();
@@ -118,9 +119,15 @@ const useInventory = () => {
       fetchProducts();
     });
 
+    socket.on("transfer", (mensaje) => {
+      notificationToast(mensaje)
+      fetchProducts();
+    });
+
     return () => {
       socket.off("newProduct");
       socket.off("cartProduct");
+      socket.off("transfer");
     };
   }, []);
 

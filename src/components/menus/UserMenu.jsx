@@ -29,6 +29,7 @@ import { useSales } from "../../hooks/useSale";
 import { useTransfers } from "../../hooks/useTransfers";
 import { useLines } from "../../hooks/useLine";
 import { usePermissions } from "../../hooks/usePermissions";
+import { useNotificationStore } from "../store/notificationStore";
 
 const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
@@ -42,7 +43,12 @@ const UserMenu = () => {
   const { goToSales } = useSales();
   const { goToTransfer } = useTransfers();
   const { goToLines } = useLines();
-
+  const hasTransferNotification = useNotificationStore(
+    (state) => state.hasTransferNotification,
+  );
+  const clearTransferNotification = useNotificationStore(
+    (state) => state.clearTransferNotification,
+  );
   return (
     <Menu as="div" style={{ position: "relative", display: "flex" }}>
       {({ open }) => (
@@ -71,6 +77,19 @@ const UserMenu = () => {
           >
             <ProfileButton>
               <User size={20} />
+              {hasTransferNotification && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 2,
+                    right: 2,
+                    width: 8,
+                    height: 8,
+                    background: "red",
+                    borderRadius: "50%",
+                  }}
+                />
+              )}
             </ProfileButton>
           </Menu.Button>
 
@@ -140,7 +159,13 @@ const UserMenu = () => {
                 {permissions.canManageTransfers && (
                   <Menu.Item>
                     {({ active }) => (
-                      <MenuOption onClick={goToTransfer} $active={active}>
+                      <MenuOption
+                        onClick={() => {
+                          clearTransferNotification(); // 👈 limpia el punto rojo
+                          goToTransfer();
+                        }}
+                        $active={active}
+                      >
                         <Truck size={16} />
                         <span>Transferencias</span>
                       </MenuOption>
