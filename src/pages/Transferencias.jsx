@@ -6,7 +6,6 @@ import { BsFillFileEarmarkPdfFill } from "react-icons/bs";
 import { PiInfoBold } from "react-icons/pi";
 import { useTransfers } from "../hooks/useTransfers";
 import useInventory from "../hooks/useInventory";
-
 import CreateTransferModal from "../components/modals/CreateTransferModal";
 import { useLoginStore } from "../components/store/loginStore";
 
@@ -287,7 +286,6 @@ export default function Transfers() {
         location={location}
         onSubmit={async (data) => {
           await createTransfer(data);
-          setOpen(false);
         }}
       />
       <TransferDetailModal

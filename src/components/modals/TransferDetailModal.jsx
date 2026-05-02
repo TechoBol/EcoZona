@@ -10,18 +10,17 @@ import {
 } from "../ui/Location";
 
 import { X } from "lucide-react";
+import { errorToast, successToast } from "../../services/toasts";
+
 const getStatusLabel = (status) => {
   switch (status) {
-    case "PENDING":
-      return "Pendiente";
-    case "APPROVED":
-      return "Aprobado";
-    case "REJECTED":
-      return "Rechazado";
-    default:
-      return status;
+    case "PENDING": return "Pendiente";
+    case "APPROVED": return "Aprobado";
+    case "REJECTED": return "Rechazado";
+    default: return status;
   }
 };
+
 export default function TransferDetailModal({
   open,
   onClose,
@@ -33,22 +32,29 @@ export default function TransferDetailModal({
 
   if (!open || !transfer) return null;
 
-  const handleApprove = () => {
-    onApprove(transfer.id);
-    onClose();
+  const handleApprove = async () => {
+    try {
+      await onApprove(transfer.id);
+      successToast("Transferencia aprobada");
+      onClose();
+    } catch (error) {
+      errorToast("Error al aprobar la transferencia");
+    }
   };
 
-  const handleReject = () => {
-    onReject(transfer.id, reason);
-    onClose();
+  const handleReject = async () => {
+    try {
+      await onReject(transfer.id, reason);
+      successToast("Transferencia rechazada");
+      onClose();
+    } catch (error) {
+      errorToast("Error al rechazar la transferencia");
+    }
   };
 
   return (
     <ModalOverlay onClick={onClose}>
-      <ModalContent
-        style={{ width: 500 }}
-        onClick={(e) => e.stopPropagation()}
-      >
+      <ModalContent style={{ width: 500 }} onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>
           <X size={18} />
         </CloseButton>
@@ -56,7 +62,6 @@ export default function TransferDetailModal({
         <ModalTitle>Detalle de transferencia</ModalTitle>
 
         <FormGroup>
-          {/* 🔹 INFO GENERAL */}
           <div>
             <strong>Código:</strong>{" "}
             {transfer.transferCode || `TR-${transfer.id}`}
@@ -79,7 +84,6 @@ export default function TransferDetailModal({
             </StatusBadge>
           </div>
 
-          {/* 🔹 PRODUCTOS */}
           <div style={{ marginTop: 10 }}>
             <strong>Productos:</strong>
             <div
@@ -108,7 +112,6 @@ export default function TransferDetailModal({
             </div>
           </div>
 
-          {/* 🔹 RECHAZO */}
           {transfer.status === "PENDING" && (
             <>
               <textarea
@@ -125,7 +128,6 @@ export default function TransferDetailModal({
                 }}
               />
 
-              {/* 🔹 BOTONES */}
               <div style={{ display: "flex", gap: 10 }}>
                 <SaveButton
                   style={{ background: "#27ae60" }}
