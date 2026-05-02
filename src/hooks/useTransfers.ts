@@ -44,9 +44,10 @@ export const useTransfers = () => {
     socket.emit("newTranfer", "Nueva transferencia " + transfer.transferCode +"  solicitada");
     await getTransfers();
   };
+
   const approveTransfer = async (id: number, fromLocationId: number) => {
     const transfer = await approveTransferService(id, fromLocationId, token);
-
+    console.log(transfer)
     const pdfBlob = generarTransferPDF(transfer);
 
     // 3. Convertir a File
