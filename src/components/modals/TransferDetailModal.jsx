@@ -38,7 +38,7 @@ export default function TransferDetailModal({
       successToast("Transferencia aprobada");
       onClose();
     } catch (error) {
-      errorToast("Error al aprobar la transferencia");
+      errorToast(error?.response?.data?.message || error?.message || "Error al aprobar la transferencia");
     }
   };
 
@@ -48,7 +48,7 @@ export default function TransferDetailModal({
       successToast("Transferencia rechazada");
       onClose();
     } catch (error) {
-      errorToast("Error al rechazar la transferencia");
+      errorToast(error?.response?.data?.message || error?.message || "Error al rechazar la transferencia");
     }
   };
 
