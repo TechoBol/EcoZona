@@ -89,7 +89,7 @@ function ProductForm() {
       imageFile: null,
       price: product?.price ?? "",
       finalPrice: product?.finalPrice ?? "",
-      stock: product?.stockTotal ?? "",
+      stock: product?.inventories?.[0]?.quantity ?? "",
       lineId: product?.lineId ?? "",
       brandName: product?.brandName ?? "",
     },
