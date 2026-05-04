@@ -185,13 +185,13 @@ const UserMenu = () => {
                   </Menu.Item>
                 )}
 
-                {/* 🏷️ LÍNEAS → level 1 y 2 */}
+                {/* 🏷️ MARCAS → level 1 y 2 */}
                 {permissions.canManageLines && (
                   <Menu.Item>
                     {({ active }) => (
                       <MenuOption onClick={goToLines} $active={active}>
                         <Tag size={16} />
-                        <span>Administrar líneas</span>
+                        <span>Administrar marcas</span>
                       </MenuOption>
                     )}
                   </Menu.Item>

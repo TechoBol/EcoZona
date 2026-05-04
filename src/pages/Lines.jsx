@@ -83,7 +83,7 @@ export default function Lines() {
 
     {
       field: "brands",
-      headerName: "Marcas",
+      headerName: "Líneas",
       width: 150,
       sortable: false,
       filterable: false,
@@ -105,7 +105,7 @@ export default function Lines() {
             }}
           >
             <Tag size={15} />
-            {count} {count === 1 ? "marca" : "marcas"}
+            {count} {count === 1 ? "línea" : "líneas"}
           </div>
         );
       },
@@ -158,12 +158,12 @@ export default function Lines() {
     <Wrapper>
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
-        <Title>Líneas</Title>
+        <Title>Marcas</Title>
       </Header>
 
       <Content>
         <Actions>
-          <AddButton onClick={handleNew}>+ Nueva línea</AddButton>
+          <AddButton onClick={handleNew}>+ Nueva marca</AddButton>
         </Actions>
 
         <div

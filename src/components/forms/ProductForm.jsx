@@ -284,7 +284,7 @@ function ProductForm() {
             <Grid2>
               <ContainerInput>
                 <Select {...form.getInputProps("lineId")}>
-                  <option value="">Selecciona una línea</option>
+                  <option value="">Selecciona una marca</option>
                   {lines?.map((line) => (
                     <option key={line.id} value={line.id}>
                       {line.name}
@@ -298,7 +298,7 @@ function ProductForm() {
                   {...form.getInputProps("brandName")}
                   disabled={!form.values.lineId}
                 >
-                  <option value="">Selecciona una marca</option>
+                  <option value="">Selecciona una línea</option>
                   {brands.map((brand) => (
                     <option key={brand} value={brand}>
                       {brand}
