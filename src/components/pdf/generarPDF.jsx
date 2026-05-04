@@ -118,8 +118,8 @@ export const generarPDF = (
   const tableData = (cartItems || []).map((item) => [
     item.name,
     item.quantity,
-    `Bs ${Number(item.price).toFixed(2)}`,
-    `Bs ${(item.price * item.quantity).toFixed(2)}`,
+    `Bs ${Number(item.finalPrice).toFixed(2)}`,
+    `Bs ${(item.finalPrice * item.quantity).toFixed(2)}`,
   ]);
 
   autoTable(doc, {
