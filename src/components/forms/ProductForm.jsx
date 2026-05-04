@@ -142,7 +142,7 @@ function ProductForm() {
         barcode: values.barcode,
         price: Number(values.price),
         finalPrice: Number(values.finalPrice),
-        stock: Number(values.stock),
+        stock: Number(values.stockTotal),
         imageUrl: imageKey,
         lineId: Number(values.lineId),
         brandName: values.brandName,
