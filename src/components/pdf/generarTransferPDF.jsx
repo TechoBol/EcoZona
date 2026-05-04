@@ -57,7 +57,7 @@ export const generarTransferPDF = (transfer) => {
     37,
   );
 
-  // Línea
+  // marca
   doc.line(margin, 42, pageWidth - margin, 42);
 
   // ─────────────────────────

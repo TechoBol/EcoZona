@@ -128,13 +128,13 @@ export default function CreateLineModal({
           <X size={18} />
         </CloseButton>
 
-        <ModalTitle>{isEdit ? "Editar línea" : "Nueva línea"}</ModalTitle>
+        <ModalTitle>{isEdit ? "Editar marca" : "Nueva marca"}</ModalTitle>
 
         {/* Nombre */}
         <FormGroup>
           <div>
             <ModalInput
-              placeholder="Nombre de la línea"
+              placeholder="Nombre de la marca"
               value={form.name}
               disabled={!canManage}
               onChange={(e) => {
@@ -160,7 +160,7 @@ export default function CreateLineModal({
           </div>
         </FormGroup>
 
-        {/* Marcas */}
+        {/* líneas */}
         <div style={{ marginTop: 20 }}>
           <p
             style={{
@@ -169,10 +169,10 @@ export default function CreateLineModal({
               marginBottom: 10,
             }}
           >
-            Marcas asociadas
+            líneas asociadas
           </p>
 
-          {/* Agregar marca */}
+          {/* Agregar línea */}
           <div
             style={{
               display: "flex",
@@ -182,7 +182,7 @@ export default function CreateLineModal({
             }}
           >
             <ModalInput
-              placeholder="Agregar marca"
+              placeholder="Agregar línea"
               value={newBrand}
               onChange={(e) => setNewBrand(e.target.value)}
               onKeyDown={(e) => {
@@ -240,7 +240,7 @@ export default function CreateLineModal({
                   padding: "20px 0",
                 }}
               >
-                No hay marcas agregadas
+                No hay líneas agregadas
               </div>
             ) : (
               brands.map((brand) => (

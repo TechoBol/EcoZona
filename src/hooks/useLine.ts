@@ -32,10 +32,10 @@ export const useLines = () => {
       const newLine = await createLineService(data, token);
       setLines((prev) => [...prev, newLine]);
       getLines();
-      successToast("Línea creada exitosamente");
+      successToast("marca creada exitosamente");
       return newLine;
     } catch {
-      errorToast("Error al crear la línea");
+      errorToast("Error al crear la marca");
     } finally {
       setIsLoading(false);
     }
@@ -46,10 +46,10 @@ export const useLines = () => {
     try {
       const updatedLine = await updateLineService(id, data, token);
       getLines();
-      successToast("Línea actualizada");
+      successToast("marca actualizada");
       return updatedLine;
     } catch {
-      errorToast("Error al actualizar la línea");
+      errorToast("Error al actualizar la marca");
     } finally {
       setIsLoading(false);
     }
@@ -61,9 +61,9 @@ export const useLines = () => {
       await deleteLineService(id, token);
       socket.emit("deleteLine", id);
       getLines();
-      successToast("Línea eliminada");
+      successToast("marca eliminada");
     } catch {
-      errorToast("Error al eliminar la línea");
+      errorToast("Error al eliminar la marca");
     } finally {
       setIsLoading(false);
     }
@@ -75,10 +75,10 @@ export const useLines = () => {
       const updated = await addBrandService(lineId, name, token);
       if (updated?.message) throw new Error(updated.message);
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
-      successToast("Marca agregada");
+      successToast("línea agregada");
       return updated;
     } catch (error: any) {
-      errorToast(error.message || "Error al agregar la marca");
+      errorToast(error.message || "Error al agregar la línea");
     } finally {
       setIsLoading(false);
     }
@@ -90,10 +90,10 @@ export const useLines = () => {
       const updated = await updateBrandService(lineId, oldName, newName, token);
       if (updated?.message) throw new Error(updated.message);
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
-      successToast("Marca actualizada");
+      successToast("línea actualizada");
       return updated;
     } catch (error: any) {
-      errorToast(error.message || "Error al actualizar la marca");
+      errorToast(error.message || "Error al actualizar la línea");
     } finally {
       setIsLoading(false);
     }
@@ -105,10 +105,10 @@ export const useLines = () => {
       const updated = await deleteBrandService(lineId, name, token);
       if (updated?.message) throw new Error(updated.message);
       setLines((prev) => prev.map((l) => (l.id === lineId ? updated : l)));
-      successToast("Marca eliminada");
+      successToast("línea eliminada");
       return updated;
     } catch (error: any) {
-      errorToast(error.message || "Error al eliminar la marca");
+      errorToast(error.message || "Error al eliminar la línea");
     } finally {
       setIsLoading(false);
     }
