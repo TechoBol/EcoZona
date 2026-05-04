@@ -66,6 +66,7 @@ function ProductForm() {
   const [imageDeleted, setImageDeleted] = useState(false);
 
   useEffect(() => {
+    console.log(product);
     if (!product?.imageUrl) return;
 
     const loadImage = async () => {
@@ -103,8 +104,8 @@ function ProductForm() {
         !v || Number(v) <= 0
           ? "Ingresa un precio válido"
           : Number(v) < Number(values.price)
-            ? "El precio final no puede ser menor que el precio base."
-            : null,
+          ? "El precio final no puede ser menor que el precio base."
+          : null,
       stock: (v) =>
         v === "" || Number(v) < 0 ? "Ingresa una cantidad válida" : null,
     },
@@ -158,7 +159,7 @@ function ProductForm() {
       }
       form.reset();
       socket.emit("createProduct", result);
-      refresh()
+      refresh();
       navigate("/inventory", { replace: true });
     } catch (err) {
       errorToast(err.message || "Error inesperado");
@@ -171,15 +172,19 @@ function ProductForm() {
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
-    const selectedLine = lines?.find((l) => l.id === Number(form.values.lineId));
+    const selectedLine = lines?.find(
+      (l) => l.id === Number(form.values.lineId),
+    );
 
     if (selectedLine) {
       setBrands(selectedLine.brands || []);
+
+      if (!selectedLine.brands?.includes(form.values.brandName)) {
+        form.setFieldValue("brandName", "");
+      }
     } else {
       setBrands([]);
     }
-
-    form.setFieldValue("brandName", "");
   }, [form.values.lineId, lines]);
 
   return (
@@ -193,10 +198,8 @@ function ProductForm() {
       </Header>
 
       <Form onSubmit={handleSubmit}>
-
         {/* ================= COLUMNA IZQUIERDA ================= */}
         <LeftColumn>
-
           {/* INFORMACIÓN GENERAL */}
           <Section>
             <SectionTitle>Información general</SectionTitle>
@@ -247,7 +250,9 @@ function ProductForm() {
                   placeholder="Precio compra"
                   {...form.getInputProps("price")}
                 />
-                {form.errors.price && <ErrorText>{form.errors.price}</ErrorText>}
+                {form.errors.price && (
+                  <ErrorText>{form.errors.price}</ErrorText>
+                )}
               </ContainerInput>
 
               <ContainerInput>
@@ -267,16 +272,16 @@ function ProductForm() {
                   placeholder="Stock inicial"
                   {...form.getInputProps("stock")}
                 />
-                {form.errors.stock && <ErrorText>{form.errors.stock}</ErrorText>}
+                {form.errors.stock && (
+                  <ErrorText>{form.errors.stock}</ErrorText>
+                )}
               </ContainerInput>
             </Grid3>
           </Section>
-
         </LeftColumn>
 
         {/* ================= COLUMNA DERECHA ================= */}
         <RightColumn>
-
           {/* CLASIFICACIÓN */}
           <Section>
             <SectionTitle>Clasificación del producto</SectionTitle>
@@ -369,7 +374,6 @@ function ProductForm() {
               </PreviewContainer>
             )}
           </Section>
-
         </RightColumn>
 
         {/* ================= BOTÓN ================= */}
@@ -378,11 +382,10 @@ function ProductForm() {
             {loading
               ? "Guardando..."
               : isEdit
-                ? "Actualizar Producto"
-                : "Crear Producto"}
+              ? "Actualizar Producto"
+              : "Crear Producto"}
           </Button>
         </ButtonRow>
-
       </Form>
 
       {scanning && (
@@ -390,7 +393,7 @@ function ProductForm() {
           <BarcodeReader
             onDetected={(code) => {
               beepRef.current.currentTime = 0;
-              beepRef.current.play().catch(() => { });
+              beepRef.current.play().catch(() => {});
               form.setFieldValue("barcode", code);
               setScanning(false);
             }}
