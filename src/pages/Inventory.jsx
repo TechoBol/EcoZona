@@ -4,6 +4,8 @@ import useInventory from "../hooks/useInventory";
 import Beep from "../assets/sounds/Beep.mp3";
 import { useLoginStore } from "../components/store/loginStore";
 import { useSucursales } from "../hooks/useSucursales";
+import { theme } from "../components/ui/Theme";
+
 
 import {
   Wrapper,
@@ -73,7 +75,7 @@ function Inventory() {
   const [selectedBrand, setSelectedBrand] = useState(null);
 
   const permissions = usePermissions();
-  
+
   const canChangeLocation = permissions.isAdmin;
 
   ///////////////////////////////////////
@@ -103,7 +105,7 @@ function Inventory() {
   const playBeep = () => {
     if (!beepRef.current) return;
     beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => {});
+    beepRef.current.play().catch(() => { });
   };
 
   ///////////////////////////////////////
@@ -217,40 +219,106 @@ function Inventory() {
     return true;
   });
 
+  const lastErrorRef = useRef({ code: "", time: 0 });
+  
   ///////////////////////////////////////
   // SCANNER
   ///////////////////////////////////////
-  const handleBarcodeDetected = (code) => {
-    const cleanCode = code.trim();
-    const now = Date.now();
+const handleBarcodeDetected = (code) => {
+  const cleanCode = code.trim();
+  const now = Date.now();
 
-    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
+  if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
 
-    setLastScanned({ code: cleanCode, time: now });
+  setLastScanned({ code: cleanCode, time: now });
 
-    const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
-    );
+  const found = products.find(
+    (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+  );
 
-    if (!found) return;
+  if (!found) return;
 
-    playBeep();
+  playBeep();
 
-    if (scanCartMode) {
-      setScannedProducts((prev) => {
-        const exists = prev.find((p) => p.id === found.id);
-        if (exists) {
-          return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
-          );
-        }
-        return [...prev, { ...found, quantity: 1 }];
-      });
+  // 🛒 MODO CARRITO
+  if (scanCartMode) {
+    const stock = getStock(found);
+
+    // 🚨 VALIDACIÓN SOLO AQUÍ
+    if (stock === 0) {
+      const now = Date.now();
+
+      if (
+        lastErrorRef.current.code !== cleanCode ||
+        now - lastErrorRef.current.time > 1500
+      ) {
+        lastErrorRef.current = { code: cleanCode, time: now };
+      }
+
+      setErrorProductId(found.id);
+      setTimeout(() => setErrorProductId(null), 400);
+
       return;
     }
 
-    setSearch(cleanCode);
+    setScannedProducts((prev) => {
+      const exists = prev.find((p) => p.id === found.id);
+
+      if (exists) {
+        if ((exists.quantity || 1) >= stock) {
+          return prev;
+        }
+        return prev.map((p) =>
+          p.id === found.id
+            ? { ...p, quantity: (p.quantity || 1) + 1 }
+            : p,
+        );
+      }
+
+      return [...prev, { ...found, quantity: 1 }];
+    });
+
+    return;
+  }
+
+  // 🔍 MODO BÚSQUEDA (SIN VALIDAR STOCK)
+  setSearch(cleanCode);
+  setScanning(false);
+};
+
+  const openSearchScanner = () => {
+    setScanCartMode(false);
+    setScanning(true);
+  };
+
+  const openCartScanner = () => {
+    setScannedProducts([]); // limpia escaneos anteriores
+    setScanCartMode(true);
+    setScanning(true);
+  };
+
+  const closeScanner = () => {
     setScanning(false);
+    setScanCartMode(false);
+  };
+
+  ///////////////////////////////////////
+  // CONFIRMAR ESCANEO → CARRITO
+  ///////////////////////////////////////
+  const totalScannedUnits = scannedProducts.reduce(
+    (sum, p) => sum + (p.quantity || 1),
+    0,
+  );
+
+  const handleConfirmScanned = () => {
+    scannedProducts.forEach((product) => {
+      for (let i = 0; i < (product.quantity || 1); i++) {
+        addToCart(product);
+      }
+    });
+    setScannedProducts([]);
+    closeScanner();
+    navigate("/cart");
   };
 
   return (
@@ -299,7 +367,7 @@ function Inventory() {
           value={search}
           onChange={onFilterTextBoxChanged}
         />
-        <ScanButton onClick={() => setScanning(true)}>
+        <ScanButton onClick={openSearchScanner}>
           <ScanLine size={18} />
         </ScanButton>
       </SearchBar>
@@ -387,11 +455,12 @@ function Inventory() {
           })}
         </ProductsGrid>
       </ScrollArea>
+
       {/* FOOTER */}
       <BottomActions>
         {permissions.canSell && (
           <>
-            <ScannerButton onClick={() => setScanning(true)}>
+            <ScannerButton onClick={openCartScanner}>
               <ScanLine size={22} />
             </ScannerButton>
             <AddToCartButton onClick={handleGoToCart}>
@@ -400,18 +469,45 @@ function Inventory() {
           </>
         )}
       </BottomActions>
+
       {/* MODAL SCANNER */}
       {scanning && (
         <ScannerOverlay>
           {scanCartMode ? (
-            <MultiBarCodeReader
-              onDetected={handleBarcodeDetected}
-              onClose={() => setScanning(false)}
-            />
+            <>
+              <MultiBarCodeReader
+                onDetected={handleBarcodeDetected}
+                onClose={closeScanner}
+              />
+              {/* BOTÓN CONFIRMAR */}
+              {scannedProducts.length > 0 && (
+                <div
+                  onClick={handleConfirmScanned}
+                  style={{
+                    position: "absolute",
+                    bottom: "2rem",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    backgroundColor: theme.colors.primary,
+                    color: "white",
+                    padding: "0.85rem 2rem",
+                    borderRadius: "999px",
+                    fontWeight: "600",
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    zIndex: 999,
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Añadir {totalScannedUnits} producto{totalScannedUnits !== 1 ? "s" : ""} al carrito
+                </div>
+              )}
+            </>
           ) : (
             <BarcodeReader
               onDetected={handleBarcodeDetected}
-              onClose={() => setScanning(false)}
+              onClose={closeScanner}
             />
           )}
         </ScannerOverlay>
