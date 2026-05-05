@@ -137,7 +137,7 @@ function ProductForm() {
       }
 
       const payload = {
-        name: values.name,
+        name: values.name.toUpperCase(),
         description: values.description,
         barcode: values.barcode,
         price: Number(values.price),
