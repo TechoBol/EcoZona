@@ -10,6 +10,7 @@ import CreateTransferModal from "../components/modals/CreateTransferModal";
 import { useLoginStore } from "../components/store/loginStore";
 import { usePermissions } from "../hooks/usePermissions";
 import UserMenu from "../components/menus/UserMenu";
+import { useSucursales } from "../hooks/useSucursales";
 
 import {
   Wrapper,
@@ -58,6 +59,8 @@ export default function Transfers() {
   const [open, setOpen] = useState(false);
   const [view, setView] = useState("mine");
 
+  const { data: locations } = useSucursales();
+
   const [form, setForm] = useState({
     items: [],
   });
@@ -65,10 +68,10 @@ export default function Transfers() {
   const filteredData = isReadOnly
     ? data || []
     : (data || []).filter((t) =>
-        view === "mine"
-          ? t.toLocation?.id === location?.id
-          : t.toLocation?.id !== location?.id,
-      );
+      view === "mine"
+        ? t.toLocation?.id === location?.id
+        : t.toLocation?.id !== location?.id,
+    );
 
   const rows = filteredData.map((t) => ({
     id: t.id,
@@ -233,7 +236,7 @@ export default function Transfers() {
               setForm({ items: [] });
               setOpen(true);
             }}>
-              + Solicitar transferencia
+              Realizar transferencia
             </AddButton>
           )}
         </Actions>
@@ -256,6 +259,7 @@ export default function Transfers() {
           setForm={setForm}
           inventory={inventory}
           location={location}
+          locations={locations}
           onSubmit={async (data) => {
             await createTransfer(data);
             setOpen(false);
