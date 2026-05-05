@@ -167,7 +167,7 @@ export const Card = styled.div`
   background: ${theme.colors.background};
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-
+  
   border: 2px solid
     ${(props) =>
       props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
@@ -223,6 +223,9 @@ export const ProductImage = styled.img`
   -webkit-user-select: none;
   user-select: none;
   pointer-events: none;
+    @media (min-width: 768px) {
+    height: 200px;
+  }
 `;
 
 /* Info */
@@ -234,12 +237,17 @@ export const ProductInfo = styled.div`
 `;
 
 export const ProductName = styled.p`
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
   margin: 0;
-  white-space: nowrap;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* máximo 3 líneas */
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  white-space: normal; /* 🔥 clave */
 `;
 
 export const ProductCode = styled.p`
