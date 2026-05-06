@@ -26,6 +26,7 @@ export default function CreateTransferModal({
   const [searches, setSearches] = useState({});
   const [activeIndex, setActiveIndex] = useState(null);
   const [sending, setSending] = useState(false);
+  const isSending = useRef(false); // bloqueo instant00e1neo sin esperar re-render
   const [showDestinations, setShowDestinations] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
   const [destDropdownPos, setDestDropdownPos] = useState({ top: 0, left: 0, width: 0 });
@@ -143,9 +144,11 @@ export default function CreateTransferModal({
 
   // ── submit ─────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    if (sending) return;
+    // isSending.current bloquea instantáneamente (antes del re-render)
+    if (isSending.current) return;
+    isSending.current = true;
+    setSending(true);
     try {
-      setSending(true);
       await onSubmit({
         destinationId: form.destinationId,
         items: form.items.map((i) => ({
@@ -158,6 +161,7 @@ export default function CreateTransferModal({
     } catch {
       errorToast("Error al enviar la transferencia");
     } finally {
+      isSending.current = false;
       setSending(false);
     }
   };
