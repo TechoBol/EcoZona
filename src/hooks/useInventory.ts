@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
+import useSWR from "swr";
 import { useLoginStore } from "../components/store/loginStore";
 import { getProducts } from "../services/InventoryService";
 import socket from "../services/SocketIOConnection";
@@ -6,39 +7,32 @@ import { useInventoryStore } from "../components/store/inventoryStore";
 import { notificationToast } from "../services/toasts";
 import { useNavigate } from "react-router-dom";
 
+// Fetcher fuera del hook para que SWR lo pueda cachear por key
+const fetcher = ([_, token]: [string, string]) => getProducts(token);
+
 const useInventory = () => {
   const { token } = useLoginStore();
-
-  // GLOBAL STORE
-  const { products, setProducts } = useInventoryStore();
+  const { setProducts } = useInventoryStore();
+  const navigate = useNavigate();
 
   const [filteredProducts, setFilteredProducts] = useState<any[]>([]);
   const [search, setSearch] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-
-  // ESCANNER
   const [scannerBuffer, setScannerBuffer] = useState("");
 
-  const goToInventory = () => {
-    navigate("/inventory");
-  };
-
   //////////////////////////////
-  // FETCH
+  // SWR
   //////////////////////////////
-  const fetchProducts = async () => {
-    setIsLoading(true);
-
-    try {
-      const data = await getProducts(token);
-      setProducts(data);
-    } catch (error) {
-      console.error("Error al obtener productos:", error);
-    } finally {
-      setIsLoading(false);
+  const { data: products = [], isLoading, mutate } = useSWR(
+    token ? ["products", token] : null,  // null = no fetches si no hay token
+    fetcher,
+    {
+      revalidateOnFocus: false,      // No refetch al cambiar de pestaña
+      dedupingInterval: 5000,        // Evita requests duplicados en 5s
+      onSuccess: (data) => {
+        setProducts(data);           // Sincroniza tu store global igual que antes
+      },
     }
-  };
+  );
 
   //////////////////////////////
   // FILTRO
@@ -65,6 +59,8 @@ const useInventory = () => {
     setSearch(e.target.value);
   };
 
+  const goToInventory = () => navigate("/inventory");
+
   //////////////////////////////
   // SCANNER GLOBAL
   //////////////////////////////
@@ -77,76 +73,51 @@ const useInventory = () => {
       if (e.key === "Enter") {
         if (scannerBuffer) {
           setSearch(scannerBuffer);
-
-          const found = products.find(
-            (p: any) => p.barcode === scannerBuffer
-          );
-
-          if (found) {
-            console.log("Producto escaneado:", found);
-          }
+          const found = products.find((p: any) => p.barcode === scannerBuffer);
+          if (found) console.log("Producto escaneado:", found);
         }
-
         setScannerBuffer("");
         return;
       }
+
       setScannerBuffer((prev) => prev + e.key);
       clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        setScannerBuffer("");
-      }, 100);
+      timeout = setTimeout(() => setScannerBuffer(""), 100);
     };
 
     window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [scannerBuffer, products]);
 
   //////////////////////////////
-  // INIT
+  // SOCKET — usa mutate en vez de fetchProducts
   //////////////////////////////
   useEffect(() => {
-    if (!products.length) {
-      fetchProducts();
-    }
-  }, []);
+    const handleRefresh = () => mutate();  // Revalida el caché de SWR
 
-  //////////////////////////////
-  // 🔌 SOCKET
-  //////////////////////////////
-  useEffect(() => {
-    socket.on("newProduct", (producto) => {
-      fetchProducts();
-    });
+    const handleTransfer = (mensaje: string) => {
+      notificationToast(mensaje);
+      mutate();
+    };
 
-    socket.on("cartProduct", () => {
-      fetchProducts();
-    });
-
-    socket.on("transfer", (mensaje) => {
-      notificationToast(mensaje)
-      fetchProducts();
-    });
+    socket.on("newProduct", handleRefresh);
+    socket.on("cartProduct", handleRefresh);
+    socket.on("transfer", handleTransfer);
 
     return () => {
-      socket.off("newProduct");
-      socket.off("cartProduct");
-      socket.off("transfer");
+      socket.off("newProduct", handleRefresh);
+      socket.off("cartProduct", handleRefresh);
+      socket.off("transfer", handleTransfer);
     };
-  }, []);
+  }, [mutate]);
 
-  //////////////////////////////
-  // RETURN
-  //////////////////////////////
   return {
     products: filteredProducts,
     search,
     setSearch,
     isLoading,
     onFilterTextBoxChanged,
-    refresh: fetchProducts,
+    refresh: mutate,
     goToInventory,
   };
 };

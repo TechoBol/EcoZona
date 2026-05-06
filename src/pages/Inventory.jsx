@@ -70,7 +70,6 @@ function Inventory() {
   const [selectedBrand, setSelectedBrand] = useState(null);
 
   const permissions = usePermissions();
-
   const canChangeLocation = permissions.isAdmin;
 
   ///////////////////////////////////////
@@ -180,26 +179,38 @@ function Inventory() {
   };
 
   ///////////////////////////////////////
-  // IMÁGENES
+  // IMÁGENES — carga paralela + cache
   ///////////////////////////////////////
   const [imageUrls, setImageUrls] = useState({});
+  const urlCacheRef = useRef({}); // cache persistente entre renders
   const { getFileUrl } = useAmazonS3();
+  const loadingImagesRef = useRef(new Set());
 
   useEffect(() => {
     if (!products.length) return;
 
+    // ✅ Paralelo — todos los requests al mismo tiempo
     const loadImages = async () => {
-      const urls = {};
-      for (const product of products) {
-        if (!product.imageUrl) continue;
-        if (imageUrls[product.id]) continue;
-        try {
-          urls[product.id] = await getFileUrl(product.imageUrl);
-        } catch {
-          urls[product.id] = null;
-        }
-      }
-      setImageUrls((prev) => ({ ...prev, ...urls }));
+      const newProducts = products.filter(
+        (p) => p.imageUrl && !imageUrls[p.id]
+      );
+
+      if (!newProducts.length) return;
+
+      const results = await Promise.all(
+        newProducts.map(async (product) => {
+          try {
+            const url = await getFileUrl(product.imageUrl);
+            return [product.id, url];
+          } catch {
+            return [product.id, null];
+          }
+        })
+      );
+      setImageUrls((prev) => ({
+        ...prev,
+        ...Object.fromEntries(results),
+      }));
     };
 
     loadImages();
@@ -293,7 +304,7 @@ function Inventory() {
   };
 
   const openCartScanner = () => {
-    setScannedProducts([]); // limpia escaneos anteriores
+    setScannedProducts([]);
     setScanCartMode(true);
     setScanning(true);
   };
@@ -322,6 +333,9 @@ function Inventory() {
     navigate("/cart");
   };
 
+  ///////////////////////////////////////
+  // RENDER
+  ///////////////////////////////////////
   return (
     <Wrapper>
       <Header>
@@ -439,9 +453,10 @@ function Inventory() {
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
-                  src={
-                    imageUrls[product.id] || "https://via.placeholder.com/150"
-                  }
+                  key={imageUrls[product.id]}
+                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <ProductInfo>
                   <ProductName>{product.name}</ProductName>
@@ -480,7 +495,6 @@ function Inventory() {
                 onDetected={handleBarcodeDetected}
                 onClose={closeScanner}
               />
-              {/* BOTÓN CONFIRMAR */}
               {scannedProducts.length > 0 && (
                 <div
                   onClick={handleConfirmScanned}
