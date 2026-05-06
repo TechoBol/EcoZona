@@ -57,7 +57,7 @@ export default function Transfers() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [open, setOpen] = useState(false);
-  const [view, setView] = useState("mine");
+  const [view, setView] = useState("all");
 
   const { data: locations } = useSucursales();
 
@@ -68,10 +68,10 @@ export default function Transfers() {
   const filteredData = isReadOnly
     ? data || []
     : (data || []).filter((t) =>
-      view === "mine"
-        ? t.toLocation?.id === location?.id
-        : t.toLocation?.id !== location?.id,
-    );
+        view === "mine"
+          ? t.toLocation?.id === location?.id
+          : t.toLocation?.id !== location?.id,
+      );
 
   const rows = filteredData.map((t) => ({
     id: t.id,
@@ -211,16 +211,6 @@ export default function Transfers() {
             <div style={{ display: "flex", gap: 10, marginRight: 10 }}>
               <AddButton
                 style={{
-                  background: view === "mine" ? "#2c3e50" : "#ecf0f1",
-                  color: view === "mine" ? "white" : "#2c3e50",
-                }}
-                onClick={() => setView("mine")}
-              >
-                Mis solicitudes
-              </AddButton>
-
-              <AddButton
-                style={{
                   background: view === "all" ? "#2c3e50" : "#ecf0f1",
                   color: view === "all" ? "white" : "#2c3e50",
                 }}
@@ -228,14 +218,25 @@ export default function Transfers() {
               >
                 Todas las transferencias
               </AddButton>
+              <AddButton
+                style={{
+                  background: view === "mine" ? "#2c3e50" : "#ecf0f1",
+                  color: view === "mine" ? "white" : "#2c3e50",
+                }}
+                onClick={() => setView("mine")}
+              >
+                Mis solicitudes
+              </AddButton>
             </div>
           )}
 
           {canCreate && (
-            <AddButton onClick={() => {
-              setForm({ items: [] });
-              setOpen(true);
-            }}>
+            <AddButton
+              onClick={() => {
+                setForm({ items: [] });
+                setOpen(true);
+              }}
+            >
               Realizar transferencia
             </AddButton>
           )}

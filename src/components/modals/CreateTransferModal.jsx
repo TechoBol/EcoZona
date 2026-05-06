@@ -333,14 +333,28 @@ export default function CreateTransferModal({
                       </button>
                       <input
                         type="number"
-                        value={item.quantity}
+                        value={item.quantity === "" ? "" : item.quantity}  // permite vacío
                         min={1}
                         onChange={(e) => {
+                          const raw = e.target.value;
+
+                          // Si está vacío, permite que quede vacío temporalmente
+                          if (raw === "") {
+                            updateItem(index, "quantity", "");
+                            return;
+                          }
+
                           const max = item.productId ? getAvailableStock(item.productId, index) : 999;
-                          let val = parseInt(e.target.value, 10);
+                          let val = parseInt(raw, 10);
                           if (isNaN(val) || val < 1) val = 1;
                           if (val > max) val = max;
                           updateItem(index, "quantity", val);
+                        }}
+                        onBlur={() => {
+                          // Al salir del campo, si está vacío o inválido lo resetea a 1
+                          if (item.quantity === "" || Number(item.quantity) < 1) {
+                            updateItem(index, "quantity", 1);
+                          }
                         }}
                         style={{
                           width: "36px",
@@ -348,7 +362,6 @@ export default function CreateTransferModal({
                           border: "none",
                           fontSize: "14px",
                           fontWeight: 600,
-                          // ocultar flechitas nativas
                           MozAppearance: "textfield",
                           WebkitAppearance: "none",
                           appearance: "textfield",

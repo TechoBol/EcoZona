@@ -147,7 +147,7 @@ export const ProductText = styled.div`
 
 export const ProductName = styled.span`
   font-weight: 600;
-  font-size: 20px;
+  font-size: 15px;
 `;
 
 export const ProductPrice = styled.span`
