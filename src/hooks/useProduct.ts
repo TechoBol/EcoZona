@@ -27,7 +27,7 @@ export const useProduct = () => {
   const subirArchivo = async (file: File, barcode: string) => {
     const fileName = `${barcode}`;
 
-  // OPTIMIZAR IMAGEN ANTES DE SUBIR
+    // OPTIMIZAR IMAGEN ANTES DE SUBIR
     const optimizedFile = await optimizeImage(file);
     const key = await s3.uploadProductImage(optimizedFile, fileName);
     return key;
@@ -36,10 +36,9 @@ export const useProduct = () => {
   const createProduct = async (data: any) => {
     try {
       setError(null);
-
       const payload = {
         ...data,
-        locationId: location.id,
+        locationId: data.locationId ?? location.id,
       };
 
       const result = await createProductService(payload, token);
@@ -57,7 +56,7 @@ export const useProduct = () => {
 
       const payload = {
         ...data,
-        locationId: location.id,
+        locationId: data.locationId ?? location.id,
       };
 
       const result = await updateProductService(id, payload, token);
