@@ -6,7 +6,6 @@ import { useLoginStore } from "../components/store/loginStore";
 import { useSucursales } from "../hooks/useSucursales";
 import { theme } from "../components/ui/Theme";
 
-
 import {
   Wrapper,
   Header,
@@ -75,7 +74,6 @@ function Inventory() {
   const [selectedBrand, setSelectedBrand] = useState(null);
 
   const permissions = usePermissions();
-
   const canChangeLocation = permissions.isAdmin;
 
   ///////////////////////////////////////
@@ -175,26 +173,38 @@ function Inventory() {
   };
 
   ///////////////////////////////////////
-  // IMÁGENES
+  // IMÁGENES — carga paralela + cache
   ///////////////////////////////////////
   const [imageUrls, setImageUrls] = useState({});
+  const urlCacheRef = useRef({}); // cache persistente entre renders
   const { getFileUrl } = useAmazonS3();
+  const loadingImagesRef = useRef(new Set());
 
   useEffect(() => {
     if (!products.length) return;
 
+    // ✅ Paralelo — todos los requests al mismo tiempo
     const loadImages = async () => {
-      const urls = {};
-      for (const product of products) {
-        if (!product.imageUrl) continue;
-        if (imageUrls[product.id]) continue;
-        try {
-          urls[product.id] = await getFileUrl(product.imageUrl);
-        } catch {
-          urls[product.id] = null;
-        }
-      }
-      setImageUrls((prev) => ({ ...prev, ...urls }));
+      const newProducts = products.filter(
+        (p) => p.imageUrl && !imageUrls[p.id]
+      );
+
+      if (!newProducts.length) return;
+
+      const results = await Promise.all(
+        newProducts.map(async (product) => {
+          try {
+            const url = await getFileUrl(product.imageUrl);
+            return [product.id, url];
+          } catch {
+            return [product.id, null];
+          }
+        })
+      );
+      setImageUrls((prev) => ({
+        ...prev,
+        ...Object.fromEntries(results),
+      }));
     };
 
     loadImages();
@@ -220,71 +230,63 @@ function Inventory() {
   });
 
   const lastErrorRef = useRef({ code: "", time: 0 });
-  
+
   ///////////////////////////////////////
   // SCANNER
   ///////////////////////////////////////
-const handleBarcodeDetected = (code) => {
-  const cleanCode = code.trim();
-  const now = Date.now();
+  const handleBarcodeDetected = (code) => {
+    const cleanCode = code.trim();
+    const now = Date.now();
 
-  if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
+    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
 
-  setLastScanned({ code: cleanCode, time: now });
+    setLastScanned({ code: cleanCode, time: now });
 
-  const found = products.find(
-    (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
-  );
+    const found = products.find(
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+    );
 
-  if (!found) return;
+    if (!found) return;
 
-  playBeep();
+    playBeep();
 
-  // 🛒 MODO CARRITO
-  if (scanCartMode) {
-    const stock = getStock(found);
+    // 🛒 MODO CARRITO
+    if (scanCartMode) {
+      const stock = getStock(found);
 
-    // 🚨 VALIDACIÓN SOLO AQUÍ
-    if (stock === 0) {
-      const now = Date.now();
-
-      if (
-        lastErrorRef.current.code !== cleanCode ||
-        now - lastErrorRef.current.time > 1500
-      ) {
-        lastErrorRef.current = { code: cleanCode, time: now };
+      if (stock === 0) {
+        const now = Date.now();
+        if (
+          lastErrorRef.current.code !== cleanCode ||
+          now - lastErrorRef.current.time > 1500
+        ) {
+          lastErrorRef.current = { code: cleanCode, time: now };
+        }
+        setErrorProductId(found.id);
+        setTimeout(() => setErrorProductId(null), 400);
+        return;
       }
 
-      setErrorProductId(found.id);
-      setTimeout(() => setErrorProductId(null), 400);
+      setScannedProducts((prev) => {
+        const exists = prev.find((p) => p.id === found.id);
+        if (exists) {
+          if ((exists.quantity || 1) >= stock) return prev;
+          return prev.map((p) =>
+            p.id === found.id
+              ? { ...p, quantity: (p.quantity || 1) + 1 }
+              : p,
+          );
+        }
+        return [...prev, { ...found, quantity: 1 }];
+      });
 
       return;
     }
 
-    setScannedProducts((prev) => {
-      const exists = prev.find((p) => p.id === found.id);
-
-      if (exists) {
-        if ((exists.quantity || 1) >= stock) {
-          return prev;
-        }
-        return prev.map((p) =>
-          p.id === found.id
-            ? { ...p, quantity: (p.quantity || 1) + 1 }
-            : p,
-        );
-      }
-
-      return [...prev, { ...found, quantity: 1 }];
-    });
-
-    return;
-  }
-
-  // 🔍 MODO BÚSQUEDA (SIN VALIDAR STOCK)
-  setSearch(cleanCode);
-  setScanning(false);
-};
+    // 🔍 MODO BÚSQUEDA
+    setSearch(cleanCode);
+    setScanning(false);
+  };
 
   const openSearchScanner = () => {
     setScanCartMode(false);
@@ -292,7 +294,7 @@ const handleBarcodeDetected = (code) => {
   };
 
   const openCartScanner = () => {
-    setScannedProducts([]); // limpia escaneos anteriores
+    setScannedProducts([]);
     setScanCartMode(true);
     setScanning(true);
   };
@@ -321,6 +323,9 @@ const handleBarcodeDetected = (code) => {
     navigate("/cart");
   };
 
+  ///////////////////////////////////////
+  // RENDER
+  ///////////////////////////////////////
   return (
     <Wrapper>
       <Header>
@@ -438,9 +443,10 @@ const handleBarcodeDetected = (code) => {
                 onClick={() => handleClick(product)}
               >
                 <ProductImage
-                  src={
-                    imageUrls[product.id] || "https://via.placeholder.com/150"
-                  }
+                  key={imageUrls[product.id]}
+                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+                  loading="lazy"
+                  decoding="async"
                 />
                 <ProductInfo>
                   <ProductName>{product.name}</ProductName>
@@ -479,7 +485,6 @@ const handleBarcodeDetected = (code) => {
                 onDetected={handleBarcodeDetected}
                 onClose={closeScanner}
               />
-              {/* BOTÓN CONFIRMAR */}
               {scannedProducts.length > 0 && (
                 <div
                   onClick={handleConfirmScanned}
