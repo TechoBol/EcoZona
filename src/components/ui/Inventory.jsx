@@ -29,6 +29,14 @@ export const Title = styled.h1`
   color: ${theme.colors.text};
   text-align: center;
   justify-self: center;
+  white-space: nowrap;        // ← no permite salto de línea
+  overflow: hidden;
+  text-overflow: ellipsis;    // ← si es muy largo pone "..."
+  min-width: 0;               // ← necesario para que funcione en grid
+
+  @media (max-width: 400px) {
+    font-size: 15px;          // ← reduce en pantallas pequeñas
+  }
 `;
 
 /* Profile */
