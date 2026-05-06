@@ -6,7 +6,6 @@ import { useLoginStore } from "../components/store/loginStore";
 import { useSucursales } from "../hooks/useSucursales";
 import { theme } from "../components/ui/Theme";
 
-
 import {
   Wrapper,
   Header,
@@ -52,12 +51,8 @@ function Inventory() {
 
   const addToCart = useCartStore((state) => state.addToCart);
 
-  const {
-    products,
-    search,
-    setSearch,
-    onFilterTextBoxChanged,
-  } = useInventory();
+  const { products, search, setSearch, onFilterTextBoxChanged } =
+    useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
@@ -105,7 +100,7 @@ function Inventory() {
   const playBeep = () => {
     if (!beepRef.current) return;
     beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => { });
+    beepRef.current.play().catch(() => {});
   };
 
   ///////////////////////////////////////
@@ -116,7 +111,12 @@ function Inventory() {
   const handleMouseDown = (product) => {
     if (!permissions.canEditProduct) return;
     pressTimer.current = setTimeout(() => {
-      navigate("/product/edit", { state: product });
+      navigate("/product/edit", {
+        state: {
+          product,
+          locationId: selectedLocation?.id,
+        },
+      });
     }, 700);
   };
 
@@ -125,7 +125,12 @@ function Inventory() {
   const handleTouchStart = (product) => {
     if (!permissions.canEditProduct) return;
     pressTimer.current = setTimeout(() => {
-      navigate("/product/edit", { state: product });
+      navigate("/product/edit", {
+        state: {
+          product,
+          locationId: selectedLocation?.id,
+        },
+      });
     }, 700);
   };
 
@@ -136,13 +141,13 @@ function Inventory() {
   // STOCK
   ///////////////////////////////////////
   const getStock = (product) => {
-    if (product.stockBySucursal && selectedLocation) {
-      const found = product.stockBySucursal.find(
-        (s) => s.locationId === selectedLocation.id,
-      );
-      return found?.quantity || 0;
-    }
-    return product.inventories?.[0]?.quantity || 0;
+    if (!selectedLocation) return 0;
+
+    const found = product.inventories?.find(
+      (inv) => inv.locationId === selectedLocation.id,
+    );
+
+    return found?.quantity || 0;
   };
 
   ///////////////////////////////////////
@@ -205,9 +210,7 @@ function Inventory() {
   ///////////////////////////////////////
   const lines = [
     ...new Map(
-      products
-        .filter((p) => p.line)
-        .map((p) => [p.line.id, p.line])
+      products.filter((p) => p.line).map((p) => [p.line.id, p.line]),
     ).values(),
   ];
 
@@ -220,71 +223,69 @@ function Inventory() {
   });
 
   const lastErrorRef = useRef({ code: "", time: 0 });
-  
+
   ///////////////////////////////////////
   // SCANNER
   ///////////////////////////////////////
-const handleBarcodeDetected = (code) => {
-  const cleanCode = code.trim();
-  const now = Date.now();
+  const handleBarcodeDetected = (code) => {
+    const cleanCode = code.trim();
+    const now = Date.now();
 
-  if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
+    if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
 
-  setLastScanned({ code: cleanCode, time: now });
+    setLastScanned({ code: cleanCode, time: now });
 
-  const found = products.find(
-    (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
-  );
+    const found = products.find(
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+    );
 
-  if (!found) return;
+    if (!found) return;
 
-  playBeep();
+    playBeep();
 
-  // 🛒 MODO CARRITO
-  if (scanCartMode) {
-    const stock = getStock(found);
+    // 🛒 MODO CARRITO
+    if (scanCartMode) {
+      const stock = getStock(found);
 
-    // 🚨 VALIDACIÓN SOLO AQUÍ
-    if (stock === 0) {
-      const now = Date.now();
+      // 🚨 VALIDACIÓN SOLO AQUÍ
+      if (stock === 0) {
+        const now = Date.now();
 
-      if (
-        lastErrorRef.current.code !== cleanCode ||
-        now - lastErrorRef.current.time > 1500
-      ) {
-        lastErrorRef.current = { code: cleanCode, time: now };
+        if (
+          lastErrorRef.current.code !== cleanCode ||
+          now - lastErrorRef.current.time > 1500
+        ) {
+          lastErrorRef.current = { code: cleanCode, time: now };
+        }
+
+        setErrorProductId(found.id);
+        setTimeout(() => setErrorProductId(null), 400);
+
+        return;
       }
 
-      setErrorProductId(found.id);
-      setTimeout(() => setErrorProductId(null), 400);
+      setScannedProducts((prev) => {
+        const exists = prev.find((p) => p.id === found.id);
+
+        if (exists) {
+          if ((exists.quantity || 1) >= stock) {
+            return prev;
+          }
+          return prev.map((p) =>
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
+          );
+        }
+
+        return [...prev, { ...found, quantity: 1 }];
+      });
 
       return;
     }
 
-    setScannedProducts((prev) => {
-      const exists = prev.find((p) => p.id === found.id);
-
-      if (exists) {
-        if ((exists.quantity || 1) >= stock) {
-          return prev;
-        }
-        return prev.map((p) =>
-          p.id === found.id
-            ? { ...p, quantity: (p.quantity || 1) + 1 }
-            : p,
-        );
-      }
-
-      return [...prev, { ...found, quantity: 1 }];
-    });
-
-    return;
-  }
-
-  // 🔍 MODO BÚSQUEDA (SIN VALIDAR STOCK)
-  setSearch(cleanCode);
-  setScanning(false);
-};
+    // 🔍 MODO BÚSQUEDA (SIN VALIDAR STOCK)
+    setSearch(cleanCode);
+    setScanning(false);
+  };
 
   const openSearchScanner = () => {
     setScanCartMode(false);
@@ -500,7 +501,8 @@ const handleBarcodeDetected = (code) => {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  Añadir {totalScannedUnits} producto{totalScannedUnits !== 1 ? "s" : ""} al carrito
+                  Añadir {totalScannedUnits} producto
+                  {totalScannedUnits !== 1 ? "s" : ""} al carrito
                 </div>
               )}
             </>

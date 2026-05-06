@@ -43,9 +43,11 @@ import useInventory from "../../hooks/useInventory";
 
 function ProductForm() {
   const navigate = useNavigate();
-  const location = useLocation();
+  const { state } = useLocation();
   const { refresh } = useInventory();
-  const product = location.state ?? null;
+
+  const product = state?.product ?? null;
+  const locationId = state?.locationId ?? null;
   const isEdit = !!product;
 
   const { createProduct, updateProduct, loading, setLoading, subirArchivo } =
@@ -55,18 +57,22 @@ function ProductForm() {
 
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [s3Image, setS3Image] = useState(null);
+  const [imageDeleted, setImageDeleted] = useState(false);
 
   const beepRef = useRef(null);
 
+  ///////////////////////////////////////
+  // BEEP
+  ///////////////////////////////////////
   useEffect(() => {
     beepRef.current = new Audio(Beep);
   }, []);
 
-  const [s3Image, setS3Image] = useState(null);
-  const [imageDeleted, setImageDeleted] = useState(false);
-
+  ///////////////////////////////////////
+  // LOAD IMAGE
+  ///////////////////////////////////////
   useEffect(() => {
-    console.log(product);
     if (!product?.imageUrl) return;
 
     const loadImage = async () => {
@@ -81,6 +87,22 @@ function ProductForm() {
     loadImage();
   }, [product]);
 
+  ///////////////////////////////////////
+  // STOCK POR SUCURSAL
+  ///////////////////////////////////////
+  const getStockByLocation = (product, locationId) => {
+    if (!product || !locationId) return "";
+
+    const found = product.inventories?.find(
+      (inv) => inv.locationId === locationId
+    );
+
+    return found?.quantity ?? 0;
+  };
+
+  ///////////////////////////////////////
+  // FORM
+  ///////////////////////////////////////
   const form = useForm({
     initialValues: {
       name: product?.name ?? "",
@@ -89,7 +111,7 @@ function ProductForm() {
       imageFile: null,
       price: product?.price ?? "",
       finalPrice: product?.finalPrice ?? "",
-      stock: product?.inventories?.[0]?.quantity ?? "",
+      stock: isEdit ? getStockByLocation(product, locationId) : "",
       lineId: product?.lineId ?? "",
       brandName: product?.brandName ?? "",
     },
@@ -99,18 +121,21 @@ function ProductForm() {
     validate: {
       name: (v) => (!v.trim() ? "Ingresa el nombre" : null),
       barcode: (v) => (!v.trim() ? "Ingresa el código" : null),
-      price: (v) => (!v || Number(v) <= 0 ? "Ingresa un precio válido" : null),
+      price: (v) => (!v || Number(v) <= 0 ? "Precio inválido" : null),
       finalPrice: (v, values) =>
         !v || Number(v) <= 0
-          ? "Ingresa un precio válido"
+          ? "Precio inválido"
           : Number(v) < Number(values.price)
-          ? "El precio final no puede ser menor que el precio base."
+          ? "No puede ser menor al precio base"
           : null,
       stock: (v) =>
-        v === "" || Number(v) < 0 ? "Ingresa una cantidad válida" : null,
+        v === "" || Number(v) < 0 ? "Cantidad inválida" : null,
     },
   });
 
+  ///////////////////////////////////////
+  // PREVIEW IMAGE
+  ///////////////////////////////////////
   const previewUrl = useMemo(() => {
     if (form.values.imageFile) {
       return URL.createObjectURL(form.values.imageFile);
@@ -123,9 +148,13 @@ function ProductForm() {
     return null;
   }, [form.values.imageFile, s3Image, imageDeleted]);
 
+  ///////////////////////////////////////
+  // SUBMIT
+  ///////////////////////////////////////
   const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
+
       let imageKey = product?.imageUrl || null;
 
       if (values.imageFile) {
@@ -143,6 +172,7 @@ function ProductForm() {
         price: Number(values.price),
         finalPrice: Number(values.finalPrice),
         stock: Number(values.stock),
+        locationId, // 🔥 IMPORTANTE
         imageUrl: imageKey,
         lineId: Number(values.lineId),
         brandName: values.brandName,
@@ -157,10 +187,12 @@ function ProductForm() {
         result = await createProduct(payload);
         successToast("Producto creado");
       }
+
       form.reset();
       socket.emit("createProduct", result);
       refresh();
       navigate("/inventory", { replace: true });
+
     } catch (err) {
       errorToast(err.message || "Error inesperado");
     } finally {
@@ -168,12 +200,15 @@ function ProductForm() {
     }
   });
 
+  ///////////////////////////////////////
+  // LINES / BRANDS
+  ///////////////////////////////////////
   const { lines } = useLines();
   const [brands, setBrands] = useState([]);
 
   useEffect(() => {
     const selectedLine = lines?.find(
-      (l) => l.id === Number(form.values.lineId),
+      (l) => l.id === Number(form.values.lineId)
     );
 
     if (selectedLine) {
@@ -187,6 +222,9 @@ function ProductForm() {
     }
   }, [form.values.lineId, lines]);
 
+  ///////////////////////////////////////
+  // UI
+  ///////////////////////////////////////
   return (
     <Wrapper>
       <Header>
@@ -198,177 +236,83 @@ function ProductForm() {
       </Header>
 
       <Form onSubmit={handleSubmit}>
-        {/* ================= COLUMNA IZQUIERDA ================= */}
         <LeftColumn>
-          {/* INFORMACIÓN GENERAL */}
           <Section>
             <SectionTitle>Información general</SectionTitle>
 
             <Grid2>
               <ContainerInput>
-                <Input
-                  placeholder="Nombre del producto"
-                  {...form.getInputProps("name")}
-                />
+                <Input {...form.getInputProps("name")} placeholder="Nombre" />
                 {form.errors.name && <ErrorText>{form.errors.name}</ErrorText>}
               </ContainerInput>
 
               <ContainerInput>
-                <Input
-                  placeholder="Descripción"
-                  {...form.getInputProps("description")}
-                />
+                <Input {...form.getInputProps("description")} placeholder="Descripción" />
               </ContainerInput>
             </Grid2>
 
-            <Grid2>
-              <ContainerInput>
-                <BarcodeWrapper>
-                  <Input
-                    placeholder="Código de barras"
-                    {...form.getInputProps("barcode")}
-                  />
-                  <ScanButton type="button" onClick={() => setScanning(true)}>
-                    <ScanLine size={18} />
-                  </ScanButton>
-                </BarcodeWrapper>
-                {form.errors.barcode && (
-                  <ErrorText>{form.errors.barcode}</ErrorText>
-                )}
-              </ContainerInput>
-            </Grid2>
+            <ContainerInput>
+              <BarcodeWrapper>
+                <Input {...form.getInputProps("barcode")} placeholder="Código" />
+                <ScanButton onClick={() => setScanning(true)}>
+                  <ScanLine size={18} />
+                </ScanButton>
+              </BarcodeWrapper>
+            </ContainerInput>
           </Section>
 
-          {/* COSTOS E INVENTARIO */}
           <Section>
             <SectionTitle>Costos e inventario</SectionTitle>
 
             <Grid3>
-              <ContainerInput>
-                <Input
-                  type="number"
-                  placeholder="Precio compra"
-                  {...form.getInputProps("price")}
-                />
-                {form.errors.price && (
-                  <ErrorText>{form.errors.price}</ErrorText>
-                )}
-              </ContainerInput>
-
-              <ContainerInput>
-                <Input
-                  type="number"
-                  placeholder="Precio venta"
-                  {...form.getInputProps("finalPrice")}
-                />
-                {form.errors.finalPrice && (
-                  <ErrorText>{form.errors.finalPrice}</ErrorText>
-                )}
-              </ContainerInput>
-
-              <ContainerInput>
-                <Input
-                  type="number"
-                  placeholder="Stock inicial"
-                  {...form.getInputProps("stock")}
-                />
-                {form.errors.stock && (
-                  <ErrorText>{form.errors.stock}</ErrorText>
-                )}
-              </ContainerInput>
+              <Input type="number" {...form.getInputProps("price")} placeholder="Compra" />
+              <Input type="number" {...form.getInputProps("finalPrice")} placeholder="Venta" />
+              <Input type="number" {...form.getInputProps("stock")} placeholder="Stock" />
             </Grid3>
           </Section>
         </LeftColumn>
 
-        {/* ================= COLUMNA DERECHA ================= */}
         <RightColumn>
-          {/* CLASIFICACIÓN */}
           <Section>
-            <SectionTitle>Clasificación del producto</SectionTitle>
+            <SectionTitle>Clasificación</SectionTitle>
 
             <Grid2>
-              <ContainerInput>
-                <Select {...form.getInputProps("lineId")}>
-                  <option value="">Selecciona una marca</option>
-                  {lines?.map((line) => (
-                    <option key={line.id} value={line.id}>
-                      {line.name}
-                    </option>
-                  ))}
-                </Select>
-              </ContainerInput>
+              <Select {...form.getInputProps("lineId")}>
+                <option value="">Línea</option>
+                {lines?.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </Select>
 
-              <ContainerInput>
-                <Select
-                  {...form.getInputProps("brandName")}
-                  disabled={!form.values.lineId}
-                >
-                  <option value="">Selecciona una línea</option>
-                  {brands.map((brand) => (
-                    <option key={brand} value={brand}>
-                      {brand}
-                    </option>
-                  ))}
-                </Select>
-              </ContainerInput>
+              <Select {...form.getInputProps("brandName")} disabled={!form.values.lineId}>
+                <option value="">Marca</option>
+                {brands.map((b) => (
+                  <option key={b} value={b}>{b}</option>
+                ))}
+              </Select>
             </Grid2>
           </Section>
 
-          {/* IMAGEN */}
           <Section>
-            <SectionTitle>Imagen del producto</SectionTitle>
+            <SectionTitle>Imagen</SectionTitle>
 
-            {!form.values.imageFile && !previewUrl && (
-              <ImageActions>
-                <UploadBox>
-                  🖼️ Elegir imagen
-                  <HiddenInput
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        form.setFieldValue("imageFile", file);
-                        setImageDeleted(false);
-                      }
-                    }}
-                  />
-                </UploadBox>
-
-                <UploadBox>
-                  📸 Tomar foto
-                  <HiddenInput
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        form.setFieldValue("imageFile", file);
-                        setImageDeleted(false);
-                      }
-                    }}
-                  />
-                </UploadBox>
-              </ImageActions>
+            {!previewUrl && (
+              <UploadBox>
+                Subir imagen
+                <HiddenInput
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) form.setFieldValue("imageFile", file);
+                  }}
+                />
+              </UploadBox>
             )}
 
             {previewUrl && (
-              <PreviewContainer className={isClosing ? "closing" : ""}>
+              <PreviewContainer>
                 <PreviewImage src={previewUrl} />
-
-                <RemoveButton
-                  type="button"
-                  onClick={() => {
-                    setIsClosing(true);
-
-                    setTimeout(() => {
-                      form.setFieldValue("imageFile", null);
-                      setImageDeleted(true);
-                      setIsClosing(false);
-                    }, 200);
-                  }}
-                >
+                <RemoveButton onClick={() => setImageDeleted(true)}>
                   <X size={18} />
                 </RemoveButton>
               </PreviewContainer>
@@ -376,14 +320,9 @@ function ProductForm() {
           </Section>
         </RightColumn>
 
-        {/* ================= BOTÓN ================= */}
         <ButtonRow>
-          <Button type="submit" disabled={!form.isValid() || loading}>
-            {loading
-              ? "Guardando..."
-              : isEdit
-              ? "Actualizar Producto"
-              : "Crear Producto"}
+          <Button type="submit">
+            {loading ? "Guardando..." : isEdit ? "Actualizar" : "Crear"}
           </Button>
         </ButtonRow>
       </Form>
