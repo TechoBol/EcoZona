@@ -14,8 +14,9 @@ export const Wrapper = styled.div`
 /* Header */
 export const Header = styled.div`
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;  // ← 4 columnas
   align-items: center;
+  gap: 8px;  // espacio entre los botones de la derecha
   padding: 0 10px;
   margin-bottom: 20px;
 `;
@@ -170,7 +171,7 @@ export const Card = styled.div`
   
   border: 2px solid
     ${(props) =>
-      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
+    props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -300,6 +301,23 @@ export const BottomActions = styled.div`
 
 /* + Button */
 export const AddProductButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  color: ${theme.colors.text};
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &:active { transform: scale(0.95); }
+  &:hover  { opacity: 0.9; }
+`;
+
+/* PDF Button */
+export const PDFButton = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 50%;
