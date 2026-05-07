@@ -117,7 +117,7 @@ export const ModalSelect = styled.select`
   border-radius: 14px;
   border: 1px solid #e0e0e0;
   padding: 0 14px;
-  font-size: 15px; // 🔥 un poco más grande
+  font-size: 15px;
   font-weight: 500;
   background: ${theme.colors.background};
   cursor: pointer;
@@ -242,16 +242,16 @@ export const ItemRow = styled.div`
 
   ${ModalSelect} {
     flex: 1;
-    min-width: 0; // 🔥 CLAVE (sin esto flex falla en muchos casos)
+    min-width: 0;
   }
 `;
 
 //////////////////////////////////////////
-// 🔹 STOCK TEXT
+// STOCK TEXT
 //////////////////////////////////////////
 export const StockText = styled.span`
   font-size: 12px;
-  min-width: 55px; // 🔥 más compacto
+  min-width: 55px;
   text-align: right;
   color: ${theme.colors.textSecondary};
 `;
@@ -278,7 +278,7 @@ export const DeleteButton = styled.button`
 `;
 
 //////////////////////////////////////////
-// 🔹 ADD ITEM BUTTON
+// ADD ITEM BUTTON
 //////////////////////////////////////////
 export const AddItemButton = styled.button`
   height: 44px;
@@ -299,7 +299,7 @@ export const AddItemButton = styled.button`
 `;
 
 //////////////////////////////////////////
-// 🔹 SMALL INPUT (CANTIDAD)
+// SMALL INPUT (CANTIDAD)
 //////////////////////////////////////////
 export const SmallInput = styled(ModalInput)`
   width: 70px;

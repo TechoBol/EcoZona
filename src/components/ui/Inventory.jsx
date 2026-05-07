@@ -13,21 +13,90 @@ export const Wrapper = styled.div`
 
 /* Header */
 export const Header = styled.div`
+  position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr auto auto;  // ← 4 columnas
   align-items: center;
+  gap: 8px;  // espacio entre los botones de la derecha
   padding: 0 10px;
   margin-bottom: 20px;
 `;
 
 /* Title */
-export const Title = styled.h1`
+export const TitleButton = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  justify-self: center;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+`;
+
+export const TitleText = styled.h1`
   font-family: var(--font-title);
   font-size: 20px;
   font-weight: 700;
   color: ${theme.colors.text};
-  text-align: center;
-  justify-self: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin: 0;
+
+  @media (max-width: 400px) {
+    font-size: 15px;
+  }
+`;
+
+export const BranchDropdown = styled.div`
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+  background: ${theme.colors.background};
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  min-width: 200px;
+  z-index: 50;
+`;
+
+export const BranchDropdownHeader = styled.div`
+  padding: 6px 14px;
+  font-size: 10px;
+  color: ${theme.colors.textSecondary};
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  background: rgba(0, 0, 0, 0.03);
+`;
+
+export const BranchDropdownItem = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: ${({ $active }) => ($active ? theme.colors.text : theme.colors.textSecondary)};
+  font-weight: ${({ $active }) => ($active ? "600" : "400")};
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  text-align: left;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.03);
+  }
+`;
+
+export const BranchDot = styled.span`
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${({ $active }) => ($active ? "#1D9E75" : "rgba(0,0,0,0.2)")};
 `;
 
 /* Profile */
@@ -170,7 +239,7 @@ export const Card = styled.div`
   
   border: 2px solid
     ${(props) =>
-      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
+    props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -247,7 +316,7 @@ export const ProductName = styled.p`
   overflow: hidden;
   text-overflow: ellipsis;
 
-  white-space: normal; /* 🔥 clave */
+  white-space: normal;
 `;
 
 export const ProductCode = styled.p`
@@ -300,6 +369,23 @@ export const BottomActions = styled.div`
 
 /* + Button */
 export const AddProductButton = styled.button`
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  color: ${theme.colors.text};
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &:active { transform: scale(0.95); }
+  &:hover  { opacity: 0.9; }
+`;
+
+/* PDF Button */
+export const PDFButton = styled.button`
   width: 40px;
   height: 40px;
   border-radius: 50%;
