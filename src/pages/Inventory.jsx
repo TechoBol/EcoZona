@@ -5,11 +5,11 @@ import Beep from "../assets/sounds/Beep.mp3";
 import { useLoginStore } from "../components/store/loginStore";
 import { useSucursales } from "../hooks/useSucursales";
 import { theme } from "../components/ui/Theme";
+import { generarInventoryPDF } from "../components/pdf/generarInventoryPDF";
 
 import {
   Wrapper,
   Header,
-  Title,
   SearchBar,
   SearchInput,
   ScanButton,
@@ -24,6 +24,7 @@ import {
   Price,
   Stock,
   BottomActions,
+  PDFButton,
   AddProductButton,
   ScannerButton,
   AddToCartButton,
@@ -33,9 +34,16 @@ import {
   FilterChipActive,
   ChevronSep,
   ChipX,
+  TitleButton,
+  TitleText,
+  BranchDropdown,
+  BranchDropdownHeader,
+  BranchDropdownItem,
+  BranchDot,
+  Overlay,
 } from "../components/ui/Inventory";
 
-import { ScanLine, Plus } from "lucide-react";
+import { ScanLine, Plus, FileText, ChevronDown, Check } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
@@ -99,7 +107,7 @@ function Inventory() {
   const playBeep = () => {
     if (!beepRef.current) return;
     beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => {});
+    beepRef.current.play().catch(() => { });
   };
 
   ///////////////////////////////////////
@@ -189,7 +197,7 @@ function Inventory() {
   useEffect(() => {
     if (!products.length) return;
 
-    // ✅ Paralelo — todos los requests al mismo tiempo
+    // Paralelo — todos los requests al mismo tiempo
     const loadImages = async () => {
       const newProducts = products.filter(
         (p) => p.imageUrl && !imageUrls[p.id]
@@ -254,11 +262,11 @@ function Inventory() {
 
     playBeep();
 
-    // 🛒 MODO CARRITO
+    // MODO CARRITO
     if (scanCartMode) {
       const stock = getStock(found);
 
-      // 🚨 VALIDACIÓN SOLO AQUÍ
+      // VALIDACIÓN SOLO AQUÍ
       if (stock === 0) {
         const now = Date.now();
 
@@ -293,7 +301,7 @@ function Inventory() {
       return;
     }
 
-    // 🔍 MODO BÚSQUEDA (SIN VALIDAR STOCK)
+    // MODO BÚSQUEDA (SIN VALIDAR STOCK)
     setSearch(cleanCode);
     setScanning(false);
   };
@@ -333,6 +341,11 @@ function Inventory() {
     navigate("/cart");
   };
 
+  const handleGeneratePDF = () => {
+    if (!products?.length) return;
+    generarInventoryPDF(products, selectedLocation, getStock);
+  };
+
   ///////////////////////////////////////
   // RENDER
   ///////////////////////////////////////
@@ -341,39 +354,65 @@ function Inventory() {
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
 
-        <Title
-          onClick={() => {
-            if (!canChangeLocation) return;
-            setOpenLocations(!openLocations);
-          }}
-          style={{ cursor: canChangeLocation ? "pointer" : "default" }}
+        <TitleButton
+          onClick={() => canChangeLocation && setOpenLocations(!openLocations)}
         >
-          {selectedLocation?.name || "Inventario"}
-        </Title>
+          <TitleText>{selectedLocation?.name || "Inventario"}</TitleText>
+          {canChangeLocation && <ChevronDown size={14} color={theme.colors.textSecondary} />}
+        </TitleButton>
 
+        <PDFButton onClick={handleGeneratePDF}>
+          <FileText size={18} />
+        </PDFButton>
         {permissions.canCreateProduct && (
           <AddProductButton onClick={() => navigate("/product")}>
             <Plus size={18} />
           </AddProductButton>
         )}
-      </Header>
 
-      {/* SUCURSALES */}
-      {openLocations && canChangeLocation && (
-        <div>
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              onClick={() => {
-                setSelectedLocation(loc);
-                setOpenLocations(false);
-              }}
-            >
-              {loc.name}
-            </div>
-          ))}
-        </div>
-      )}
+        {openLocations && canChangeLocation && (
+          <>
+            <Overlay onClick={() => setOpenLocations(false)} />
+            <BranchDropdown>
+              {/* Almacen Central primero, sin header */}
+              {locations
+                .filter((l) => l.id === 1)
+                .map((loc) => (
+                  <BranchDropdownItem
+                    key={loc.id}
+                    $active={selectedLocation?.id === loc.id}
+                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
+                    style={{ borderTop: "none" }}
+                  >
+                    <BranchDot $active={selectedLocation?.id === loc.id} />
+                    {loc.name}
+                    {selectedLocation?.id === loc.id && (
+                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
+                    )}
+                  </BranchDropdownItem>
+                ))}
+
+              {/* Sucursales */}
+              <BranchDropdownHeader>Sucursales</BranchDropdownHeader>
+              {locations
+                .filter((l) => l.id !== 1)
+                .map((loc) => (
+                  <BranchDropdownItem
+                    key={loc.id}
+                    $active={selectedLocation?.id === loc.id}
+                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
+                  >
+                    <BranchDot $active={selectedLocation?.id === loc.id} />
+                    {loc.name}
+                    {selectedLocation?.id === loc.id && (
+                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
+                    )}
+                  </BranchDropdownItem>
+                ))}
+            </BranchDropdown>
+          </>
+        )}
+      </Header>
 
       {/* SEARCH */}
       <SearchBar>

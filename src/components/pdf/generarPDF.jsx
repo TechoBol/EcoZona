@@ -116,6 +116,7 @@ export const generarPDF = (
 
   // ── TABLA ──
   const tableData = (cartItems || []).map((item) => [
+    item.barcode,
     item.name,
     item.quantity,
     `Bs ${Number(item.finalPrice).toFixed(2)}`,
@@ -124,7 +125,7 @@ export const generarPDF = (
 
   autoTable(doc, {
     startY: y + 21,
-    head: [["Producto", "Cant.", "Precio unit.", "Subtotal"]],
+    head: [["Codigo", "Producto", "Cant.", "Precio unit.", "Subtotal"]],
     body: tableData,
     styles: { fontSize: 9 },
   });
