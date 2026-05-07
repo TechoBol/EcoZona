@@ -109,7 +109,7 @@ export const generarPDF = (
   campo("Cliente", venta.clientName || "Consumidor final", col1, y + 12, 28);
 
   campo("Cajero", cajero || "—", col2, y, 22);
-  campo("Forma de pago", venta.typeSale === "qr" ? "QR" : "Efectivo", col2, y + 6, 38);
+  campo("Forma de pago", venta.typeSale === "Qr" ? "QR" : "Efectivo", col2, y + 6, 38);
   campo("Cód. transacción", venta.transactionNumber || "—", col2, y + 12, 42);
 
   doc.line(margin, y + 17, pageWidth - margin, y + 17);
