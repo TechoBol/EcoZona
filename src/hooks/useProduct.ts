@@ -8,9 +8,10 @@ import { useAmazonS3 } from "./useAmazonS3";
 import imageCompression from "browser-image-compression";
 
 export const useProduct = () => {
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  
   const { token, location } = useLoginStore();
   const s3 = useAmazonS3();
   const optimizeImage = async (file: File) => {

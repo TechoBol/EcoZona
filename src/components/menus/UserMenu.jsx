@@ -13,7 +13,7 @@ import {
   Tag,
   Bookmark,
 } from "lucide-react";
-import { MdOutlineInventory2 } from "react-icons/md";
+import { MdOutlineInventory2,MdOutlineInventory } from "react-icons/md";
 import {
   ProfileButton,
   Dropdown,
@@ -32,6 +32,7 @@ import { useSales } from "../../hooks/useSale";
 import { useTransfers } from "../../hooks/useTransfers";
 import { useLines } from "../../hooks/useLine";
 import { usePermissions } from "../../hooks/usePermissions";
+import { useInventoryFisico } from "../../hooks/useInventoryFisico";
 import { useNotificationStore } from "../store/notificationStore";
 
 const UserMenu = () => {
@@ -47,6 +48,8 @@ const UserMenu = () => {
   const { goToSales } = useSales();
   const { goToTransfer } = useTransfers();
   const { goToLines } = useLines();
+  const { goToInventoryFisico } = useInventoryFisico();
+
   const hasTransferNotification = useNotificationStore(
     (state) => state.hasTransferNotification,
   );
@@ -131,6 +134,14 @@ const UserMenu = () => {
                     </MenuOption>
                   )}
                 </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <MenuOption onClick={goToInventoryFisico} $active={active}>
+                      <MdOutlineInventory size={16} />
+                      <span>Inventario Fisico - Valorado</span>
+                    </MenuOption>
+                  )}
+                </Menu.Item>
                 {/* 🏢 SUCURSALES → solo level 1 */}
                 {permissions.canManageBranches && (
                   <Menu.Item>
@@ -173,7 +184,7 @@ const UserMenu = () => {
                     {({ active }) => (
                       <MenuOption
                         onClick={() => {
-                          clearTransferNotification(); // 👈 limpia el punto rojo
+                          clearTransferNotification(); 
                           goToTransfer();
                         }}
                         $active={active}
