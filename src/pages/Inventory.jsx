@@ -10,7 +10,6 @@ import { generarInventoryPDF } from "../components/pdf/generarInventoryPDF";
 import {
   Wrapper,
   Header,
-  Title,
   SearchBar,
   SearchInput,
   ScanButton,
@@ -35,9 +34,16 @@ import {
   FilterChipActive,
   ChevronSep,
   ChipX,
+  TitleButton,
+  TitleText,
+  BranchDropdown,
+  BranchDropdownHeader,
+  BranchDropdownItem,
+  BranchDot,
+  Overlay,
 } from "../components/ui/Inventory";
 
-import { ScanLine, Plus, FileText } from "lucide-react";
+import { ScanLine, Plus, FileText, ChevronDown, Check } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
@@ -348,15 +354,13 @@ function Inventory() {
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
 
-        <Title
-          onClick={() => {
-            if (!canChangeLocation) return;
-            setOpenLocations(!openLocations);
-          }}
-          style={{ cursor: canChangeLocation ? "pointer" : "default" }}
+        <TitleButton
+          onClick={() => canChangeLocation && setOpenLocations(!openLocations)}
         >
-          {selectedLocation?.name || "Inventario"}
-        </Title>
+          <TitleText>{selectedLocation?.name || "Inventario"}</TitleText>
+          {canChangeLocation && <ChevronDown size={14} color={theme.colors.textSecondary} />}
+        </TitleButton>
+
         <PDFButton onClick={handleGeneratePDF}>
           <FileText size={18} />
         </PDFButton>
@@ -365,24 +369,50 @@ function Inventory() {
             <Plus size={18} />
           </AddProductButton>
         )}
-      </Header>
 
-      {/* SUCURSALES */}
-      {openLocations && canChangeLocation && (
-        <div>
-          {locations.map((loc) => (
-            <div
-              key={loc.id}
-              onClick={() => {
-                setSelectedLocation(loc);
-                setOpenLocations(false);
-              }}
-            >
-              {loc.name}
-            </div>
-          ))}
-        </div>
-      )}
+        {openLocations && canChangeLocation && (
+          <>
+            <Overlay onClick={() => setOpenLocations(false)} />
+            <BranchDropdown>
+              {/* Almacen Central primero, sin header */}
+              {locations
+                .filter((l) => l.id === 1)
+                .map((loc) => (
+                  <BranchDropdownItem
+                    key={loc.id}
+                    $active={selectedLocation?.id === loc.id}
+                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
+                    style={{ borderTop: "none" }}
+                  >
+                    <BranchDot $active={selectedLocation?.id === loc.id} />
+                    {loc.name}
+                    {selectedLocation?.id === loc.id && (
+                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
+                    )}
+                  </BranchDropdownItem>
+                ))}
+
+              {/* Sucursales */}
+              <BranchDropdownHeader>Sucursales</BranchDropdownHeader>
+              {locations
+                .filter((l) => l.id !== 1)
+                .map((loc) => (
+                  <BranchDropdownItem
+                    key={loc.id}
+                    $active={selectedLocation?.id === loc.id}
+                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
+                  >
+                    <BranchDot $active={selectedLocation?.id === loc.id} />
+                    {loc.name}
+                    {selectedLocation?.id === loc.id && (
+                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
+                    )}
+                  </BranchDropdownItem>
+                ))}
+            </BranchDropdown>
+          </>
+        )}
+      </Header>
 
       {/* SEARCH */}
       <SearchBar>

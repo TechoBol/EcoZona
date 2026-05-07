@@ -1,11 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { BsFillFileEarmarkPdfFill } from "react-icons/bs";
 import { useSales } from "../hooks/useSale";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 import UserMenu from "../components/menus/UserMenu";
+import { Dialog, DialogContent, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { Document, Page, pdfjs } from "react-pdf";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
 
 import {
   Wrapper,
@@ -20,13 +24,18 @@ import {
   DatePickerWrapper,
   ClearButton,
 } from "../components/ui/Location";
-import { BackButton } from "../components/ui/Product";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { FaTrash } from "react-icons/fa";
+
+// Configurar el worker de pdf.js
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  "pdfjs-dist/build/pdf.worker.min.mjs",
+  import.meta.url
+).toString();
 
 export default function Sales() {
   const navigate = useNavigate();
@@ -37,30 +46,58 @@ export default function Sales() {
   const [globalFilter, setGlobalFilter] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const [openPdf, setOpenPdf] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState("");
+  const [numPages, setNumPages] = useState(null);
+  const [pageWidth, setPageWidth] = useState(600);
+  const containerRef = useRef(null);
+
+  // Ajusta el ancho del PDF según el contenedor
+  useEffect(() => {
+    if (!openPdf) return;
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setPageWidth(containerRef.current.offsetWidth - 32); // 16px padding cada lado
+      }
+    };
+    // Pequeño delay para que el Dialog termine de renderizarse
+    const timeout = setTimeout(updateWidth, 100);
+    window.addEventListener("resize", updateWidth);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener("resize", updateWidth);
+    };
+  }, [openPdf]);
 
   const handleViewPDF = async (key) => {
     const url = await getFileUrl(key);
-    window.open(url, "_blank");
+    setPdfUrl(url);
+    setOpenPdf(true);
+  };
+
+  const handleClosePdf = () => {
+    setOpenPdf(false);
+    setPdfUrl("");
+    setNumPages(null);
+  };
+
+  const onDocumentLoadSuccess = ({ numPages }) => {
+    setNumPages(numPages);
   };
 
   const rows = (data || []).map((sale) => ({
     ...sale,
     date: sale.date ? new Date(sale.date) : null,
-    employeeName: `${sale.employee?.name || ""} ${
-      sale.employee?.lastName || ""
-    }`.trim(),
+    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""}`.trim(),
     locationName: sale.location?.name || "",
   }));
 
   const filteredRows = rows.filter((row) => {
-    // Filtro por fechas
     if (row.date) {
       const date = dayjs(row.date);
       if (startDate && date.isBefore(startDate, "day")) return false;
       if (endDate && date.isAfter(endDate, "day")) return false;
     }
-
-    // Filtro global (empleado + sucursal + tipo)
     if (globalFilter) {
       const q = globalFilter.toLowerCase();
       const matchEmpleado = row.employeeName.toLowerCase().includes(q);
@@ -68,46 +105,22 @@ export default function Sales() {
       const matchTipo = row.typeSale?.toLowerCase().includes(q);
       if (!matchEmpleado && !matchSucursal && !matchTipo) return false;
     }
-
     return true;
   });
 
   useEffect(() => {
     const total = filteredRows.reduce(
       (sum, row) => sum + Number(row.total || 0),
-      0,
+      0
     );
     setFilteredTotal(total);
   }, [filteredRows]);
 
   const columns = [
-    {
-      field: "code",
-      disableColumnMenu: true,
-      headerName: "Código",
-      width: 130,
-    },
-    {
-      field: "employeeName",
-      disableColumnMenu: true,
-      headerName: "Trabajador",
-      flex: 1,
-      minWidth: 180,
-    },
-    {
-      field: "locationName",
-      disableColumnMenu: true,
-      headerName: "Sucursal",
-      flex: 1,
-      minWidth: 160,
-    },
-    {
-      field: "typeSale",
-      disableColumnMenu: true,
-      headerName: "Tipo venta",
-      flex: 1,
-      minWidth: 160,
-    },
+    { field: "code", disableColumnMenu: true, headerName: "Código", width: 130 },
+    { field: "employeeName", disableColumnMenu: true, headerName: "Trabajador", flex: 1, minWidth: 180 },
+    { field: "locationName", disableColumnMenu: true, headerName: "Sucursal", flex: 1, minWidth: 160 },
+    { field: "typeSale", disableColumnMenu: true, headerName: "Tipo venta", flex: 1, minWidth: 160 },
     {
       field: "total",
       headerName: "Total",
@@ -119,13 +132,7 @@ export default function Sales() {
         </span>
       ),
     },
-    {
-      field: "date",
-      headerName: "Fecha",
-      width: 180,
-      disableColumnMenu: true,
-      type: "dateTime",
-    },
+    { field: "date", headerName: "Fecha", width: 180, disableColumnMenu: true, type: "dateTime" },
     {
       field: "actions",
       headerName: "Recibo",
@@ -155,7 +162,6 @@ export default function Sales() {
       <Content>
         <Actions />
 
-        {/* FILTRO DE FECHAS */}
         <DatePickerWrapper>
           <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
             <DatePicker
@@ -167,24 +173,16 @@ export default function Sales() {
                   size: "small",
                   sx: {
                     width: "150px",
-                    "& .MuiOutlinedInput-root": {
-                      height: "44px",
-                      borderRadius: "14px",
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: "0 14px",
-                    },
+                    "& .MuiOutlinedInput-root": { height: "44px", borderRadius: "14px" },
+                    "& .MuiInputBase-input": { padding: "0 14px" },
                     "& .MuiInputLabel-root": {
                       transform: "translate(14px, 12px) scale(1)",
-                      "&.MuiInputLabel-shrink": {
-                        transform: "translate(14px, -9px) scale(0.75)",
-                      },
+                      "&.MuiInputLabel-shrink": { transform: "translate(14px, -9px) scale(0.75)" },
                     },
                   },
                 },
               }}
             />
-
             <DatePicker
               label="Hasta"
               value={endDate}
@@ -194,35 +192,22 @@ export default function Sales() {
                   size: "small",
                   sx: {
                     width: "150px",
-                    "& .MuiOutlinedInput-root": {
-                      height: "44px",
-                      borderRadius: "14px",
-                    },
-                    "& .MuiInputBase-input": {
-                      padding: "0 14px",
-                    },
+                    "& .MuiOutlinedInput-root": { height: "44px", borderRadius: "14px" },
+                    "& .MuiInputBase-input": { padding: "0 14px" },
                     "& .MuiInputLabel-root": {
                       transform: "translate(14px, 12px) scale(1)",
-                      "&.MuiInputLabel-shrink": {
-                        transform: "translate(14px, -9px) scale(0.75)",
-                      },
+                      "&.MuiInputLabel-shrink": { transform: "translate(14px, -9px) scale(0.75)" },
                     },
                   },
                 },
               }}
             />
           </LocalizationProvider>
-          <ClearButton
-            onClick={() => {
-              setStartDate(null);
-              setEndDate(null);
-            }}
-          >
+          <ClearButton onClick={() => { setStartDate(null); setEndDate(null); }}>
             <FaTrash size={18} />
           </ClearButton>
         </DatePickerWrapper>
 
-        {/* BUSCADOR GLOBAL */}
         <FiltersRow>
           <FilterInput
             placeholder="Buscar por empleado, sucursal o tipo de venta..."
@@ -230,36 +215,21 @@ export default function Sales() {
             onChange={(e) => setGlobalFilter(e.target.value)}
           />
         </FiltersRow>
+
         <div style={{ height: 500, background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={filteredRows}
             columns={columns}
             getRowId={(row) => row.id}
-            initialState={{
-              pagination: {
-                paginationModel: { pageSize: 25 },
-              },
-            }}
+            initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
             pageSizeOptions={[25, 50, 100]}
             slots={{ toolbar: GridToolbar }}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-                quickFilterProps: { debounceMs: 300 },
-              },
-            }}
+            slotProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 300 } } }}
             sx={{
               border: "none",
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f8f9ff",
-                fontWeight: 600,
-              },
+              "& .MuiDataGrid-columnHeaders": { backgroundColor: "#f8f9ff", fontWeight: 600 },
               "& .MuiDataGrid-toolbarContainer": { padding: "10px" },
-              "& .MuiInputBase-root": {
-                borderRadius: "12px",
-                backgroundColor: "#f5f5f5",
-                paddingLeft: "8px",
-              },
+              "& .MuiInputBase-root": { borderRadius: "12px", backgroundColor: "#f5f5f5", paddingLeft: "8px" },
               "& .MuiDataGrid-columnHeaderTitle": { fontWeight: "bold" },
             }}
           />
@@ -269,6 +239,77 @@ export default function Sales() {
           <TotalText $bold>TOTAL:</TotalText>
           <TotalText>Bs {filteredTotal.toFixed(2)}</TotalText>
         </TotalBar>
+
+        {/* ── MODAL PDF CON REACT-PDF ── */}
+        <Dialog
+          open={openPdf}
+          onClose={handleClosePdf}
+          fullScreen={window.innerWidth < 768}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: { xs: 0, md: "16px" }, overflow: "hidden" },
+          }}
+        >
+          <DialogContent
+            ref={containerRef}
+            sx={{
+              padding: "16px",
+              paddingTop: "52px", // espacio para el botón de cerrar
+              background: "#f0f0f0",
+              minHeight: "60vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              overflowY: "auto",
+              gap: "12px",
+            }}
+          >
+            {/* Botón cerrar */}
+            <IconButton
+              onClick={handleClosePdf}
+              sx={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                zIndex: 1000,
+                backgroundColor: "white",
+                boxShadow: 2,
+                "&:hover": { backgroundColor: "#f5f5f5" },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+
+            {pdfUrl && (
+              <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={
+                  <div style={{ padding: "40px", color: "#666", textAlign: "center" }}>
+                    Cargando PDF...
+                  </div>
+                }
+                error={
+                  <div style={{ padding: "40px", color: "#d32f2f", textAlign: "center" }}>
+                    Error al cargar el PDF.
+                  </div>
+                }
+              >
+                {Array.from({ length: numPages || 0 }, (_, i) => (
+                  <Page
+                    key={`page_${i + 1}`}
+                    pageNumber={i + 1}
+                    width={pageWidth}
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    style={{ marginBottom: "12px" }}
+                  />
+                ))}
+              </Document>
+            )}
+          </DialogContent>
+        </Dialog>
       </Content>
     </Wrapper>
   );

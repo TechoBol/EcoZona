@@ -60,11 +60,13 @@ const UserMenu = () => {
           {/* OVERLAY */}
           {open && (
             <div
-              onClick={() => {}}
+              onClick={() => { }}
               style={{
                 position: "fixed",
                 inset: 0,
-                background: "rgba(0,0,0,0.35)",
+                background: "rgba(0,0,0,0.2)",
+                backdropFilter: "blur(4px)",
+                WebkitBackdropFilter: "blur(4px)",
                 zIndex: 90,
               }}
             />
