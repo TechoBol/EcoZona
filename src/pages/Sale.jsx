@@ -11,6 +11,8 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import DownloadIcon from "@mui/icons-material/Download";
+import PrintIcon from "@mui/icons-material/Print";
 
 import {
   Wrapper,
@@ -50,6 +52,7 @@ export default function Sales() {
   const [numPages, setNumPages] = useState(null);
   const [pageWidth, setPageWidth] = useState(600);
   const containerRef = useRef(null);
+  const [currentCode, setCurrentCode] = useState("");
 
   useEffect(() => {
     if (!openPdf) return;
@@ -66,9 +69,10 @@ export default function Sales() {
     };
   }, [openPdf]);
 
-  const handleViewPDF = async (key) => {
+  const handleViewPDF = async (key, code) => {
     const url = await getFileUrl(key);
     setPdfUrl(url);
+    setCurrentCode(code);
     setOpenPdf(true);
   };
 
@@ -191,7 +195,7 @@ export default function Sales() {
         <BsFillFileEarmarkPdfFill
           size={20}
           style={{ cursor: "pointer", marginTop: "10px", color: "#f20707" }}
-          onClick={() => handleViewPDF(params.row.pdfUrl)}
+          onClick={() => handleViewPDF(params.row.pdfUrl, params.row.code)}
         />
       ),
     },
@@ -233,159 +237,217 @@ export default function Sales() {
             flexWrap: "nowrap",
           }}
         >
-        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
-          <DatePicker
-            label="Desde"
-            value={startDate}
-            onChange={(newValue) => setStartDate(newValue)}
-            slotProps={{
-              textField: {
-                size: "small",
-                sx: {
-                  width: { xs: "calc(50% - 28px)", sm: "160px" },
-                  "& .MuiOutlinedInput-root": { height: "36px", borderRadius: "10px" },
-                  "& .MuiInputBase-input": { padding: "0 8px", fontSize: "13px" },
-                  "& .MuiInputLabel-root": {
-                    transform: "translate(10px, 9px) scale(1)",
-                    fontSize: "13px",
-                    "&.MuiInputLabel-shrink": { transform: "translate(10px, -9px) scale(0.75)" },
+          <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+            <DatePicker
+              label="Desde"
+              value={startDate}
+              onChange={(newValue) => setStartDate(newValue)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: {
+                    width: { xs: "calc(50% - 28px)", sm: "160px" },
+                    "& .MuiOutlinedInput-root": { height: "36px", borderRadius: "10px" },
+                    "& .MuiInputBase-input": { padding: "0 8px", fontSize: "13px" },
+                    "& .MuiInputLabel-root": {
+                      transform: "translate(10px, 9px) scale(1)",
+                      fontSize: "13px",
+                      "&.MuiInputLabel-shrink": { transform: "translate(10px, -9px) scale(0.75)" },
+                    },
                   },
                 },
-              },
-            }}
-          />
-          <DatePicker
-            label="Hasta"
-            value={endDate}
-            onChange={(newValue) => setEndDate(newValue)}
-            slotProps={{
-              textField: {
-                size: "small",
-                sx: {
-                  width: { xs: "calc(50% - 28px)", sm: "160px" },
-                  "& .MuiOutlinedInput-root": { height: "36px", borderRadius: "10px" },
-                  "& .MuiInputBase-input": { padding: "0 8px", fontSize: "13px" },
-                  "& .MuiInputLabel-root": {
-                    transform: "translate(10px, 9px) scale(1)",
-                    fontSize: "13px",
-                    "&.MuiInputLabel-shrink": { transform: "translate(10px, -9px) scale(0.75)" },
+              }}
+            />
+            <DatePicker
+              label="Hasta"
+              value={endDate}
+              onChange={(newValue) => setEndDate(newValue)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: {
+                    width: { xs: "calc(50% - 28px)", sm: "160px" },
+                    "& .MuiOutlinedInput-root": { height: "36px", borderRadius: "10px" },
+                    "& .MuiInputBase-input": { padding: "0 8px", fontSize: "13px" },
+                    "& .MuiInputLabel-root": {
+                      transform: "translate(10px, 9px) scale(1)",
+                      fontSize: "13px",
+                      "&.MuiInputLabel-shrink": { transform: "translate(10px, -9px) scale(0.75)" },
+                    },
                   },
                 },
-              },
-            }}
+              }}
+            />
+          </LocalizationProvider>
+
+          {/* Trash */}
+          <ClearButton
+            onClick={() => { setStartDate(null); setEndDate(null); }}
+            style={{ background: "none", border: "none", boxShadow: "none", padding: "6px" }}
+          >
+            <FaTrash size={18} color="#9e9e9e" />
+          </ClearButton>
+        </DatePickerWrapper>
+
+        <FiltersRow>
+          <FilterInput
+            placeholder="Buscar por empleado, sucursal o tipo de venta..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
           />
-        </LocalizationProvider>
+        </FiltersRow>
 
-        {/* Trash */}
-        <ClearButton
-          onClick={() => { setStartDate(null); setEndDate(null); }}
-          style={{ background: "none", border: "none", boxShadow: "none", padding: "6px" }}
-        >
-          <FaTrash size={18} color="#9e9e9e" />
-        </ClearButton>
-      </DatePickerWrapper>
-
-      <FiltersRow>
-        <FilterInput
-          placeholder="Buscar por empleado, sucursal o tipo de venta..."
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-        />
-      </FiltersRow>
-
-      <div style={{ height: 500, background: "white", borderRadius: 12 }}>
-        <DataGrid
-          rows={filteredRows}
-          columns={columns}
-          getRowId={(row) => row.id}
-          initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
-          pageSizeOptions={[25, 50, 100]}
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 300 } } }}
-          sx={{
-            border: "none",
-            "& .MuiDataGrid-columnHeaders": { backgroundColor: "#f8f9ff", fontWeight: 600 },
-            "& .MuiDataGrid-toolbarContainer": { padding: "10px" },
-            "& .MuiInputBase-root": { borderRadius: "12px", backgroundColor: "#f5f5f5", paddingLeft: "8px" },
-            "& .MuiDataGrid-columnHeaderTitle": { fontWeight: "bold" },
-          }}
-        />
-      </div>
-
-      <TotalBar>
-        <TotalText $bold>TOTAL:</TotalText>
-        <TotalText>Bs {filteredTotal.toFixed(2)}</TotalText>
-      </TotalBar>
-
-      <Dialog
-        open={openPdf}
-        onClose={handleClosePdf}
-        fullScreen={window.innerWidth < 768}
-        maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: { xs: 0, md: "16px" }, overflow: "hidden" },
-        }}
-      >
-        <DialogContent
-          ref={containerRef}
-          sx={{
-            padding: "16px",
-            paddingTop: "52px",
-            background: "#f0f0f0",
-            minHeight: "60vh",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            overflowY: "auto",
-            gap: "12px",
-          }}
-        >
-          <IconButton
-            onClick={handleClosePdf}
+        <div style={{ height: 500, background: "white", borderRadius: 12 }}>
+          <DataGrid
+            rows={filteredRows}
+            columns={columns}
+            getRowId={(row) => row.id}
+            initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
+            pageSizeOptions={[25, 50, 100]}
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 300 } } }}
             sx={{
-              position: "absolute",
-              top: 10,
-              right: 10,
-              zIndex: 1000,
-              backgroundColor: "white",
-              boxShadow: 2,
-              "&:hover": { backgroundColor: "#f5f5f5" },
+              border: "none",
+              "& .MuiDataGrid-columnHeaders": { backgroundColor: "#f8f9ff", fontWeight: 600 },
+              "& .MuiDataGrid-toolbarContainer": { padding: "10px" },
+              "& .MuiInputBase-root": { borderRadius: "12px", backgroundColor: "#f5f5f5", paddingLeft: "8px" },
+              "& .MuiDataGrid-columnHeaderTitle": { fontWeight: "bold" },
+            }}
+          />
+        </div>
+
+        <TotalBar>
+          <TotalText $bold>TOTAL:</TotalText>
+          <TotalText>Bs {filteredTotal.toFixed(2)}</TotalText>
+        </TotalBar>
+
+        <Dialog
+          open={openPdf}
+          onClose={handleClosePdf}
+          fullScreen={window.innerWidth < 768}
+          maxWidth="md"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: { xs: 0, md: "16px" }, overflow: "hidden" },
+          }}
+        >
+          <DialogContent
+            ref={containerRef}
+            sx={{
+              padding: "16px",
+              paddingTop: "52px",
+              background: "#f0f0f0",
+              minHeight: "60vh",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              overflowY: "auto",
+              gap: "12px",
             }}
           >
-            <CloseIcon />
-          </IconButton>
-
-          {pdfUrl && (
-            <Document
-              file={pdfUrl}
-              onLoadSuccess={onDocumentLoadSuccess}
-              loading={
-                <div style={{ padding: "40px", color: "#666", textAlign: "center" }}>
-                  Cargando PDF...
-                </div>
-              }
-              error={
-                <div style={{ padding: "40px", color: "#d32f2f", textAlign: "center" }}>
-                  Error al cargar el PDF.
-                </div>
-              }
+            <IconButton
+              onClick={handleClosePdf}
+              sx={{
+                position: "absolute",
+                top: 10,
+                right: 10,
+                zIndex: 1000,
+                backgroundColor: "white",
+                boxShadow: 2,
+                "&:hover": { backgroundColor: "#f5f5f5" },
+              }}
             >
-              {Array.from({ length: numPages || 0 }, (_, i) => (
-                <Page
-                  key={`page_${i + 1}`}
-                  pageNumber={i + 1}
-                  width={pageWidth}
-                  renderTextLayer={true}
-                  renderAnnotationLayer={true}
-                  style={{ marginBottom: "12px" }}
-                />
-              ))}
-            </Document>
-          )}
-        </DialogContent>
-      </Dialog>
-    </Content>
+              <CloseIcon />
+            </IconButton>
+
+            <div style={{
+              position: "absolute",
+              top: 10,
+              right: 56,  // justo a la izquierda del botón cerrar
+              display: "flex",
+              gap: "8px",
+              zIndex: 1000,
+            }}>
+              {/* Descargar */}
+              <IconButton
+                onClick={async () => {
+                  const response = await fetch(pdfUrl);
+                  const blob = await response.blob();
+                  const blobUrl = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = blobUrl;
+                  a.download = `Recibo ${currentCode}.pdf`;
+                  a.click();
+                  URL.revokeObjectURL(blobUrl);
+                }}
+                sx={{
+                  backgroundColor: "white",
+                  boxShadow: 2,
+                  "&:hover": { backgroundColor: "#f5f5f5" },
+                }}
+              >
+                <DownloadIcon />
+              </IconButton>
+
+              {/* Imprimir */}
+              <IconButton
+                onClick={async () => {
+                  const response = await fetch(pdfUrl);
+                  const blob = await response.blob();
+                  const blobUrl = URL.createObjectURL(blob);
+                  const iframe = document.createElement("iframe");
+                  iframe.style.display = "none";
+                  iframe.src = blobUrl;
+                  document.body.appendChild(iframe);
+                  iframe.onload = () => {
+                    iframe.contentWindow.print();
+                    setTimeout(() => {
+                      document.body.removeChild(iframe);
+                      URL.revokeObjectURL(blobUrl);
+                    }, 1000);
+                  };
+                }}
+                sx={{
+                  backgroundColor: "white",
+                  boxShadow: 2,
+                  "&:hover": { backgroundColor: "#f5f5f5" },
+                }}
+              >
+                <PrintIcon />
+              </IconButton>
+            </div>
+
+
+            {pdfUrl && (
+              <Document
+                file={pdfUrl}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={
+                  <div style={{ padding: "40px", color: "#666", textAlign: "center" }}>
+                    Cargando PDF...
+                  </div>
+                }
+                error={
+                  <div style={{ padding: "40px", color: "#d32f2f", textAlign: "center" }}>
+                    Error al cargar el PDF.
+                  </div>
+                }
+              >
+                {Array.from({ length: numPages || 0 }, (_, i) => (
+                  <Page
+                    key={`page_${i + 1}`}
+                    pageNumber={i + 1}
+                    width={pageWidth}
+                    renderTextLayer={true}
+                    renderAnnotationLayer={true}
+                    style={{ marginBottom: "12px" }}
+                  />
+                ))}
+              </Document>
+            )}
+          </DialogContent>
+        </Dialog>
+      </Content>
     </Wrapper >
   );
 }
