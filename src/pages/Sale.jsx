@@ -33,6 +33,10 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { FaTrash } from "react-icons/fa";
+import { useUpdateSale } from "../hooks/useUpdateSale";
+import { useUpdateDateSale } from "../hooks/useUpdateDateSale";
+import { successToast, errorToast } from "../services/toasts";
+import { useRegeneratePdf } from "../hooks/useRegeneratePdf";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -40,7 +44,6 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
 ).toString();
 
 export default function Sales() {
-  const { data } = useSales();
   const { getFileUrl } = useAmazonS3();
   const [menuOpen, setMenuOpen] = useState(false);
   const [filteredTotal, setFilteredTotal] = useState(0);
@@ -53,6 +56,15 @@ export default function Sales() {
   const [pageWidth, setPageWidth] = useState(600);
   const containerRef = useRef(null);
   const [currentCode, setCurrentCode] = useState("");
+  const [confirmModal, setConfirmModal] = useState({ open: false, row: null });
+  const { updateSale } = useUpdateSale();
+  const { updateDateSale } = useUpdateDateSale();
+  const { data, refresh } = useSales();
+  const [dateModal, setDateModal] = useState({ open: false, row: null });
+  const [newDate, setNewDate] = useState(dayjs());
+  const { regeneratePdf } = useRegeneratePdf();
+  const [loadingConfirm, setLoadingConfirm] = useState(false);
+  const [loadingDate, setLoadingDate] = useState(false);
 
   useEffect(() => {
     if (!openPdf) return;
@@ -192,12 +204,98 @@ export default function Sales() {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <BsFillFileEarmarkPdfFill
-          size={20}
-          style={{ cursor: "pointer", marginTop: "10px", color: "#f20707" }}
-          onClick={() => handleViewPDF(params.row.pdfUrl, params.row.code)}
-        />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+          <BsFillFileEarmarkPdfFill
+            size={20}
+            style={{ cursor: "pointer", color: "#f20707" }}
+            onClick={() => handleViewPDF(params.row.pdfUrl, params.row.code)}
+          />
+        </div>
       ),
+    },
+    {
+      field: "changePayment",
+      headerName: "Acciones",
+      width: 160,
+      sortable: false,
+      filterable: false,
+      disableColumnMenu: true,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => {
+        const isQr = params.row.typeSale === "Qr";
+        const opposite = isQr ? "Efectivo" : "Qr";
+        const alreadyChanged = params.row.paymentMethodChanged;
+        const alreadyDateChanged = params.row.dateChanged;
+
+        return (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 10px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                lineHeight: "1",
+                cursor: alreadyChanged ? "not-allowed" : "pointer",
+                opacity: alreadyChanged ? 0.45 : 1,
+                background: alreadyChanged ? "#f0f0f0" : isQr ? "#E1F5EE" : "#E6F1FB",
+                color: alreadyChanged ? "#999" : isQr ? "#0F6E56" : "#0C447C",
+                border: `1px solid ${alreadyChanged ? "#ddd" : isQr ? "#1D9E75" : "#185FA5"}`,
+                transition: "opacity 0.15s",
+              }}
+              onMouseEnter={(e) => { if (!alreadyChanged) e.currentTarget.style.opacity = "0.7"; }}
+              onMouseLeave={(e) => { if (!alreadyChanged) e.currentTarget.style.opacity = "1"; }}
+              onClick={() => {
+                if (alreadyChanged) {
+                  errorToast("Este método de pago ya fue cambiado anteriormente");
+                  return;
+                }
+                setConfirmModal({ open: true, row: params.row });
+              }}
+            >
+              {alreadyChanged ? "🔒" : "→"} {opposite}
+            </span>
+
+            {/* Cambiar fecha */}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 10px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                lineHeight: "1",
+                cursor: alreadyDateChanged ? "not-allowed" : "pointer",
+                opacity: alreadyDateChanged ? 0.45 : 1,
+                background: alreadyDateChanged ? "#f0f0f0" : "#FFF4E5",
+                color: alreadyDateChanged ? "#999" : "#9A5B00",
+                border: `1px solid ${alreadyDateChanged ? "#ddd" : "#F0B15A"}`,
+              }}
+              onClick={() => {
+                if (alreadyDateChanged) {
+                  errorToast("La fecha ya fue modificada anteriormente");
+                  return;
+                }
+
+                setDateModal({
+                  open: true,
+                  row: params.row,
+                });
+              }}
+            >
+              {alreadyDateChanged ? "🔒" : "📅"} Fecha
+            </span>
+          </div>
+        );
+      },
     },
   ];
 
@@ -206,7 +304,6 @@ export default function Sales() {
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Ventas</Title>
-        {/* PDF aquí */}
         <button
           onClick={handleExportTablePDF}
           style={{
@@ -279,8 +376,6 @@ export default function Sales() {
               }}
             />
           </LocalizationProvider>
-
-          {/* Trash */}
           <ClearButton
             onClick={() => { setStartDate(null); setEndDate(null); }}
             style={{ background: "none", border: "none", boxShadow: "none", padding: "6px" }}
@@ -321,6 +416,7 @@ export default function Sales() {
           <TotalText>Bs {filteredTotal.toFixed(2)}</TotalText>
         </TotalBar>
 
+        {/* Modal PDF */}
         <Dialog
           open={openPdf}
           onClose={handleClosePdf}
@@ -363,12 +459,11 @@ export default function Sales() {
             <div style={{
               position: "absolute",
               top: 10,
-              right: 56,  // justo a la izquierda del botón cerrar
+              right: 56,
               display: "flex",
               gap: "8px",
               zIndex: 1000,
             }}>
-              {/* Descargar */}
               <IconButton
                 onClick={async () => {
                   const response = await fetch(pdfUrl);
@@ -389,7 +484,6 @@ export default function Sales() {
                 <DownloadIcon />
               </IconButton>
 
-              {/* Imprimir */}
               <IconButton
                 onClick={async () => {
                   const response = await fetch(pdfUrl);
@@ -416,7 +510,6 @@ export default function Sales() {
                 <PrintIcon />
               </IconButton>
             </div>
-
 
             {pdfUrl && (
               <Document
@@ -447,7 +540,162 @@ export default function Sales() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Modal confirmación cambio de método de pago */}
+        <Dialog
+          open={confirmModal.open}
+          onClose={() => setConfirmModal({ open: false, row: null })}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: "16px", padding: "8px" },
+          }}
+        >
+          <DialogContent sx={{ textAlign: "center", padding: "24px" }}>
+            <div style={{ fontSize: "36px", marginBottom: "12px" }}>🔄</div>
+            <p style={{ fontWeight: 600, fontSize: "16px", marginBottom: "8px" }}>
+              ¿Cambiar método de pago?
+            </p>
+            <p style={{ color: "#666", fontSize: "14px", marginBottom: "24px" }}>
+              La venta <strong>{confirmModal.row?.code}</strong> pasará de{" "}
+              <strong>{confirmModal.row?.typeSale}</strong> a{" "}
+              <strong>{confirmModal.row?.typeSale === "Qr" ? "Efectivo" : "Qr"}</strong>.
+            </p>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+              <button
+                onClick={() => setConfirmModal({ open: false, row: null })}
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  border: "1px solid #ddd",
+                  background: "white",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  if (loadingConfirm) return;
+                  try {
+                    setLoadingConfirm(true);
+                    const newType = confirmModal.row.typeSale === "Qr" ? "Efectivo" : "Qr";
+                    const updatedSale = await updateSale(confirmModal.row.id, newType);
+                    await regeneratePdf(updatedSale);
+                    await refresh();
+                    setConfirmModal({ open: false, row: null });
+                    successToast("Método de pago actualizado correctamente");
+                  } catch (error) {
+                    setConfirmModal({ open: false, row: null });
+                    errorToast(error.message);
+                  } finally {
+                    setLoadingConfirm(false);
+                  }
+                }}
+                disabled={loadingConfirm}
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: loadingConfirm ? "#a5d6c5" : "#1D9E75",
+                  color: "white",
+                  cursor: loadingConfirm ? "not-allowed" : "pointer",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                }}
+              >
+                {loadingConfirm ? "Guardando..." : "Confirmar"}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        {/* Modal de cambio de fecha */}
+        <Dialog
+          open={dateModal.open}
+          onClose={() => setDateModal({ open: false, row: null })}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: { borderRadius: "16px", padding: "8px" },
+          }}
+        >
+          <DialogContent sx={{ textAlign: "center", padding: "24px" }}>
+            <div style={{ fontSize: "36px", marginBottom: "12px" }}>📅</div>
+            <p style={{ fontWeight: 600, fontSize: "16px", marginBottom: "8px" }}>
+              ¿Cambiar fecha de venta?
+            </p>
+            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+              Venta <strong>{dateModal.row?.code}</strong>
+            </p>
+
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="es">
+              <DatePicker
+                label="Nueva fecha"
+                value={newDate}
+                onChange={(value) => setNewDate(value)}
+                slotProps={{
+                  textField: {
+                    size: "small",
+                    fullWidth: true,
+                    sx: {
+                      "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+                    },
+                  },
+                }}
+              />
+            </LocalizationProvider>
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "24px" }}>
+              <button
+                onClick={() => setDateModal({ open: false, row: null })}
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  border: "1px solid #ddd",
+                  background: "white",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  if (loadingDate) return;
+                  try {
+                    setLoadingDate(true);
+                    const updatedSale = await updateDateSale(dateModal.row.id, newDate.toISOString());
+                    await regeneratePdf(updatedSale);
+                    await refresh();
+                    setDateModal({ open: false, row: null });
+                    successToast("Fecha actualizada");
+                  } catch (error) {
+                    errorToast(error.message);
+                  } finally {
+                    setLoadingDate(false);
+                  }
+                }}
+                disabled={loadingDate}
+                style={{
+                  padding: "8px 24px",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: loadingDate ? "#a5d6c5" : "#1D9E75",
+                  color: "white",
+                  cursor: loadingDate ? "not-allowed" : "pointer",
+                  fontSize: "14px",
+                  fontWeight: 500,
+                }}
+              >
+                {loadingDate ? "Guardando..." : "Guardar"}
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </Content>
-    </Wrapper >
+    </Wrapper>
   );
 }
