@@ -105,7 +105,7 @@ export const generarPDF = (
   };
 
   campo("Nro. Recibo", `${venta.code}`, col1, y, 28);
-  campo("Fecha", new Date().toLocaleString("es-BO"), col1, y + 6, 28);
+  campo("Fecha", new Date(venta.date).toLocaleString("es-BO"), col1, y + 6, 28);
   campo("Cliente", venta.clientName || "Consumidor final", col1, y + 12, 28);
 
   campo("Cajero", cajero || "—", col2, y, 22);
