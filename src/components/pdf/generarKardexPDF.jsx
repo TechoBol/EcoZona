@@ -90,7 +90,12 @@ export const generarKardexPDF = ({
     // =====================================================
     // 🔥 TABLA
     // =====================================================
-
+    const n = (value) => {
+      return Number(value || 0).toLocaleString("es-ES", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+    };
     autoTable(doc, {
       startY: currentY,
 
@@ -178,36 +183,32 @@ export const generarKardexPDF = ({
         }
 
         if (row.detalle?.includes("TRANSFERENCIA")) {
-          codigo = row.detalle.split(" ").pop();
+          codigo = row.codigoMovimiento || "";
         }
 
         return [
-          // 🔥 CODIGO
           codigo,
 
-          // 🔥 FECHA
           dayjs(row.fecha).format("DD/MM/YYYY"),
 
-          // 🔥 CLIENTE
           row.detalle?.includes("VENTA")
             ? "CONSUMIDOR FINAL"
             : row.detalle?.includes("TRANSFERENCIA")
             ? "TRANSFERENCIA"
             : "",
 
-          // 🔥 DETALLE
-          row.detalle,
+          row.detalle.replace(/→/g, "A"),
 
           // 🔥 INVENTARIO FISICO
-          row.entrada || "",
-          row.salida || "",
-          row.saldoCantidad || "",
+          n(row.entrada),
+          n(row.salida),
+          n(row.saldoCantidad),
 
           // 🔥 INVENTARIO VALORADO
-          Number(row.costoUnitario || 0).toFixed(2),
-          Number(row.entradaTotal || 0).toFixed(2),
-          Number(row.salidaTotal || 0).toFixed(2),
-          Number(row.saldoTotal || 0).toFixed(2),
+          n(row.costoUnitario),
+          n(row.entradaTotal),
+          n(row.salidaTotal),
+          n(row.saldoTotal),
         ];
       }),
 
@@ -223,41 +224,44 @@ export const generarKardexPDF = ({
           "",
 
           // 🔥 INVENTARIO FISICO
-          grupo.kardex
-            .reduce((acc, row) => acc + Number(row.entrada || 0), 0)
-            .toFixed(2),
+          n(
+            grupo.kardex.reduce(
+              (acc, row) => acc + Number(row.entrada || 0),
+              0,
+            ),
+          ),
 
-          grupo.kardex
-            .reduce((acc, row) => acc + Number(row.salida || 0), 0)
-            .toFixed(2),
+          n(
+            grupo.kardex.reduce((acc, row) => acc + Number(row.salida || 0), 0),
+          ),
 
           grupo.kardex.length > 0
-            ? Number(
-                grupo.kardex[grupo.kardex.length - 1]?.saldoCantidad || 0,
-              ).toFixed(2)
-            : "0.00",
+            ? n(grupo.kardex[grupo.kardex.length - 1]?.saldoCantidad || 0)
+            : n(0),
 
           // 🔥 C/U FINAL
           grupo.kardex.length > 0
-            ? Number(
-                grupo.kardex[grupo.kardex.length - 1]?.costoUnitario || 0,
-              ).toFixed(2)
-            : "0.00",
+            ? n(grupo.kardex[grupo.kardex.length - 1]?.costoUnitario || 0)
+            : n(0),
 
           // 🔥 INVENTARIO VALORADO
-          grupo.kardex
-            .reduce((acc, row) => acc + Number(row.entradaTotal || 0), 0)
-            .toFixed(2),
+          n(
+            grupo.kardex.reduce(
+              (acc, row) => acc + Number(row.entradaTotal || 0),
+              0,
+            ),
+          ),
 
-          grupo.kardex
-            .reduce((acc, row) => acc + Number(row.salidaTotal || 0), 0)
-            .toFixed(2),
+          n(
+            grupo.kardex.reduce(
+              (acc, row) => acc + Number(row.salidaTotal || 0),
+              0,
+            ),
+          ),
 
           grupo.kardex.length > 0
-            ? Number(
-                grupo.kardex[grupo.kardex.length - 1]?.saldoTotal || 0,
-              ).toFixed(2)
-            : "0.00",
+            ? n(grupo.kardex[grupo.kardex.length - 1]?.saldoTotal || 0)
+            : n(0),
         ],
       ],
 
