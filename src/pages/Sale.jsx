@@ -36,7 +36,7 @@ import { FaTrash } from "react-icons/fa";
 import { useUpdateSale } from "../hooks/useUpdateSale";
 import { useUpdateDateSale } from "../hooks/useUpdateDateSale";
 import { successToast, errorToast } from "../services/toasts";
-import { useRegeneratePdf } from "../hooks/useRegeneratePdf";
+import { useRegeneratePdf } from "../hooks/useRegeneratePDF";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
