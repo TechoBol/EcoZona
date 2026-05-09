@@ -57,6 +57,7 @@ function ProductForm() {
 
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [inventoryEditEnabled, setInventoryEditEnabled] = useState(false);
 
   const beepRef = useRef(null);
 
@@ -68,7 +69,6 @@ function ProductForm() {
   const [imageDeleted, setImageDeleted] = useState(false);
 
   useEffect(() => {
-    console.log(product);
     if (!product?.imageUrl) return;
 
     const loadImage = async () => {
@@ -82,15 +82,17 @@ function ProductForm() {
 
     loadImage();
   }, [product]);
+
   const getStockByLocation = (product, locationId) => {
     if (!product || !locationId) return "";
-
     const found = product.inventories?.find(
       (inv) => inv.locationId === locationId,
     );
-
     return found?.quantity ?? 0;
   };
+
+  const originalStock = getStockByLocation(product, locationId);
+
   const form = useForm({
     initialValues: {
       name: product?.name ?? "",
@@ -99,7 +101,7 @@ function ProductForm() {
       imageFile: null,
       price: product?.price ?? "",
       finalPrice: product?.finalPrice ?? "",
-      stock: getStockByLocation(product, locationId) ?? "",
+      stock: originalStock,
       lineId: product?.lineId ?? "",
       brandName: product?.brandName ?? "",
     },
@@ -125,15 +127,49 @@ function ProductForm() {
     if (form.values.imageFile) {
       return URL.createObjectURL(form.values.imageFile);
     }
-
     if (!imageDeleted && s3Image) {
       return s3Image;
     }
-
     return null;
   }, [form.values.imageFile, s3Image, imageDeleted]);
 
- const handleSubmit = form.onSubmit(async (values) => {
+  // En edición: botón activo si cualquier campo libre cambió,
+  // o si el switch está on y price/stock cambiaron
+  const hasChanges = useMemo(() => {
+    if (!isEdit) return form.isValid();
+
+    const generalChanged =
+      form.values.name !== (product?.name ?? "") ||
+      form.values.description !== (product?.description ?? "") ||
+      form.values.barcode !== (product?.barcode ?? "") ||
+      form.values.lineId !== (product?.lineId ?? "") ||
+      form.values.brandName !== (product?.brandName ?? "") ||
+      Number(form.values.finalPrice) !== Number(product?.finalPrice) ||
+      !!form.values.imageFile;
+
+    const inventoryChanged =
+      inventoryEditEnabled &&
+      (Number(form.values.price) !== Number(product?.price) ||
+        Number(form.values.stock) !== Number(originalStock));
+
+    return generalChanged || inventoryChanged;
+  }, [
+    isEdit,
+    inventoryEditEnabled,
+    form.values.name,
+    form.values.description,
+    form.values.barcode,
+    form.values.lineId,
+    form.values.brandName,
+    form.values.finalPrice,
+    form.values.price,
+    form.values.stock,
+    form.values.imageFile,
+    product,
+    originalStock,
+  ]);
+
+  const handleSubmit = form.onSubmit(async (values) => {
     try {
       setLoading(true);
 
@@ -158,6 +194,7 @@ function ProductForm() {
         imageUrl: imageKey,
         lineId: Number(values.lineId),
         brandName: values.brandName,
+        inventoryEdited: isEdit ? inventoryEditEnabled : false,
       };
 
       let result;
@@ -174,14 +211,12 @@ function ProductForm() {
       socket.emit("createProduct", result);
       refresh();
       navigate("/inventory", { replace: true });
-
     } catch (err) {
       errorToast(err.message || "Error inesperado");
     } finally {
       setLoading(false);
     }
   });
-
 
   const { lines } = useLines();
   const [brands, setBrands] = useState([]);
@@ -193,7 +228,6 @@ function ProductForm() {
 
     if (selectedLine) {
       setBrands(selectedLine.brands || []);
-
       if (!selectedLine.brands?.includes(form.values.brandName)) {
         form.setFieldValue("brandName", "");
       }
@@ -208,14 +242,13 @@ function ProductForm() {
         <BackButton onClick={() => navigate("/inventory", { replace: true })}>
           <ArrowLeft size={20} />
         </BackButton>
-
         <Title>{isEdit ? "Editar Producto" : "Crear Producto"}</Title>
       </Header>
 
       <Form onSubmit={handleSubmit}>
         {/* ================= COLUMNA IZQUIERDA ================= */}
         <LeftColumn>
-          {/* INFORMACIÓN GENERAL */}
+          {/* INFORMACIÓN GENERAL — siempre editable */}
           <Section>
             <SectionTitle>Información general</SectionTitle>
 
@@ -256,20 +289,87 @@ function ProductForm() {
 
           {/* COSTOS E INVENTARIO */}
           <Section>
-            <SectionTitle>Costos e inventario</SectionTitle>
+            <SectionTitle
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              Costos e inventario
+              {isEdit && (
+                <label
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    fontSize: 12,
+                    fontWeight: 400,
+                    cursor: "pointer",
+                    color: "var(--color-text-secondary)",
+                    userSelect: "none",
+                  }}
+                >
+                  <span
+                    onClick={() => {
+                      const enabled = !inventoryEditEnabled;
+                      setInventoryEditEnabled(enabled);
+                      if (!enabled) {
+                        form.setFieldValue("price", product?.price ?? "");
+                        form.setFieldValue("stock", originalStock);
+                      } else {
+                        form.setFieldValue("stock", 0);
+                      }
+                    }}
+                    style={{
+                      position: "relative",
+                      display: "inline-block",
+                      width: 36,
+                      height: 20,
+                      borderRadius: 20,
+                      background: inventoryEditEnabled ? "#e53e3e" : "#ccc",
+                      transition: "background 0.2s",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 3,
+                        left: inventoryEditEnabled ? 19 : 3,
+                        width: 14,
+                        height: 14,
+                        borderRadius: "50%",
+                        background: "white",
+                        transition: "left 0.2s",
+                      }}
+                    />
+                  </span>
+                </label>
+              )}
+            </SectionTitle>
 
             <Grid3>
-              <ContainerInput>
+              {/* Precio compra — restringido por switch */}
+              <ContainerInput
+                style={
+                  isEdit && !inventoryEditEnabled
+                    ? { opacity: 0.45, pointerEvents: "none" }
+                    : {}
+                }
+              >
                 <Input
                   type="number"
                   placeholder="Precio compra"
                   {...form.getInputProps("price")}
+                  disabled={isEdit && !inventoryEditEnabled}
                 />
                 {form.errors.price && (
                   <ErrorText>{form.errors.price}</ErrorText>
                 )}
               </ContainerInput>
 
+              {/* Precio venta — siempre editable */}
               <ContainerInput>
                 <Input
                   type="number"
@@ -281,12 +381,38 @@ function ProductForm() {
                 )}
               </ContainerInput>
 
-              <ContainerInput>
+              {/* Stock — restringido por switch */}
+              <ContainerInput
+                style={
+                  isEdit && !inventoryEditEnabled
+                    ? { opacity: 0.45, pointerEvents: "none" }
+                    : {}
+                }
+              >
                 <Input
                   type="number"
-                  placeholder="Stock inicial"
+                  placeholder={
+                    isEdit && inventoryEditEnabled ? "Nuevo stock" : "Stock"
+                  }
                   {...form.getInputProps("stock")}
+                  disabled={isEdit && !inventoryEditEnabled}
                 />
+                {isEdit && inventoryEditEnabled && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: "var(--color-text-secondary)",
+                      marginTop: 4,
+                      display: "block",
+                      paddingLeft: 2,
+                    }}
+                  >
+                    Stock actual:{" "}
+                    <strong style={{ color: "var(--color-text-primary)" }}>
+                      {originalStock} unidades
+                    </strong>
+                  </span>
+                )}
                 {form.errors.stock && (
                   <ErrorText>{form.errors.stock}</ErrorText>
                 )}
@@ -297,7 +423,7 @@ function ProductForm() {
 
         {/* ================= COLUMNA DERECHA ================= */}
         <RightColumn>
-          {/* CLASIFICACIÓN */}
+          {/* CLASIFICACIÓN — siempre editable */}
           <Section>
             <SectionTitle>Clasificación del producto</SectionTitle>
 
@@ -329,7 +455,7 @@ function ProductForm() {
             </Grid2>
           </Section>
 
-          {/* IMAGEN */}
+          {/* IMAGEN — siempre editable, en edición sin botón eliminar */}
           <Section>
             <SectionTitle>Imagen del producto</SectionTitle>
 
@@ -370,22 +496,50 @@ function ProductForm() {
 
             {previewUrl && (
               <PreviewContainer className={isClosing ? "closing" : ""}>
-                <PreviewImage src={previewUrl} />
+                <PreviewImage src={previewUrl} alt="Preview del producto" />
 
-                <RemoveButton
-                  type="button"
-                  onClick={() => {
-                    setIsClosing(true);
-
-                    setTimeout(() => {
-                      form.setFieldValue("imageFile", null);
-                      setImageDeleted(true);
-                      setIsClosing(false);
-                    }, 200);
-                  }}
-                >
-                  <X size={18} />
-                </RemoveButton>
+                {isEdit ? (
+                  // Edición: solo cambiar imagen, sin eliminar
+                  <>
+                    <HiddenInput
+                      type="file"
+                      accept="image/*"
+                      id="edit-image-input"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          form.setFieldValue("imageFile", file);
+                          setImageDeleted(false);
+                        }
+                      }}
+                    />
+                    <RemoveButton
+                      type="button"
+                      title="Cambiar imagen"
+                      onClick={() =>
+                        document.getElementById("edit-image-input").click()
+                      }
+                      style={{ background: "rgba(0,0,0,0.55)" }}
+                    >
+                      📷
+                    </RemoveButton>
+                  </>
+                ) : (
+                  // Creación: eliminar imagen
+                  <RemoveButton
+                    type="button"
+                    onClick={() => {
+                      setIsClosing(true);
+                      setTimeout(() => {
+                        form.setFieldValue("imageFile", null);
+                        setImageDeleted(true);
+                        setIsClosing(false);
+                      }, 200);
+                    }}
+                  >
+                    <X size={18} />
+                  </RemoveButton>
+                )}
               </PreviewContainer>
             )}
           </Section>
@@ -393,7 +547,14 @@ function ProductForm() {
 
         {/* ================= BOTÓN ================= */}
         <ButtonRow>
-          <Button type="submit" disabled={!form.isValid() || loading}>
+          <Button
+            type="submit"
+            disabled={
+              isEdit
+                ? !hasChanges || !form.isValid() || loading
+                : !form.isValid() || loading
+            }
+          >
             {loading
               ? "Guardando..."
               : isEdit
