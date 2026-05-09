@@ -10,6 +10,7 @@ export const useCart = () => {
   const { token, location } = useLoginStore();
   const { uploadPDF } = useAmazonS3();
   const {fullName} = useLoginStore()
+
   const createSale = async (
     data: any,
     cartItems: any[],
@@ -20,7 +21,7 @@ export const useCart = () => {
     try {
       setLoading(true);
       setError(null);
-
+      console.log(data)
       const payload = {
         ...data,
         locationId: location.id,

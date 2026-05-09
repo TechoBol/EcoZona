@@ -12,6 +12,7 @@ import {
 } from "../ui/Location";
 import { FaTrash } from "react-icons/fa";
 import { errorToast, successToast } from "../../services/toasts";
+import { usePermissions } from "../../hooks/usePermissions";
 
 export default function CreateTransferModal({
   open,
@@ -29,13 +30,19 @@ export default function CreateTransferModal({
   const isSending = useRef(false); // bloqueo instant00e1neo sin esperar re-render
   const [showDestinations, setShowDestinations] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
-  const [destDropdownPos, setDestDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  const [destDropdownPos, setDestDropdownPos] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
   const inputRefs = useRef({});
   const destinationTriggerRef = useRef(null);
   const productDropdownRef = useRef(null);
   const destDropdownRef = useRef(null);
 
+  const permissions = usePermissions();
+  const viewTo = permissions.isAdmin;
   // ── cerrar al click afuera ──────────────────────────────────────────
   useEffect(() => {
     const handle = (e) => {
@@ -67,7 +74,9 @@ export default function CreateTransferModal({
   // ── stock ──────────────────────────────────────────────────────────
   const getStock = (product) => {
     if (!product?.inventories) return 0;
-    const found = product.inventories.find((inv) => inv.locationId === location?.id);
+    const found = product.inventories.find(
+      (inv) => inv.locationId === location?.id,
+    );
     return found?.quantity || 0;
   };
 
@@ -84,7 +93,10 @@ export default function CreateTransferModal({
 
   // ── items ──────────────────────────────────────────────────────────
   const addItem = () => {
-    setForm({ ...form, items: [...form.items, { productId: "", quantity: 1 }] });
+    setForm({
+      ...form,
+      items: [...form.items, { productId: "", quantity: 1 }],
+    });
   };
 
   const removeItem = (index) => {
@@ -94,7 +106,8 @@ export default function CreateTransferModal({
 
   const updateItem = (index, field, value) => {
     const newItems = [...form.items];
-    if (field === "productId") newItems[index] = { productId: value, quantity: 1 };
+    if (field === "productId")
+      newItems[index] = { productId: value, quantity: 1 };
     if (field === "quantity") newItems[index].quantity = value;
     setForm({ ...form, items: newItems });
   };
@@ -137,10 +150,12 @@ export default function CreateTransferModal({
   };
 
   // ── validación ─────────────────────────────────────────────────────
-  const isValid =
-    form.destinationId &&
-    form.items.length > 0 &&
-    form.items.every((i) => i.productId && i.quantity > 0);
+  const isValid = viewTo
+    ? form.destinationId &&
+      form.items.length > 0 &&
+      form.items.every((i) => i.productId && i.quantity > 0)
+    : form.items.length > 0 &&
+      form.items.every((i) => i.productId && i.quantity > 0);
 
   // ── submit ─────────────────────────────────────────────────────────
   const handleSubmit = async () => {
@@ -148,6 +163,7 @@ export default function CreateTransferModal({
     if (isSending.current) return;
     isSending.current = true;
     setSending(true);
+    console.log("click");
     try {
       await onSubmit({
         destinationId: form.destinationId,
@@ -226,57 +242,89 @@ export default function CreateTransferModal({
         {/* ── HEADER ── */}
         <div style={{ padding: "20px 20px 12px 20px", flexShrink: 0 }}>
           <CloseButton onClick={onClose}>✖</CloseButton>
-          <ModalTitle style={{ marginBottom: "14px" }}>Enviar productos</ModalTitle>
+          <ModalTitle style={{ marginBottom: "14px" }}>
+            Enviar productos
+          </ModalTitle>
 
           {/* Origen → Destino */}
-          <div
-            style={{
-              background: "#f8f8f8",
-              borderRadius: "14px",
-              padding: "12px 16px",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px",
-              border: "1px solid #eee",
-            }}
-          >
-            {/* Origen */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "10px", color: "#aaa", fontWeight: 600, marginBottom: "2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Desde
+          {viewTo && (
+            <div
+              style={{
+                background: "#f8f8f8",
+                borderRadius: "14px",
+                padding: "12px 16px",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                border: "1px solid #eee",
+              }}
+            >
+              {/* Origen */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "#aaa",
+                    fontWeight: 600,
+                    marginBottom: "2px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Desde
+                </div>
+                <div
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {location?.name}
+                </div>
               </div>
-              <div style={{ fontWeight: 600, fontSize: "14px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {location?.name}
+
+              <span style={{ fontSize: "16px", color: "#bbb", flexShrink: 0 }}>
+                →
+              </span>
+
+              {/* Destino */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontSize: "10px",
+                    color: "#aaa",
+                    fontWeight: 600,
+                    marginBottom: "2px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Hacia
+                </div>
+                <div
+                  ref={destinationTriggerRef}
+                  onClick={openDestDropdown}
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    cursor: "pointer",
+                    color: form.destinationId ? "#1a1a1a" : "#999",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    userSelect: "none",
+                  }}
+                >
+                  {form.destinationId
+                    ? locations.find((l) => l.id === form.destinationId)?.name
+                    : "Seleccionar destino..."}
+                </div>
               </div>
             </div>
-
-            <span style={{ fontSize: "16px", color: "#bbb", flexShrink: 0 }}>→</span>
-
-            {/* Destino */}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "10px", color: "#aaa", fontWeight: 600, marginBottom: "2px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                Hacia
-              </div>
-              <div
-                ref={destinationTriggerRef}
-                onClick={openDestDropdown}
-                style={{
-                  fontWeight: 600,
-                  fontSize: "14px",
-                  cursor: "pointer",
-                  color: form.destinationId ? "#1a1a1a" : "#999",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  userSelect: "none",
-                }}
-              >
-                {form.destinationId
-                  ? locations.find((l) => l.id === form.destinationId)?.name
-                  : "Seleccionar destino..."}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
         {/* ── SCROLL BODY ── */}
@@ -291,49 +339,82 @@ export default function CreateTransferModal({
           <FormGroup>
             {form.items.map((item, index) => {
               const product = inventory.find((p) => p.id === item.productId);
-              const available = item.productId ? getAvailableStock(item.productId, index) : null;
+              const available = item.productId
+                ? getAvailableStock(item.productId, index)
+                : null;
 
               const filteredProducts = inventory.filter((p) => {
                 const q = (searches[index] || "").toLowerCase();
                 if (!q) return true;
-                return `${p.name} ${p.code || ""} ${p.barcode || ""}`.toLowerCase().includes(q);
+                return `${p.name} ${p.code || ""} ${p.barcode || ""}`
+                  .toLowerCase()
+                  .includes(q);
               });
 
               return (
                 <div key={index} style={{ marginBottom: "10px" }}>
                   {/* Fila principal */}
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                    }}
+                  >
                     {/* Input buscador */}
-                    <div ref={(el) => (inputRefs.current[index] = el)} style={{ flex: 1, minWidth: 0 }}>
+                    <div
+                      ref={(el) => (inputRefs.current[index] = el)}
+                      style={{ flex: 1, minWidth: 0 }}
+                    >
                       <input
                         style={{
                           ...inputStyle,
-                          borderColor: activeIndex === index ? "#1a1a1a" : "#e0e0e0",
-                          background: activeIndex === index ? "#fff" : "#fafafa",
+                          borderColor:
+                            activeIndex === index ? "#1a1a1a" : "#e0e0e0",
+                          background:
+                            activeIndex === index ? "#fff" : "#fafafa",
                         }}
                         placeholder="Buscar por nombre o código..."
-                        value={activeIndex === index ? searches[index] || "" : product?.name || ""}
+                        value={
+                          activeIndex === index
+                            ? searches[index] || ""
+                            : product?.name || ""
+                        }
                         onFocus={() => openProductDropdown(index)}
                         onChange={(e) =>
-                          setSearches((prev) => ({ ...prev, [index]: e.target.value }))
+                          setSearches((prev) => ({
+                            ...prev,
+                            [index]: e.target.value,
+                          }))
                         }
                         readOnly={activeIndex !== index}
                       />
                     </div>
 
                     {/* Cantidad */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "4px",
+                        flexShrink: 0,
+                      }}
+                    >
                       <button
                         style={btnQty}
                         onClick={() =>
-                          updateItem(index, "quantity", Math.max(1, Number(item.quantity || 1) - 1))
+                          updateItem(
+                            index,
+                            "quantity",
+                            Math.max(1, Number(item.quantity || 1) - 1),
+                          )
                         }
                       >
                         −
                       </button>
                       <input
                         type="number"
-                        value={item.quantity === "" ? "" : item.quantity}  // permite vacío
+                        value={item.quantity === "" ? "" : item.quantity} // permite vacío
                         min={1}
                         onChange={(e) => {
                           const raw = e.target.value;
@@ -344,7 +425,9 @@ export default function CreateTransferModal({
                             return;
                           }
 
-                          const max = item.productId ? getAvailableStock(item.productId, index) : 999;
+                          const max = item.productId
+                            ? getAvailableStock(item.productId, index)
+                            : 999;
                           let val = parseInt(raw, 10);
                           if (isNaN(val) || val < 1) val = 1;
                           if (val > max) val = max;
@@ -352,7 +435,10 @@ export default function CreateTransferModal({
                         }}
                         onBlur={() => {
                           // Al salir del campo, si está vacío o inválido lo resetea a 1
-                          if (item.quantity === "" || Number(item.quantity) < 1) {
+                          if (
+                            item.quantity === "" ||
+                            Number(item.quantity) < 1
+                          ) {
                             updateItem(index, "quantity", 1);
                           }
                         }}
@@ -370,8 +456,14 @@ export default function CreateTransferModal({
                       <button
                         style={btnQty}
                         onClick={() => {
-                          const max = item.productId ? getAvailableStock(item.productId, index) : 999;
-                          updateItem(index, "quantity", Math.min(max, Number(item.quantity || 0) + 1));
+                          const max = item.productId
+                            ? getAvailableStock(item.productId, index)
+                            : 999;
+                          updateItem(
+                            index,
+                            "quantity",
+                            Math.min(max, Number(item.quantity || 0) + 1),
+                          );
                         }}
                       >
                         +
@@ -379,20 +471,25 @@ export default function CreateTransferModal({
                     </div>
 
                     {/* Eliminar */}
-                    <DeleteButton onClick={() => removeItem(index)} style={{ flexShrink: 0 }}>
+                    <DeleteButton
+                      onClick={() => removeItem(index)}
+                      style={{ flexShrink: 0 }}
+                    >
                       <FaTrash />
                     </DeleteButton>
                   </div>
 
                   {/* Stock disponible */}
                   {product && available !== null && (
-                    <div style={{
-                      fontSize: "11px",
-                      color: available <= 5 ? "#e53935" : "#888",
-                      marginTop: "4px",
-                      marginLeft: "2px",
-                      fontWeight: available <= 5 ? 600 : 400,
-                    }}>
+                    <div
+                      style={{
+                        fontSize: "11px",
+                        color: available <= 5 ? "#e53935" : "#888",
+                        marginTop: "4px",
+                        marginLeft: "2px",
+                        fontWeight: available <= 5 ? 600 : 400,
+                      }}
+                    >
                       {available <= 0
                         ? "⚠ Sin stock disponible"
                         : `Stock disponible: ${available} unidades`}
@@ -439,12 +536,20 @@ export default function CreateTransferModal({
               const filteredProducts = inventory.filter((p) => {
                 const q = (searches[index] || "").toLowerCase();
                 if (!q) return true;
-                return `${p.name} ${p.code || ""} ${p.barcode || ""}`.toLowerCase().includes(q);
+                return `${p.name} ${p.code || ""} ${p.barcode || ""}`
+                  .toLowerCase()
+                  .includes(q);
               });
 
               if (!filteredProducts.length)
                 return (
-                  <div style={{ padding: "12px 14px", fontSize: "13px", color: "#aaa" }}>
+                  <div
+                    style={{
+                      padding: "12px 14px",
+                      fontSize: "13px",
+                      color: "#aaa",
+                    }}
+                  >
                     Sin resultados
                   </div>
                 );
@@ -468,25 +573,45 @@ export default function CreateTransferModal({
                       alignItems: "center",
                       gap: "8px",
                     }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f8f8")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.background = "#f8f8f8")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.background = "transparent")
+                    }
                   >
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: "13px", fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      <div
+                        style={{
+                          fontSize: "13px",
+                          fontWeight: 500,
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
                         {p.name}
                       </div>
                       {(p.code || p.barcode) && (
-                        <div style={{ fontSize: "11px", color: "#aaa", marginTop: "1px" }}>
+                        <div
+                          style={{
+                            fontSize: "11px",
+                            color: "#aaa",
+                            marginTop: "1px",
+                          }}
+                        >
                           {p.code || p.barcode}
                         </div>
                       )}
                     </div>
-                    <span style={{
-                      fontSize: "11px",
-                      color: stock <= 5 ? "#e53935" : "#888",
-                      flexShrink: 0,
-                      fontWeight: stock <= 5 ? 600 : 400,
-                    }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        color: stock <= 5 ? "#e53935" : "#888",
+                        flexShrink: 0,
+                        fontWeight: stock <= 5 ? 600 : 400,
+                      }}
+                    >
                       Stock: {stock}
                     </span>
                   </div>
@@ -494,7 +619,7 @@ export default function CreateTransferModal({
               });
             })()}
           </div>,
-          document.body
+          document.body,
         )}
 
       {/* ── PORTAL: dropdown destinos ── */}
@@ -525,14 +650,18 @@ export default function CreateTransferModal({
                     fontSize: "14px",
                     borderBottom: "1px solid #f5f5f5",
                   }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "#f8f8f8")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#f8f8f8")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
                 >
                   {l.name}
                 </div>
               ))}
           </div>,
-          document.body
+          document.body,
         )}
     </ModalOverlay>
   );

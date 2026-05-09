@@ -31,7 +31,7 @@ export const useTransfers = () => {
   const createTransfer = async (values: any) => {
     const transfer = await createTransferService(values, token);
     const pdfBlob = generarTransferPDF(transfer);
-
+    console.log("aca")
     // 3. Convertir a File
     const file = new File([pdfBlob], `transfer_${transfer.transferCode}.pdf`, {
       type: "application/pdf",

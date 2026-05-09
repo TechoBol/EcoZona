@@ -12,6 +12,7 @@ import Roles from "./pages/Roles";
 import Sales from "./pages/Sale";
 import Transfers from "./pages/Transferencias";
 import Lines from "./pages/Lines";
+import InventoryFisico from "./pages/InventoryFisico"
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -37,6 +38,7 @@ function App() {
             <Route path="/reports" element={<Sales />} />
             <Route path="/transfer" element={<Transfers />} />
             <Route path="/lines" element={<Lines />} />
+            <Route path="/inventory-fisico-valorado" element={<InventoryFisico />} />
           </>
         )}
 
