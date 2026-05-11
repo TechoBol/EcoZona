@@ -30,7 +30,10 @@ export default function CreateRoleModal({
     };
 
     window.addEventListener("keydown", handleEsc);
-    return () => window.removeEventListener("keydown", handleEsc);
+
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
   }, []);
 
   useEffect(() => {
@@ -42,35 +45,44 @@ export default function CreateRoleModal({
     }
   }, [open]);
 
-  // Validacion
+  // VALIDACIÓN
   const validate = () => {
     let valid = true;
+
     const newErrors = {
       name: "",
       maxEmployeesAllowed: "",
     };
 
-    if (!form.name.trim()) {
+    // Nombre obligatorio
+    if (!form.name?.trim()) {
       newErrors.name = "El nombre es obligatorio";
       valid = false;
     }
 
+    // Máximo empleados
     if (
       form.maxEmployeesAllowed === "" ||
-      form.maxEmployeesAllowed <= 0
+      form.maxEmployeesAllowed < 1 ||
+      form.maxEmployeesAllowed > 4
     ) {
-      newErrors.maxEmployeesAllowed =
-        "Debe ser mayor a 0";
+      newErrors.maxEmployeesAllowed = "Debe ser entre 1 y 4";
+
       valid = false;
     }
 
     setErrors(newErrors);
+
     return valid;
   };
 
   const handleSubmit = () => {
     if (!validate()) return;
-    onSubmit(form);
+
+    onSubmit({
+      ...form,
+      maxEmployeesAllowed: Number(form.maxEmployeesAllowed),
+    });
   };
 
   const handleClose = () => {
@@ -78,6 +90,7 @@ export default function CreateRoleModal({
       name: "",
       maxEmployeesAllowed: "",
     });
+
     onClose();
   };
 
@@ -90,23 +103,34 @@ export default function CreateRoleModal({
           <X size={18} />
         </CloseButton>
 
-        <ModalTitle>
-          {isEdit ? "Editar rol" : "Nuevo rol"}
-        </ModalTitle>
+        <ModalTitle>{isEdit ? "Editar rol" : "Nuevo rol"}</ModalTitle>
 
         <FormGroup>
-          {/* NAME */}
+          {/* NOMBRE */}
           <div>
             <ModalInput
               placeholder="Nombre del rol"
               value={form.name}
               onChange={(e) => {
-                setForm({ ...form, name: e.target.value });
-                setErrors({ ...errors, name: "" });
+                setForm({
+                  ...form,
+                  name: e.target.value,
+                });
+
+                setErrors({
+                  ...errors,
+                  name: "",
+                });
               }}
             />
+
             {errors.name && (
-              <span style={{ color: "red", fontSize: 12 }}>
+              <span
+                style={{
+                  color: "red",
+                  fontSize: 12,
+                }}
+              >
                 {errors.name}
               </span>
             )}
@@ -127,14 +151,30 @@ export default function CreateRoleModal({
           {/* MAX EMPLEADOS */}
           <div>
             <ModalInput
-              type="number"
-              placeholder="Máx empleados"
+              type="text"
+              inputMode="numeric"
+              placeholder="Nivel de permisos"
               value={form.maxEmployeesAllowed}
               onChange={(e) => {
+                let value = e.target.value;
+                // Permitir vacío
+                if (value === "") {
+                  setForm({
+                    ...form,
+                    maxEmployeesAllowed: "",
+                  });
+
+                  return;
+                }
+                // Solo permitir números
+                if (!/^[1-4]$/.test(value)) {
+                  return;
+                }
                 setForm({
                   ...form,
-                  maxEmployeesAllowed: Number(e.target.value),
+                  maxEmployeesAllowed: value,
                 });
+
                 setErrors({
                   ...errors,
                   maxEmployeesAllowed: "",
@@ -142,7 +182,12 @@ export default function CreateRoleModal({
               }}
             />
             {errors.maxEmployeesAllowed && (
-              <span style={{ color: "red", fontSize: 12 }}>
+              <span
+                style={{
+                  color: "red",
+                  fontSize: 12,
+                }}
+              >
                 {errors.maxEmployeesAllowed}
               </span>
             )}
@@ -150,7 +195,13 @@ export default function CreateRoleModal({
         </FormGroup>
 
         <SaveButton onClick={handleSubmit} disabled={isLoading}>
-          {isLoading ? (isEdit ? "Actualizando..." : "Guardando...") : (isEdit ? "Actualizar" : "Guardar")}
+          {isLoading
+            ? isEdit
+              ? "Actualizando..."
+              : "Guardando..."
+            : isEdit
+            ? "Actualizar"
+            : "Guardar"}
         </SaveButton>
       </ModalContent>
     </ModalOverlay>

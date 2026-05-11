@@ -37,7 +37,7 @@ export default function Roles() {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    maxEmployeesAllowed: 1,
+    maxEmployeesAllowed: "",
   });
 
   // 🔥 SOLO LEVEL 1 PUEDE EDITAR
@@ -92,8 +92,7 @@ export default function Roles() {
                   setForm({
                     name: params.row.name,
                     description: params.row.description || "",
-                    maxEmployeesAllowed:
-                      params.row.maxEmployeesAllowed || 1,
+                    maxEmployeesAllowed: params.row.maxEmployeesAllowed || 1,
                   });
 
                   setEditId(params.row.id);
@@ -118,7 +117,7 @@ export default function Roles() {
   return (
     <Wrapper>
       <Header>
-       <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Roles</Title>
       </Header>
 

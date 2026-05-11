@@ -105,7 +105,7 @@ export default function InventoryFisico() {
   );
     generarKardex({
       producto: filters.producto,
-      productoId: filters.producto?.id || null,
+      productId: filters.producto?.id || null,
       locationId: Number(filters.sucursal) || null,
       locationName: sucursalSeleccionada?.name || "TODAS",
       linea: Number(filters.linea),

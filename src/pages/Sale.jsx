@@ -37,10 +37,11 @@ import { useUpdateSale } from "../hooks/useUpdateSale";
 import { useUpdateDateSale } from "../hooks/useUpdateDateSale";
 import { successToast, errorToast } from "../services/toasts";
 import { useRegeneratePdf } from "../hooks/useRegeneratePDF";
+import { usePermissions } from "../hooks/usePermissions";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
+  import.meta.url,
 ).toString();
 
 export default function Sales() {
@@ -65,6 +66,7 @@ export default function Sales() {
   const { regeneratePdf } = useRegeneratePdf();
   const [loadingConfirm, setLoadingConfirm] = useState(false);
   const [loadingDate, setLoadingDate] = useState(false);
+  const permissions = usePermissions();
 
   useEffect(() => {
     if (!openPdf) return;
@@ -120,13 +122,15 @@ export default function Sales() {
       `Generado el ${dayjs().format("DD/MM/YYYY HH:mm")}`,
       doc.internal.pageSize.width - 14,
       16,
-      { align: "right" }
+      { align: "right" },
     );
     doc.setTextColor(0);
 
     autoTable(doc, {
       startY: startDate || endDate ? 28 : 22,
-      head: [["Código", "Trabajador", "Sucursal", "Tipo venta", "Total", "Fecha"]],
+      head: [
+        ["Código", "Trabajador", "Sucursal", "Tipo venta", "Total", "Fecha"],
+      ],
       body: filteredRows.map((row) => [
         row.code || "",
         row.employeeName || "",
@@ -137,8 +141,16 @@ export default function Sales() {
       ]),
       foot: [["", "", "", "TOTAL", `Bs ${filteredTotal.toFixed(2)}`, ""]],
       styles: { fontSize: 10, cellPadding: 5 },
-      headStyles: { fillColor: [30, 30, 60], textColor: 255, fontStyle: "bold" },
-      footStyles: { fillColor: [240, 240, 240], textColor: [30, 30, 30], fontStyle: "bold" },
+      headStyles: {
+        fillColor: [30, 30, 60],
+        textColor: 255,
+        fontStyle: "bold",
+      },
+      footStyles: {
+        fillColor: [240, 240, 240],
+        textColor: [30, 30, 30],
+        fontStyle: "bold",
+      },
       alternateRowStyles: { fillColor: [248, 249, 255] },
       columnStyles: { 4: { halign: "right" } },
     });
@@ -149,7 +161,9 @@ export default function Sales() {
   const rows = (data || []).map((sale) => ({
     ...sale,
     date: sale.date ? new Date(sale.date) : null,
-    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""}`.trim(),
+    employeeName: `${sale.employee?.name || ""} ${
+      sale.employee?.lastName || ""
+    }`.trim(),
     locationName: sale.location?.name || "",
   }));
 
@@ -172,16 +186,39 @@ export default function Sales() {
   useEffect(() => {
     const total = filteredRows.reduce(
       (sum, row) => sum + Number(row.total || 0),
-      0
+      0,
     );
     setFilteredTotal(total);
   }, [filteredRows]);
 
   const columns = [
-    { field: "code", disableColumnMenu: true, headerName: "Código", width: 130 },
-    { field: "employeeName", disableColumnMenu: true, headerName: "Trabajador", flex: 1, minWidth: 180 },
-    { field: "locationName", disableColumnMenu: true, headerName: "Sucursal", flex: 1, minWidth: 160 },
-    { field: "typeSale", disableColumnMenu: true, headerName: "Tipo venta", flex: 1, minWidth: 160 },
+    {
+      field: "code",
+      disableColumnMenu: true,
+      headerName: "Código",
+      width: 130,
+    },
+    {
+      field: "employeeName",
+      disableColumnMenu: true,
+      headerName: "Trabajador",
+      flex: 1,
+      minWidth: 180,
+    },
+    {
+      field: "locationName",
+      disableColumnMenu: true,
+      headerName: "Sucursal",
+      flex: 1,
+      minWidth: 160,
+    },
+    {
+      field: "typeSale",
+      disableColumnMenu: true,
+      headerName: "Tipo venta",
+      flex: 1,
+      minWidth: 160,
+    },
     {
       field: "total",
       headerName: "Total",
@@ -193,7 +230,13 @@ export default function Sales() {
         </span>
       ),
     },
-    { field: "date", headerName: "Fecha", width: 180, disableColumnMenu: true, type: "dateTime" },
+    {
+      field: "date",
+      headerName: "Fecha",
+      width: 180,
+      disableColumnMenu: true,
+      type: "dateTime",
+    },
     {
       field: "actions",
       headerName: "Recibo",
@@ -204,7 +247,15 @@ export default function Sales() {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+          }}
+        >
           <BsFillFileEarmarkPdfFill
             size={20}
             style={{ cursor: "pointer", color: "#f20707" }}
@@ -229,7 +280,15 @@ export default function Sales() {
         const alreadyDateChanged = params.row.dateChanged;
 
         return (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              height: "100%",
+            }}
+          >
             <span
               style={{
                 display: "inline-flex",
@@ -243,16 +302,28 @@ export default function Sales() {
                 lineHeight: "1",
                 cursor: alreadyChanged ? "not-allowed" : "pointer",
                 opacity: alreadyChanged ? 0.45 : 1,
-                background: alreadyChanged ? "#f0f0f0" : isQr ? "#E1F5EE" : "#E6F1FB",
+                background: alreadyChanged
+                  ? "#f0f0f0"
+                  : isQr
+                  ? "#E1F5EE"
+                  : "#E6F1FB",
                 color: alreadyChanged ? "#999" : isQr ? "#0F6E56" : "#0C447C",
-                border: `1px solid ${alreadyChanged ? "#ddd" : isQr ? "#1D9E75" : "#185FA5"}`,
+                border: `1px solid ${
+                  alreadyChanged ? "#ddd" : isQr ? "#1D9E75" : "#185FA5"
+                }`,
                 transition: "opacity 0.15s",
               }}
-              onMouseEnter={(e) => { if (!alreadyChanged) e.currentTarget.style.opacity = "0.7"; }}
-              onMouseLeave={(e) => { if (!alreadyChanged) e.currentTarget.style.opacity = "1"; }}
+              onMouseEnter={(e) => {
+                if (!alreadyChanged) e.currentTarget.style.opacity = "0.7";
+              }}
+              onMouseLeave={(e) => {
+                if (!alreadyChanged) e.currentTarget.style.opacity = "1";
+              }}
               onClick={() => {
                 if (alreadyChanged) {
-                  errorToast("Este método de pago ya fue cambiado anteriormente");
+                  errorToast(
+                    "Este método de pago ya fue cambiado anteriormente",
+                  );
                   return;
                 }
                 setConfirmModal({ open: true, row: params.row });
@@ -262,37 +333,41 @@ export default function Sales() {
             </span>
 
             {/* Cambiar fecha */}
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "3px 10px",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: 500,
-                whiteSpace: "nowrap",
-                lineHeight: "1",
-                cursor: alreadyDateChanged ? "not-allowed" : "pointer",
-                opacity: alreadyDateChanged ? 0.45 : 1,
-                background: alreadyDateChanged ? "#f0f0f0" : "#FFF4E5",
-                color: alreadyDateChanged ? "#999" : "#9A5B00",
-                border: `1px solid ${alreadyDateChanged ? "#ddd" : "#F0B15A"}`,
-              }}
-              onClick={() => {
-                if (alreadyDateChanged) {
-                  errorToast("La fecha ya fue modificada anteriormente");
-                  return;
-                }
+            {permissions.canManageDateSale && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "5px",
+                  padding: "3px 10px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  whiteSpace: "nowrap",
+                  lineHeight: "1",
+                  cursor: alreadyDateChanged ? "not-allowed" : "pointer",
+                  opacity: alreadyDateChanged ? 0.45 : 1,
+                  background: alreadyDateChanged ? "#f0f0f0" : "#FFF4E5",
+                  color: alreadyDateChanged ? "#999" : "#9A5B00",
+                  border: `1px solid ${
+                    alreadyDateChanged ? "#ddd" : "#F0B15A"
+                  }`,
+                }}
+                onClick={() => {
+                  if (alreadyDateChanged) {
+                    errorToast("La fecha ya fue modificada anteriormente");
+                    return;
+                  }
 
-                setDateModal({
-                  open: true,
-                  row: params.row,
-                });
-              }}
-            >
-              {alreadyDateChanged ? "🔒" : "📅"} Fecha
-            </span>
+                  setDateModal({
+                    open: true,
+                    row: params.row,
+                  });
+                }}
+              >
+                {alreadyDateChanged ? "🔒" : "📅"} Fecha
+              </span>
+            )}
           </div>
         );
       },
@@ -344,12 +419,20 @@ export default function Sales() {
                   size: "small",
                   sx: {
                     width: { xs: "calc(50% - 28px)", sm: "160px" },
-                    "& .MuiOutlinedInput-root": { height: "36px", borderRadius: "10px" },
-                    "& .MuiInputBase-input": { padding: "0 8px", fontSize: "13px" },
+                    "& .MuiOutlinedInput-root": {
+                      height: "36px",
+                      borderRadius: "10px",
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "0 8px",
+                      fontSize: "13px",
+                    },
                     "& .MuiInputLabel-root": {
                       transform: "translate(10px, 9px) scale(1)",
                       fontSize: "13px",
-                      "&.MuiInputLabel-shrink": { transform: "translate(10px, -9px) scale(0.75)" },
+                      "&.MuiInputLabel-shrink": {
+                        transform: "translate(10px, -9px) scale(0.75)",
+                      },
                     },
                   },
                 },
@@ -364,12 +447,20 @@ export default function Sales() {
                   size: "small",
                   sx: {
                     width: { xs: "calc(50% - 28px)", sm: "160px" },
-                    "& .MuiOutlinedInput-root": { height: "36px", borderRadius: "10px" },
-                    "& .MuiInputBase-input": { padding: "0 8px", fontSize: "13px" },
+                    "& .MuiOutlinedInput-root": {
+                      height: "36px",
+                      borderRadius: "10px",
+                    },
+                    "& .MuiInputBase-input": {
+                      padding: "0 8px",
+                      fontSize: "13px",
+                    },
                     "& .MuiInputLabel-root": {
                       transform: "translate(10px, 9px) scale(1)",
                       fontSize: "13px",
-                      "&.MuiInputLabel-shrink": { transform: "translate(10px, -9px) scale(0.75)" },
+                      "&.MuiInputLabel-shrink": {
+                        transform: "translate(10px, -9px) scale(0.75)",
+                      },
                     },
                   },
                 },
@@ -377,8 +468,16 @@ export default function Sales() {
             />
           </LocalizationProvider>
           <ClearButton
-            onClick={() => { setStartDate(null); setEndDate(null); }}
-            style={{ background: "none", border: "none", boxShadow: "none", padding: "6px" }}
+            onClick={() => {
+              setStartDate(null);
+              setEndDate(null);
+            }}
+            style={{
+              background: "none",
+              border: "none",
+              boxShadow: "none",
+              padding: "6px",
+            }}
           >
             <FaTrash size={18} color="#9e9e9e" />
           </ClearButton>
@@ -400,12 +499,24 @@ export default function Sales() {
             initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
             pageSizeOptions={[25, 50, 100]}
             slots={{ toolbar: GridToolbar }}
-            slotProps={{ toolbar: { showQuickFilter: true, quickFilterProps: { debounceMs: 300 } } }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 300 },
+              },
+            }}
             sx={{
               border: "none",
-              "& .MuiDataGrid-columnHeaders": { backgroundColor: "#f8f9ff", fontWeight: 600 },
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: "#f8f9ff",
+                fontWeight: 600,
+              },
               "& .MuiDataGrid-toolbarContainer": { padding: "10px" },
-              "& .MuiInputBase-root": { borderRadius: "12px", backgroundColor: "#f5f5f5", paddingLeft: "8px" },
+              "& .MuiInputBase-root": {
+                borderRadius: "12px",
+                backgroundColor: "#f5f5f5",
+                paddingLeft: "8px",
+              },
               "& .MuiDataGrid-columnHeaderTitle": { fontWeight: "bold" },
             }}
           />
@@ -456,14 +567,16 @@ export default function Sales() {
               <CloseIcon />
             </IconButton>
 
-            <div style={{
-              position: "absolute",
-              top: 10,
-              right: 56,
-              display: "flex",
-              gap: "8px",
-              zIndex: 1000,
-            }}>
+            <div
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 56,
+                display: "flex",
+                gap: "8px",
+                zIndex: 1000,
+              }}
+            >
               <IconButton
                 onClick={async () => {
                   const response = await fetch(pdfUrl);
@@ -516,12 +629,24 @@ export default function Sales() {
                 file={pdfUrl}
                 onLoadSuccess={onDocumentLoadSuccess}
                 loading={
-                  <div style={{ padding: "40px", color: "#666", textAlign: "center" }}>
+                  <div
+                    style={{
+                      padding: "40px",
+                      color: "#666",
+                      textAlign: "center",
+                    }}
+                  >
                     Cargando PDF...
                   </div>
                 }
                 error={
-                  <div style={{ padding: "40px", color: "#d32f2f", textAlign: "center" }}>
+                  <div
+                    style={{
+                      padding: "40px",
+                      color: "#d32f2f",
+                      textAlign: "center",
+                    }}
+                  >
                     Error al cargar el PDF.
                   </div>
                 }
@@ -553,15 +678,24 @@ export default function Sales() {
         >
           <DialogContent sx={{ textAlign: "center", padding: "24px" }}>
             <div style={{ fontSize: "36px", marginBottom: "12px" }}>🔄</div>
-            <p style={{ fontWeight: 600, fontSize: "16px", marginBottom: "8px" }}>
+            <p
+              style={{ fontWeight: 600, fontSize: "16px", marginBottom: "8px" }}
+            >
               ¿Cambiar método de pago?
             </p>
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "24px" }}>
+            <p
+              style={{ color: "#666", fontSize: "14px", marginBottom: "24px" }}
+            >
               La venta <strong>{confirmModal.row?.code}</strong> pasará de{" "}
               <strong>{confirmModal.row?.typeSale}</strong> a{" "}
-              <strong>{confirmModal.row?.typeSale === "Qr" ? "Efectivo" : "Qr"}</strong>.
+              <strong>
+                {confirmModal.row?.typeSale === "Qr" ? "Efectivo" : "Qr"}
+              </strong>
+              .
             </p>
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
+            <div
+              style={{ display: "flex", gap: "10px", justifyContent: "center" }}
+            >
               <button
                 onClick={() => setConfirmModal({ open: false, row: null })}
                 style={{
@@ -581,8 +715,12 @@ export default function Sales() {
                   if (loadingConfirm) return;
                   try {
                     setLoadingConfirm(true);
-                    const newType = confirmModal.row.typeSale === "Qr" ? "Efectivo" : "Qr";
-                    const updatedSale = await updateSale(confirmModal.row.id, newType);
+                    const newType =
+                      confirmModal.row.typeSale === "Qr" ? "Efectivo" : "Qr";
+                    const updatedSale = await updateSale(
+                      confirmModal.row.id,
+                      newType,
+                    );
                     await regeneratePdf(updatedSale);
                     await refresh();
                     setConfirmModal({ open: false, row: null });
@@ -623,10 +761,14 @@ export default function Sales() {
         >
           <DialogContent sx={{ textAlign: "center", padding: "24px" }}>
             <div style={{ fontSize: "36px", marginBottom: "12px" }}>📅</div>
-            <p style={{ fontWeight: 600, fontSize: "16px", marginBottom: "8px" }}>
+            <p
+              style={{ fontWeight: 600, fontSize: "16px", marginBottom: "8px" }}
+            >
               ¿Cambiar fecha de venta?
             </p>
-            <p style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}>
+            <p
+              style={{ color: "#666", fontSize: "14px", marginBottom: "20px" }}
+            >
               Venta <strong>{dateModal.row?.code}</strong>
             </p>
 
@@ -647,7 +789,14 @@ export default function Sales() {
               />
             </LocalizationProvider>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginTop: "24px" }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "10px",
+                justifyContent: "center",
+                marginTop: "24px",
+              }}
+            >
               <button
                 onClick={() => setDateModal({ open: false, row: null })}
                 style={{
@@ -667,7 +816,10 @@ export default function Sales() {
                   if (loadingDate) return;
                   try {
                     setLoadingDate(true);
-                    const updatedSale = await updateDateSale(dateModal.row.id, newDate.toISOString());
+                    const updatedSale = await updateDateSale(
+                      dateModal.row.id,
+                      newDate.toISOString(),
+                    );
                     await regeneratePdf(updatedSale);
                     await refresh();
                     setDateModal({ open: false, row: null });
