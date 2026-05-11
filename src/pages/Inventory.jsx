@@ -79,7 +79,7 @@ function Inventory() {
 
   const permissions = usePermissions();
   const canChangeLocation = permissions.isAdmin;
-  const isWarehouse = selectedLocation?.id === 1;
+  const isWarehouse = selectedLocation?.type === "WAREHOUSE";
 
   ///////////////////////////////////////
   // SUCURSAL
