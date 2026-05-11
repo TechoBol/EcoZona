@@ -13,7 +13,7 @@ import {
   Tag,
   Bookmark,
 } from "lucide-react";
-import { MdOutlineInventory2,MdOutlineInventory } from "react-icons/md";
+import { MdOutlineInventory2, MdOutlineInventory } from "react-icons/md";
 import {
   ProfileButton,
   Dropdown,
@@ -35,6 +35,9 @@ import { usePermissions } from "../../hooks/usePermissions";
 import { useInventoryFisico } from "../../hooks/useInventoryFisico";
 import { useNotificationStore } from "../store/notificationStore";
 
+import { BarChart3 } from "lucide-react";
+import { useKardex } from "../../hooks/useKardex";
+
 const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
   const { logOut } = useAuthentication();
@@ -49,7 +52,7 @@ const UserMenu = () => {
   const { goToTransfer } = useTransfers();
   const { goToLines } = useLines();
   const { goToInventoryFisico } = useInventoryFisico();
-
+  const { goToKardex } = useKardex();
   const hasTransferNotification = useNotificationStore(
     (state) => state.hasTransferNotification,
   );
@@ -63,7 +66,7 @@ const UserMenu = () => {
           {/* OVERLAY */}
           {open && (
             <div
-              onClick={() => { }}
+              onClick={() => {}}
               style={{
                 position: "fixed",
                 inset: 0,
@@ -136,14 +139,29 @@ const UserMenu = () => {
                     </MenuOption>
                   )}
                 </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <MenuOption onClick={goToInventoryFisico} $active={active}>
-                      <MdOutlineInventory size={16} />
-                      <span>Inventario Fisico - Valorado</span>
-                    </MenuOption>
-                  )}
-                </Menu.Item>
+                {permissions.canManageInventaryFisico && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption
+                        onClick={goToInventoryFisico}
+                        $active={active}
+                      >
+                        <MdOutlineInventory size={16} />
+                        <span>Inventario Fisico - Valorado</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
+                
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToKardex} $active={active}>
+                        <BarChart3 size={16} />
+                        <span>Kardex</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+              
                 {/* 🏢 SUCURSALES → solo level 1 */}
                 {permissions.canManageBranches && (
                   <Menu.Item>
@@ -186,7 +204,7 @@ const UserMenu = () => {
                     {({ active }) => (
                       <MenuOption
                         onClick={() => {
-                          clearTransferNotification(); 
+                          clearTransferNotification();
                           goToTransfer();
                         }}
                         $active={active}

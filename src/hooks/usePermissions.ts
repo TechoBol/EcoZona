@@ -16,6 +16,7 @@ export const usePermissions = () => {
 
     // 🛠 GESTIÓN
     canManageBranches:  [1 , 4].includes(lvl),
+    canManageInventaryFisico:  [1 , 4].includes(lvl),
     canManageEmployees: [1, 2 , 4].includes(lvl),
     canManageRoles: [1 , 4].includes(lvl),
     canManageLines: [1, 2 , 4].includes(lvl),
@@ -23,7 +24,7 @@ export const usePermissions = () => {
     canApproveTransfers: [1, 2].includes(lvl),
     canCreateTransfers: [1, 2].includes(lvl),
     canManageLinesAdmin: [1, 2].includes(lvl),
-
+    canManageDateSale : [1, 2].includes(lvl),
     // 💰 VENTAS
     canManageSales: [1, 2, 3 , 4].includes(lvl),
     canSell: [1, 2, 3].includes(lvl),
