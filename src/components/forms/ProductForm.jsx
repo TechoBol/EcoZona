@@ -242,7 +242,13 @@ function ProductForm() {
         <BackButton onClick={() => navigate("/inventory", { replace: true })}>
           <ArrowLeft size={20} />
         </BackButton>
-        <Title>{isEdit ? "Editar Producto" : "Crear Producto"}</Title>
+        <Title>
+          {isEdit
+            ? inventoryEditEnabled
+              ? "Añadir Nuevo Inventario"
+              : "Editar Producto"
+            : "Crear Producto"}
+        </Title>
       </Header>
 
       <Form onSubmit={handleSubmit}>
@@ -358,9 +364,22 @@ function ProductForm() {
                     : {}
                 }
               >
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Precio compra
+                </label>
                 <Input
                   type="number"
-                  placeholder="Precio compra"
+                  placeholder="0.00"
                   {...form.getInputProps("price")}
                   disabled={isEdit && !inventoryEditEnabled}
                 />
@@ -371,9 +390,22 @@ function ProductForm() {
 
               {/* Precio venta — siempre editable */}
               <ContainerInput>
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Precio venta
+                </label>
                 <Input
                   type="number"
-                  placeholder="Precio venta"
+                  placeholder="0.00"
                   {...form.getInputProps("finalPrice")}
                 />
                 {form.errors.finalPrice && (
@@ -389,11 +421,22 @@ function ProductForm() {
                     : {}
                 }
               >
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {isEdit && inventoryEditEnabled ? "Nuevo stock" : "Stock"}
+                </label>
                 <Input
                   type="number"
-                  placeholder={
-                    isEdit && inventoryEditEnabled ? "Nuevo stock" : "Stock"
-                  }
+                  placeholder="0"
                   {...form.getInputProps("stock")}
                   disabled={isEdit && !inventoryEditEnabled}
                 />
