@@ -96,23 +96,28 @@ export const ModalOverlay = styled.div`
 `;
 
 export const ModalContent = styled.div`
-  background: ${theme.colors.background};
+  background: white;
 
-  width: 900px;
+  width: 640px;
   max-width: 95vw;
 
-  border-radius: 22px;
+  max-height: 90vh;
 
-  padding: 28px;
+  overflow-y: auto;
 
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  border-radius: 26px;
+
+  padding: 32px;
+
+  box-shadow:
+    0 24px 80px rgba(0,0,0,0.18);
 
   animation: scaleIn 0.2s ease;
 
   @keyframes scaleIn {
     from {
       opacity: 0;
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
 
     to {
@@ -121,7 +126,6 @@ export const ModalContent = styled.div`
     }
   }
 `;
-
 export const ModalTitle = styled.h2`
   font-size: 26px;
   font-weight: 700;
@@ -154,11 +158,18 @@ export const SectionTitle = styled.div`
 
 export const Row = styled.div`
   display: grid;
-  grid-template-columns: 160px 1fr;
+  grid-template-columns: 140px 1fr;
+
   gap: 14px;
+
   align-items: center;
 
-  margin-bottom: 14px;
+  margin-bottom: 16px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
 
   &:last-child {
     margin-bottom: 0;
@@ -237,8 +248,14 @@ export const ModalSelect = styled.select`
 
 export const DatesGrid = styled.div`
   display: grid;
+
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+
+  gap: 18px;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 //////////////////////////////////////////
@@ -314,9 +331,11 @@ export const CancelButton = styled.button`
   height: 46px;
 
   border-radius: 14px;
-  border: 1px solid #ddd;
+  border: 1px solid #d8d8d8;
 
-  background: white;
+  background: #f8f8f8;
+
+  color: #444;
 
   font-size: 14px;
   font-weight: 600;
@@ -326,7 +345,7 @@ export const CancelButton = styled.button`
   transition: all 0.2s ease;
 
   &:hover {
-    background: #f8f8f8;
+    background: #efefef;
   }
 
   &:active {

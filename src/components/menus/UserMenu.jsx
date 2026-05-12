@@ -157,7 +157,7 @@ const UserMenu = () => {
                     {({ active }) => (
                       <MenuOption onClick={goToKardex} $active={active}>
                         <BarChart3 size={16} />
-                        <span>Kardex</span>
+                        <span>Matriz de ventas</span>
                       </MenuOption>
                     )}
                   </Menu.Item>

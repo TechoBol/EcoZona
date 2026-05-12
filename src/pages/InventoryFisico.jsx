@@ -215,12 +215,14 @@ export default function InventoryFisico() {
             <DateRow>
               <DatePicker
                 label="Desde"
+                format="DD/MM/YYYY"
                 value={desde}
                 onChange={(v) => v && setDesde(v)}
                 slotProps={{ textField: { fullWidth: true } }}
               />
               <DatePicker
                 label="Hasta"
+                format="DD/MM/YYYY"
                 value={hasta}
                 onChange={(v) => v && setHasta(v)}
                 slotProps={{ textField: { fullWidth: true } }}
