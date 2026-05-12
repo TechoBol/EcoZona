@@ -10,20 +10,18 @@ import {
   ModalSelect,
   SaveButton,
   ActionsRow,
+  Section,
+  SectionTitle,
+  DatesGrid,
+  CancelButton,
 } from "../ui/Kardex";
 
 import { useKardex } from "../../hooks/useKardex";
 
 import dayjs from "dayjs";
 
-
-export default function KardexFiltersModal({
-  open,
-  onClose,
-  onGenerate,
-}) {
-  const { generarKardex, loading } =
-    useKardex();
+export default function KardexFiltersModal({ open, onClose, onGenerate }) {
+  const { generarKardex, loading } = useKardex();
 
   const [form, setForm] = useState({
     sucursal: "",
@@ -35,9 +33,7 @@ export default function KardexFiltersModal({
     documento: "",
   });
 
-  const [desde, setDesde] = useState(
-    dayjs().startOf("month"),
-  );
+  const [desde, setDesde] = useState(dayjs().startOf("month"));
 
   const [hasta, setHasta] = useState(dayjs());
 
@@ -55,171 +51,94 @@ export default function KardexFiltersModal({
 
   return (
     <ModalOverlay>
-      <ModalContent
-        style={{
-          width: 900,
-          maxWidth: "95vw",
-        }}
-      >
-        <ModalTitle>
-          Matriz de Ventas
-        </ModalTitle>
+      <ModalContent>
+        <>
+          <ModalTitle>Filtros de Ventas</ModalTitle>
 
-        {/* SUCURSAL */}
-        <Row>
-          <Label>Suc. - Almacén</Label>
+          <Section>
+            <SectionTitle>Rango de fechas</SectionTitle>
 
-          <ModalSelect
-            value={form.sucursal}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                sucursal: e.target.value,
-              }))
-            }
-          >
-            <option value="">
-              *** TODAS ***
-            </option>
-          </ModalSelect>
-        </Row>
+            <DatesGrid>
+              <div>
+                <Label>Desde</Label>
 
-        {/* ITEM */}
-        <Row>
-          <Label>Item</Label>
+                <ModalInput
+                  type="date"
+                  value={desde.format("YYYY-MM-DD")}
+                  onChange={(e) => setDesde(dayjs(e.target.value))}
+                />
+              </div>
 
-          <ModalInput
-            value={form.item}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                item: e.target.value,
-              }))
-            }
-          />
-        </Row>
+              <div>
+                <Label>Hasta</Label>
 
-        {/* MARCA */}
-        <Row>
-          <Label>Marca</Label>
+                <ModalInput
+                  type="date"
+                  value={hasta.format("YYYY-MM-DD")}
+                  onChange={(e) => setHasta(dayjs(e.target.value))}
+                />
+              </div>
+            </DatesGrid>
+          </Section>
 
-          <ModalInput
-            value={form.marca}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                marca: e.target.value,
-              }))
-            }
-          />
-        </Row>
+          <Section>
+            <SectionTitle>Filtros generales</SectionTitle>
 
-        {/* LINEA */}
-        <Row>
-          <Label>Línea</Label>
+            <Row>
+              <Label>Sucursal</Label>
 
-          <ModalInput
-            value={form.linea}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                linea: e.target.value,
-              }))
-            }
-          />
-        </Row>
+              <ModalSelect
+                value={form.sucursal}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    sucursal: e.target.value,
+                  }))
+                }
+              >
+                <option value="">Todas</option>
+              </ModalSelect>
+            </Row>
 
-        {/* CLIENTE */}
-        <Row>
-          <Label>Cliente</Label>
+            <Row>
+              <Label>Línea</Label>
 
-          <ModalInput
-            value={form.cliente}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                cliente: e.target.value,
-              }))
-            }
-          />
-        </Row>
+              <ModalInput
+                placeholder="Buscar línea..."
+                value={form.linea}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    linea: e.target.value,
+                  }))
+                }
+              />
+            </Row>
 
-        {/* VENDEDOR */}
-        <Row>
-          <Label>Vendedor</Label>
+            <Row>
+              <Label>Marca</Label>
 
-          <ModalSelect
-            value={form.vendedor}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                vendedor: e.target.value,
-              }))
-            }
-          >
-            <option value="">
-              *** TODOS ***
-            </option>
-          </ModalSelect>
-        </Row>
+              <ModalInput
+                placeholder="Buscar marca..."
+                value={form.marca}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    marca: e.target.value,
+                  }))
+                }
+              />
+            </Row>
+          </Section>
 
-        {/* DOCUMENTO */}
-        <Row>
-          <Label>Documento</Label>
+          <ActionsRow>
+            <SaveButton onClick={handleGenerate}>
+              {loading ? "Generando..." : "Generar"}
+            </SaveButton>
 
-          <ModalSelect
-            value={form.documento}
-            onChange={(e) =>
-              setForm((prev) => ({
-                ...prev,
-                documento: e.target.value,
-              }))
-            }
-          >
-            <option value="">
-              **Todos**
-            </option>
-          </ModalSelect>
-        </Row>
-
-        {/* FECHAS */}
-        <Row>
-          <Label>Desde</Label>
-
-          <ModalInput
-            type="date"
-            value={desde.format("YYYY-MM-DD")}
-            onChange={(e) =>
-              setDesde(dayjs(e.target.value))
-            }
-          />
-        </Row>
-
-        <Row>
-          <Label>Hasta</Label>
-
-          <ModalInput
-            type="date"
-            value={hasta.format("YYYY-MM-DD")}
-            onChange={(e) =>
-              setHasta(dayjs(e.target.value))
-            }
-          />
-        </Row>
-
-        <ActionsRow>
-          <SaveButton
-            onClick={handleGenerate}
-          >
-            {loading
-              ? "Generando..."
-              : "OK"}
-          </SaveButton>
-
-          <SaveButton onClick={onClose}>
-            Cancelar
-          </SaveButton>
-        </ActionsRow>
+            <CancelButton onClick={onClose}>Cancelar</CancelButton>
+          </ActionsRow>
+        </>
       </ModalContent>
     </ModalOverlay>
   );
