@@ -42,6 +42,61 @@ export const Content = styled.div`
 `;
 
 //////////////////////////////////////////
+// GROUP BAR
+//////////////////////////////////////////
+
+export const GroupBar = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+`;
+
+export const GroupButton = styled.button`
+  height: 42px;
+
+  padding: 0 18px;
+
+  border-radius: 999px;
+
+  border: 1px solid
+    ${({ $active }) =>
+      $active
+        ? theme.colors.primary
+        : "#e2e2e2"};
+
+  background: ${({ $active }) =>
+    $active
+      ? theme.colors.primary
+      : "white"};
+
+  color: ${({ $active }) =>
+    $active ? "white" : "#555"};
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  box-shadow: ${({ $active }) =>
+    $active
+      ? "0 6px 18px rgba(91,108,255,0.22)"
+      : "none"};
+
+  &:hover {
+    transform: translateY(-1px);
+
+    border-color: ${theme.colors.primary};
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+`;
+
+//////////////////////////////////////////
 // BUTTONS
 //////////////////////////////////////////
 
@@ -126,6 +181,7 @@ export const ModalContent = styled.div`
     }
   }
 `;
+
 export const ModalTitle = styled.h2`
   font-size: 26px;
   font-weight: 700;
@@ -240,6 +296,12 @@ export const ModalSelect = styled.select`
     border-color: ${theme.colors.primary};
     box-shadow: 0 0 0 3px rgba(91, 108, 255, 0.12);
   }
+
+  &:disabled {
+    background: #f7f7f7;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
 `;
 
 //////////////////////////////////////////
@@ -256,27 +318,6 @@ export const DatesGrid = styled.div`
   @media (max-width: 700px) {
     grid-template-columns: 1fr;
   }
-`;
-
-//////////////////////////////////////////
-// RADIO
-//////////////////////////////////////////
-
-export const RadioGroup = styled.div`
-  display: flex;
-  gap: 20px;
-  margin-top: 6px;
-`;
-
-export const RadioLabel = styled.label`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-
-  font-size: 14px;
-  font-weight: 500;
-
-  cursor: pointer;
 `;
 
 //////////////////////////////////////////
@@ -391,7 +432,8 @@ export const TotalBar = styled.div`
 export const TotalText = styled.span`
   font-size: 18px;
 
-  font-weight: ${({ $bold }) => ($bold ? 700 : 500)};
+  font-weight: ${({ $bold }) =>
+    $bold ? 700 : 500};
 
   color: ${theme.colors.text};
 `;

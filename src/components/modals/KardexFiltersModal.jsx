@@ -20,123 +20,293 @@ import { useKardex } from "../../hooks/useKardex";
 
 import dayjs from "dayjs";
 
-export default function KardexFiltersModal({ open, onClose, onGenerate }) {
-  const { generarKardex, loading } = useKardex();
+import { useSucursales } from "../../hooks/useSucursales";
 
-  const [form, setForm] = useState({
-    sucursal: "",
-    item: "",
-    marca: "",
-    linea: "",
-    cliente: "",
-    vendedor: "",
-    documento: "",
-  });
+import { useLines } from "../../hooks/useLine";
 
-  const [desde, setDesde] = useState(dayjs().startOf("month"));
+export default function KardexFiltersModal({
+  open,
+  onClose,
+  onGenerate,
+  groupBy,
+}) {
+  const {
+    generarKardex,
+    loading,
+  } = useKardex();
 
-  const [hasta, setHasta] = useState(dayjs());
+  const { data = [] } =
+    useSucursales();
 
-  if (!open) return null;
+  const { lines = [] } =
+    useLines();
 
-  const handleGenerate = async () => {
-    const res = await generarKardex({
-      ...form,
-      fromDate: desde.format("YYYY-MM-DD"),
-      toDate: hasta.format("YYYY-MM-DD"),
+  const [form, setForm] =
+    useState({
+      sucursal: "",
+      marca: "",
+      linea: "",
     });
 
-    onGenerate(res || []);
-  };
+  const [desde, setDesde] =
+    useState(
+      dayjs().startOf("month"),
+    );
+
+  const [hasta, setHasta] =
+    useState(dayjs());
+
+  //////////////////////////////////////////
+  // SELECTED LINE
+  //////////////////////////////////////////
+
+  const selectedLine = lines.find(
+    (line) =>
+      Number(line.id) ===
+      Number(form.linea),
+  );
+
+  const brands =
+    selectedLine?.brands || [];
+
+  //////////////////////////////////////////
+  // HANDLE GENERATE
+  //////////////////////////////////////////
+
+  const handleGenerate =
+    async () => {
+      const res =
+        await generarKardex({
+          ...form,
+
+          groupBy,
+
+          fromDate:
+            desde.format(
+              "YYYY-MM-DD",
+            ),
+
+          toDate:
+            hasta.format(
+              "YYYY-MM-DD",
+            ),
+        });
+
+      onGenerate(res || []);
+    };
+
+  if (!open) return null;
 
   return (
     <ModalOverlay>
       <ModalContent>
         <>
-          <ModalTitle>Filtros de Ventas</ModalTitle>
+          <ModalTitle>
+            Filtros de Ventas
+          </ModalTitle>
 
           <Section>
-            <SectionTitle>Rango de fechas</SectionTitle>
+            <SectionTitle>
+              Rango de fechas
+            </SectionTitle>
 
             <DatesGrid>
               <div>
-                <Label>Desde</Label>
+                <Label>
+                  Desde
+                </Label>
 
                 <ModalInput
                   type="date"
-                  value={desde.format("YYYY-MM-DD")}
-                  onChange={(e) => setDesde(dayjs(e.target.value))}
+                  value={desde.format(
+                    "YYYY-MM-DD",
+                  )}
+                  onChange={(e) =>
+                    setDesde(
+                      dayjs(
+                        e.target.value,
+                      ),
+                    )
+                  }
                 />
               </div>
 
               <div>
-                <Label>Hasta</Label>
+                <Label>
+                  Hasta
+                </Label>
 
                 <ModalInput
                   type="date"
-                  value={hasta.format("YYYY-MM-DD")}
-                  onChange={(e) => setHasta(dayjs(e.target.value))}
+                  value={hasta.format(
+                    "YYYY-MM-DD",
+                  )}
+                  onChange={(e) =>
+                    setHasta(
+                      dayjs(
+                        e.target.value,
+                      ),
+                    )
+                  }
                 />
               </div>
             </DatesGrid>
           </Section>
 
           <Section>
-            <SectionTitle>Filtros generales</SectionTitle>
+            <SectionTitle>
+              Filtros generales
+            </SectionTitle>
 
             <Row>
-              <Label>Sucursal</Label>
+              <Label>
+                Sucursal
+              </Label>
 
               <ModalSelect
-                value={form.sucursal}
+                value={
+                  form.sucursal
+                }
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    sucursal: e.target.value,
-                  }))
+                  setForm(
+                    (prev) => ({
+                      ...prev,
+
+                      sucursal:
+                        e.target
+                          .value,
+                    }),
+                  )
                 }
               >
-                <option value="">Todas</option>
+                <option value="">
+                  Todas
+                </option>
+
+                {data.map(
+                  (item) => (
+                    <option
+                      key={
+                        item.id
+                      }
+                      value={
+                        item.id
+                      }
+                    >
+                      {item.name}
+                    </option>
+                  ),
+                )}
               </ModalSelect>
             </Row>
 
             <Row>
-              <Label>Línea</Label>
+              <Label>
+                Línea
+              </Label>
 
-              <ModalInput
-                placeholder="Buscar línea..."
-                value={form.linea}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    linea: e.target.value,
-                  }))
+              <ModalSelect
+                value={
+                  form.linea
                 }
-              />
+                onChange={(e) =>
+                  setForm(
+                    (prev) => ({
+                      ...prev,
+
+                      linea:
+                        e.target
+                          .value,
+
+                      marca: "",
+                    }),
+                  )
+                }
+              >
+                <option value="">
+                  Todas
+                </option>
+
+                {lines.map(
+                  (line) => (
+                    <option
+                      key={
+                        line.id
+                      }
+                      value={
+                        line.id
+                      }
+                    >
+                      {line.name}
+                    </option>
+                  ),
+                )}
+              </ModalSelect>
             </Row>
 
             <Row>
-              <Label>Marca</Label>
+              <Label>
+                Marca
+              </Label>
 
-              <ModalInput
-                placeholder="Buscar marca..."
-                value={form.marca}
-                onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    marca: e.target.value,
-                  }))
+              <ModalSelect
+                value={
+                  form.marca
                 }
-              />
+                onChange={(e) =>
+                  setForm(
+                    (prev) => ({
+                      ...prev,
+
+                      marca:
+                        e.target
+                          .value,
+                    }),
+                  )
+                }
+                disabled={
+                  !form.linea
+                }
+              >
+                <option value="">
+                  Todas
+                </option>
+
+                {brands.map(
+                  (
+                    brand,
+                    index,
+                  ) => (
+                    <option
+                      key={index}
+                      value={
+                        brand
+                      }
+                    >
+                      {brand}
+                    </option>
+                  ),
+                )}
+              </ModalSelect>
             </Row>
           </Section>
 
           <ActionsRow>
-            <SaveButton onClick={handleGenerate}>
-              {loading ? "Generando..." : "Generar"}
+            <SaveButton
+              onClick={
+                handleGenerate
+              }
+            >
+              {loading
+                ? "Generando..."
+                : "Generar"}
             </SaveButton>
 
-            <CancelButton onClick={onClose}>Cancelar</CancelButton>
+            <CancelButton
+              onClick={onClose}
+            >
+              Cancelar
+            </CancelButton>
           </ActionsRow>
         </>
       </ModalContent>
