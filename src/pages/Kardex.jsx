@@ -19,207 +19,84 @@ import {
 import { DataGrid } from "@mui/x-data-grid";
 
 export default function Kardex() {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] =
+    useState(false);
 
-  const [openFilters, setOpenFilters] = useState(true);
+  const [openFilters, setOpenFilters] =
+    useState(true);
 
-  const [rawRows, setRawRows] = useState([]);
+  const [rawRows, setRawRows] =
+    useState([]);
 
-  const [groupBy, setGroupBy] = useState("");
+  const [groupBy, setGroupBy] =
+    useState("");
 
   const rows = useMemo(() => {
     if (!groupBy) {
-      const grouped = {};
-
-      rawRows.forEach((item) => {
-        const key = "GENERAL";
-
-        if (!grouped[key]) {
-          grouped[key] = {
-            id: key,
-            group: "GENERAL",
-            items: [],
-            totalAmount: 0,
-          };
-        }
-
-        grouped[key].items.push({
-          product: item.product,
-          quantity: item.quantity,
-          total: item.total,
-        });
-
-        grouped[key].totalAmount += Number(item.total || 0);
-      });
-
-      return Object.values(grouped);
+      return rawRows.map((item) => ({
+        id: item.id,
+        name: item.product,
+        quantity: Number(
+          item.quantity || 0,
+        ),
+        total: Number(item.total || 0),
+      }));
     }
 
     const grouped = {};
 
     rawRows.forEach((item) => {
-      const groupValue = item[groupBy] || "Sin grupo";
+      const groupValue =
+        item[groupBy] || "Sin grupo";
 
       if (!grouped[groupValue]) {
         grouped[groupValue] = {
-          id: groupValue,
-          group: groupValue,
-          items: [],
-          totalAmount: 0,
+          id: `${groupBy}-${groupValue}`,
+          name: groupValue,
+          quantity: 0,
+          total: 0,
         };
       }
 
-      grouped[groupValue].items.push({
-        product: item.product,
-        quantity: item.quantity,
-        total: item.total,
-      });
+      grouped[groupValue].quantity +=
+        Number(item.quantity || 0);
 
-      grouped[groupValue].totalAmount += Number(item.total || 0);
+      grouped[groupValue].total +=
+        Number(item.total || 0);
     });
 
     return Object.values(grouped);
   }, [rawRows, groupBy]);
 
   const totalGeneral = useMemo(() => {
-    return rawRows.reduce((acc, item) => acc + Number(item.total || 0), 0);
-  }, [rawRows]);
+    return rows.reduce(
+      (acc, item) =>
+        acc + Number(item.total || 0),
+      0,
+    );
+  }, [rows]);
+
+  const firstColumnTitle =
+    groupBy === "seller"
+      ? "Vendedor"
+      : groupBy === "line"
+        ? "Línea"
+        : groupBy === "brand"
+          ? "Marca"
+          : groupBy === "branch"
+            ? "Sucursal"
+            : "Producto";
 
   const columns = useMemo(() => {
-    const baseColumns = [
-      {
-        field: "products",
-
-        headerName: "Productos",
-
-        flex: 2.2,
-
-        minWidth: 450,
-
-        sortable: false,
-
-        renderCell: (params) => (
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              padding: "10px 0",
-            }}
-          >
-            {params.row.items.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: "8px 0",
-
-                  borderBottom: "1px solid #f1f1f1",
-                }}
-              >
-                {item.product}
-              </div>
-            ))}
-          </div>
-        ),
-      },
-
-      {
-        field: "quantities",
-
-        headerName: "Cantidades",
-
-        width: 150,
-
-        sortable: false,
-
-        renderCell: (params) => (
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              padding: "10px 0",
-
-              fontWeight: 700,
-            }}
-          >
-            {params.row.items.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: "8px 0",
-
-                  borderBottom: "1px solid #f1f1f1",
-                }}
-              >
-                {item.quantity}
-              </div>
-            ))}
-          </div>
-        ),
-      },
-
-      {
-        field: "totals",
-
-        headerName: "Totales",
-
-        width: 190,
-
-        sortable: false,
-
-        renderCell: (params) => (
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              padding: "10px 0",
-
-              fontWeight: 700,
-              color: "#0f766e",
-            }}
-          >
-            {params.row.items.map((item, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: "8px 0",
-
-                  borderBottom: "1px solid #f1f1f1",
-                }}
-              >
-                {`Bs ${Number(item.total || 0).toLocaleString("es-BO", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`}
-              </div>
-            ))}
-          </div>
-        ),
-      },
-    ];
-
-    if (!groupBy) {
-      return baseColumns;
-    }
-
     return [
       {
-        field: "group",
+        field: "name",
 
-        headerName:
-          groupBy === "seller"
-            ? "Vendedor"
-            : groupBy === "line"
-            ? "Línea"
-            : groupBy === "brand"
-            ? "Marca"
-            : "Sucursal",
+        headerName: firstColumnTitle,
 
-        flex: 1,
+        flex: 1.8,
 
-        minWidth: 260,
+        minWidth: 320,
 
         sortable: false,
 
@@ -228,12 +105,52 @@ export default function Kardex() {
             style={{
               width: "100%",
               display: "flex",
-              alignItems: "flex-start",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: 4,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                color: "#111827",
+                lineHeight: 1.4,
+              }}
+            >
+              {String(params.value).toUpperCase()}
+            </div>
 
-              paddingTop: 14,
+            {groupBy && (
+              <div
+                style={{
+                  fontSize: 13,
+                  color: "#0f766e",
+                }}
+              >
+               
+              </div>
+            )}
+          </div>
+        ),
+      },
 
-              fontWeight: 700,
+      {
+        field: "quantity",
+
+        headerName: "Cantidad",
+
+        width: 160,
+
+        type: "number",
+
+        sortable: false,
+
+        renderCell: (params) => (
+          <div
+            style={{
+              fontSize: 14,
               color: "#111827",
+              width: "100%",
             }}
           >
             {params.value}
@@ -241,83 +158,113 @@ export default function Kardex() {
         ),
       },
 
-      ...baseColumns,
-
       {
-        field: "generalTotal",
+        field: "total",
 
-        headerName: "Total General",
+        headerName: "Total Vendido",
 
-        width: 220,
+        width: 210,
+
+        type: "number",
 
         sortable: false,
 
         renderCell: (params) => (
           <div
             style={{
+              fontSize: 14,
+              fontWeight: 700,
+              color: "#0f766e",
               width: "100%",
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "center",
-
-              paddingTop: 14,
-
-              fontWeight: 800,
-              fontSize: 16,
-
-              color: "#065f46",
             }}
           >
-            {`Bs ${Number(params.row.totalAmount || 0).toLocaleString("es-BO", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`}
+            {`Bs ${Number(
+              params.value || 0,
+            ).toLocaleString(
+              "es-BO",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              },
+            )}`}
           </div>
         ),
       },
     ];
-  }, [groupBy]);
+  }, [groupBy, firstColumnTitle]);
 
   return (
     <Wrapper>
       <Header>
-        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
+        <UserMenu
+          isOpen={menuOpen}
+          setIsOpen={setMenuOpen}
+        />
 
-        <Title>Matriz de Ventas</Title>
+        <Title>
+          Matriz de Ventas
+        </Title>
 
-        <AddButton onClick={() => setOpenFilters(true)}>Filtros</AddButton>
+        <AddButton
+          onClick={() =>
+            setOpenFilters(true)
+          }
+        >
+          Filtros
+        </AddButton>
       </Header>
 
       <Content>
         <GroupBar>
-          <GroupButton $active={groupBy === ""} onClick={() => setGroupBy("")}>
+          <GroupButton
+            $active={groupBy === ""}
+            onClick={() =>
+              setGroupBy("")
+            }
+          >
             General
           </GroupButton>
 
           <GroupButton
-            $active={groupBy === "seller"}
-            onClick={() => setGroupBy("seller")}
+            $active={
+              groupBy === "seller"
+            }
+            onClick={() =>
+              setGroupBy("seller")
+            }
           >
             Vendedores
           </GroupButton>
 
           <GroupButton
-            $active={groupBy === "line"}
-            onClick={() => setGroupBy("line")}
+            $active={
+              groupBy === "line"
+            }
+            onClick={() =>
+              setGroupBy("line")
+            }
           >
             Líneas
           </GroupButton>
 
           <GroupButton
-            $active={groupBy === "brand"}
-            onClick={() => setGroupBy("brand")}
+            $active={
+              groupBy === "brand"
+            }
+            onClick={() =>
+              setGroupBy("brand")
+            }
           >
             Marcas
           </GroupButton>
 
           <GroupButton
-            $active={groupBy === "branch"}
-            onClick={() => setGroupBy("branch")}
+            $active={
+              groupBy === "branch"
+            }
+            onClick={() =>
+              setGroupBy("branch")
+            }
           >
             Sucursales
           </GroupButton>
@@ -329,8 +276,12 @@ export default function Kardex() {
             columns={columns}
             getRowId={(row) => row.id}
             disableRowSelectionOnClick
-            pageSizeOptions={[10, 20, 50]}
-            getRowHeight={() => "auto"}
+            pageSizeOptions={[
+              10,
+              20,
+              50,
+            ]}
+            getRowHeight={() => 74}
             initialState={{
               pagination: {
                 paginationModel: {
@@ -343,76 +294,116 @@ export default function Kardex() {
 
               fontSize: 14,
 
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f7f8fc",
+              fontFamily:
+                "inherit",
 
-                borderBottom: "1px solid #ececec",
-              },
+              backgroundColor:
+                "white",
 
-              "& .MuiDataGrid-columnHeaderTitle": {
-                fontWeight: 700,
-              },
+              "& .MuiDataGrid-columnHeaders":
+                {
+                  backgroundColor:
+                    "#f8fafc",
 
-              "& .MuiDataGrid-cell": {
-                borderBottom: "1px solid #f5f5f5",
+                  borderBottom:
+                    "1px solid #ececec",
 
-                display: "flex",
+                  minHeight:
+                    "58px !important",
 
-                alignItems: "stretch",
+                  maxHeight:
+                    "58px !important",
+                },
 
-                py: 0,
-              },
+              "& .MuiDataGrid-columnHeader":
+                {
+                  padding:
+                    "0 18px",
+                },
 
-              "& .MuiDataGrid-row:hover": {
-                backgroundColor: "#fafafa",
-              },
+              "& .MuiDataGrid-columnHeaderTitle":
+                {
+                  fontWeight: 700,
+                  fontSize: 14,
+                  color: "#111827",
+                },
 
-              "& .MuiDataGrid-footerContainer": {
-                borderTop: "1px solid #ececec",
-              },
+              "& .MuiDataGrid-row":
+                {
+                  backgroundColor:
+                    "white",
+
+                  transition:
+                    "all 0.2s ease",
+                },
+
+              "& .MuiDataGrid-row:hover":
+                {
+                  backgroundColor:
+                    "#fafafa",
+                },
+
+              "& .MuiDataGrid-cell":
+                {
+                  borderBottom:
+                    "1px solid #f3f4f6",
+
+                  display: "flex",
+
+                  alignItems:
+                    "center",
+
+                  padding:
+                    "0 18px",
+
+                  fontSize: 14,
+
+                  color: "#111827",
+
+                  outline: "none !important",
+                },
+
+              "& .MuiDataGrid-footerContainer":
+                {
+                  borderTop:
+                    "1px solid #ececec",
+
+                  minHeight: 56,
+                },
+
+              "& .MuiTablePagination-root":
+                {
+                  fontSize: 14,
+                },
             }}
           />
         </TableWrapper>
 
-        <div
-          style={{
-            marginTop: 18,
+        <TotalBar>
+          <TotalText $bold>
+            Total General
+          </TotalText>
 
-            display: "flex",
-            justifyContent: "flex-end",
-          }}
-        >
-          <div
-            style={{
-              background: "white",
-
-              border: "1px solid #e5e7eb",
-
-              borderRadius: 18,
-
-              padding: "18px 24px",
-
-              minWidth: 280,
-
-              boxShadow: "0 4px 16px rgba(0,0,0,0.05)",
-            }}
-          >
-              <TotalText $bold>TOTAL:</TotalText>
-              <TotalText>
-                {" "}
-                {`Bs ${Number(totalGeneral || 0).toLocaleString("es-BO", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`}
-              </TotalText>
-          </div>
-        </div>
+          <TotalText >
+            {`Bs ${Number(
+              totalGeneral || 0,
+            ).toLocaleString(
+              "es-BO",
+              {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              },
+            )}`}
+          </TotalText>
+        </TotalBar>
       </Content>
 
       <KardexFiltersModal
         groupBy={groupBy}
         open={openFilters}
-        onClose={() => setOpenFilters(false)}
+        onClose={() =>
+          setOpenFilters(false)
+        }
         onGenerate={(data) => {
           setRawRows(data);
 
