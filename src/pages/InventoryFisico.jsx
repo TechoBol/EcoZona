@@ -37,7 +37,6 @@ export default function InventoryFisico() {
     producto: null,
     marca: "",
     linea: "",
-    auxiliar: "",
   });
 
   const [desde, setDesde] = useState(dayjs("2026-05-01"));
@@ -110,7 +109,6 @@ export default function InventoryFisico() {
       locationName: sucursalSeleccionada?.name || "TODAS",
       linea: Number(filters.linea),
       marca: filters.marca,
-      auxiliar: filters.auxiliar,
       fromDate: desde.format("YYYY-MM-DD"),
       toDate: hasta.format("YYYY-MM-DD"),
     });
@@ -200,12 +198,6 @@ export default function InventoryFisico() {
                 </option>
               ))}
             </Select>
-          </Row>
-
-          {/* Auxiliar */}
-          <Row>
-            <Label>Auxiliar</Label>
-            <Input onChange={(e) => handleChange("auxiliar", e.target.value)} />
           </Row>
         </Section>
 
