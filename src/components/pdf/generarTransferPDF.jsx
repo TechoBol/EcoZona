@@ -85,7 +85,7 @@ export const generarTransferPDF = (transfer) => {
   doc.text("Glosa:", margin, finalY + 10);
 
   doc.setFont("helvetica", "normal");
-  doc.text(`TRANSFERENCIA ${transfer.transferCode}`, margin + 20, finalY + 10);
+  doc.text(`${transfer.glosa}`, margin + 20, finalY + 10);
 
   // ─────────────────────────
   // FIRMAS

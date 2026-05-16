@@ -50,7 +50,7 @@ export default function KardexFiltersModal({
 
   const [desde, setDesde] =
     useState(
-      dayjs().startOf("month"),
+      dayjs("2026-04-01")
     );
 
   const [hasta, setHasta] =

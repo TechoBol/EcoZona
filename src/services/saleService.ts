@@ -38,3 +38,28 @@ export const updateDateSaleService = async (token: string, id: number, date: str
   if (!res.ok) throw new Error(data.error || "Error al actualizar fecha");
   return data;
 };
+
+export const cancelSaleService = async (
+  token: string,
+  id: number,
+  reason: string,
+) => {
+  const res = await fetch(`${API}/sale/cancel/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-token": token,
+    },
+    body: JSON.stringify({
+      reason,
+    }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    throw new Error(data.error || "Error al cancelar venta");
+  }
+
+  return data;
+};

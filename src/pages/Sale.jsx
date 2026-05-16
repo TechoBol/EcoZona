@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import DownloadIcon from "@mui/icons-material/Download";
 import PrintIcon from "@mui/icons-material/Print";
+import Swal from "sweetalert2";
 
 import {
   Wrapper,
@@ -38,6 +39,7 @@ import { useUpdateDateSale } from "../hooks/useUpdateDateSale";
 import { successToast, errorToast } from "../services/toasts";
 import { useRegeneratePdf } from "../hooks/useRegeneratePDF";
 import { usePermissions } from "../hooks/usePermissions";
+import socket from "../services/SocketIOConnection";
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   "pdfjs-dist/build/pdf.worker.min.mjs",
@@ -60,7 +62,7 @@ export default function Sales() {
   const [confirmModal, setConfirmModal] = useState({ open: false, row: null });
   const { updateSale } = useUpdateSale();
   const { updateDateSale } = useUpdateDateSale();
-  const { data, refresh } = useSales();
+  const { data, refresh, cancelSale } = useSales();
   const [dateModal, setDateModal] = useState({ open: false, row: null });
   const [newDate, setNewDate] = useState(dayjs());
   const { regeneratePdf } = useRegeneratePdf();
@@ -238,6 +240,29 @@ export default function Sales() {
       type: "dateTime",
     },
     {
+      field: "status",
+      headerName: "Estado",
+      width: 130,
+      renderCell: (params) => {
+        const cancelled = params.value === "CANCELLED";
+
+        return (
+          <span
+            style={{
+              padding: "4px 10px",
+              borderRadius: "999px",
+              fontSize: "12px",
+              fontWeight: 600,
+              background: cancelled ? "#FDECEC" : "#E8F5E9",
+              color: cancelled ? "#C62828" : "#2E7D32",
+            }}
+          >
+            {cancelled ? "Cancelada" : "Activa"}
+          </span>
+        );
+      },
+    },
+    {
       field: "actions",
       headerName: "Recibo",
       width: 120,
@@ -278,6 +303,7 @@ export default function Sales() {
         const opposite = isQr ? "Efectivo" : "Qr";
         const alreadyChanged = params.row.paymentMethodChanged;
         const alreadyDateChanged = params.row.dateChanged;
+        const isCancelled = params.row.status === "CANCELLED";
 
         return (
           <div
@@ -287,6 +313,8 @@ export default function Sales() {
               justifyContent: "center",
               width: "100%",
               height: "100%",
+              gap: "6px",
+              flexWrap: "wrap",
             }}
           >
             <span
@@ -368,6 +396,83 @@ export default function Sales() {
                 {alreadyDateChanged ? "🔒" : "📅"} Fecha
               </span>
             )}
+            {/* Cancelar venta */}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                padding: "3px 10px",
+                borderRadius: "6px",
+                fontSize: "12px",
+                fontWeight: 500,
+                whiteSpace: "nowrap",
+                lineHeight: "1",
+                cursor: isCancelled ? "not-allowed" : "pointer",
+                opacity: isCancelled ? 0.45 : 1,
+                background: isCancelled ? "#f0f0f0" : "#FDECEC",
+                color: isCancelled ? "#999" : "#C62828",
+                border: `1px solid ${isCancelled ? "#ddd" : "#E57373"}`,
+              }}
+              onClick={async () => {
+                if (isCancelled) {
+                  errorToast("La venta ya fue cancelada");
+                  return;
+                }
+              
+                const result = await Swal.fire({
+                  title: "¿Cancelar venta?",
+                  html: `
+                    <p style="font-size:14px;color:#666">
+                      La venta <b>${params.row.code}</b>
+                      será cancelada.
+                    </p>
+                  `,
+                  input: "textarea",
+                  inputLabel: "Motivo de cancelación",
+                  inputPlaceholder: "Escriba el motivo...",
+                  inputAttributes: {
+                    maxlength: 250,
+                  },
+                  showCancelButton: true,
+                  confirmButtonText: "Cancelar venta",
+                  cancelButtonText: "Volver",
+                  confirmButtonColor: "#d32f2f",
+                  reverseButtons: true,
+              
+                  inputValidator: (value) => {
+                    if (!value || !value.trim()) {
+                      return "Debe ingresar un motivo";
+                    }
+              
+                    if (value.trim().length < 5) {
+                      return "Motivo demasiado corto";
+                    }
+              
+                    return null;
+                  },
+                });
+              
+                if (!result.isConfirmed) return;
+              
+                try {
+                  await cancelSale(
+                    params.row.id,
+                    result.value,
+                  );
+              
+                  await refresh();
+                  socket.emit("newCartProduct", []);
+                  successToast(
+                    "Venta cancelada correctamente",
+                  );
+                } catch (error) {
+                  errorToast(error.message);
+                }
+              }}
+            >
+              {isCancelled ? "🔒" : "❌"} Cancelar
+            </span>
           </div>
         );
       },
