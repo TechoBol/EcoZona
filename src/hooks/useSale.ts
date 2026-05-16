@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLoginStore } from "../components/store/loginStore";
-import { getSalesService } from "../services/saleService";
+import { cancelSaleService, getSalesService } from "../services/saleService";
 import { useNavigate } from "react-router-dom";
 import socket from "../services/SocketIOConnection";
 
@@ -32,9 +32,14 @@ export const useSales = () => {
     getSales();
   }, []);
 
+  const cancelSale = async (id: number, reason: string) => {
+    return await cancelSaleService(token, id, reason);
+  };
+
   return {
     data,
     refresh: getSales,
     goToSales,
+    cancelSale
   };
 };

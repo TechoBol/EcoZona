@@ -13,6 +13,7 @@ import {
 import { FaTrash } from "react-icons/fa";
 import { errorToast, successToast } from "../../services/toasts";
 import { usePermissions } from "../../hooks/usePermissions";
+import Swal from "sweetalert2";
 
 export default function CreateTransferModal({
   open,
@@ -159,19 +160,42 @@ export default function CreateTransferModal({
 
   // ── submit ─────────────────────────────────────────────────────────
   const handleSubmit = async () => {
-    // isSending.current bloquea instantáneamente (antes del re-render)
+    // bloqueo instantáneo
     if (isSending.current) return;
+
+    // ── pedir glosa ─────────────────────────────
+    const glosaResult = await Swal.fire({
+      title: "Ingrese una glosa",
+      input: "text",
+      inputLabel: "Glosa",
+      inputPlaceholder: "Ej: Transferencia a sucursal central",
+      showCancelButton: true,
+      confirmButtonText: "Guardar",
+      cancelButtonText: "Cancelar",
+      confirmButtonColor: "#28a745",
+      inputValidator: (value) => {
+        if (!value) {
+          return "Debes ingresar una glosa";
+        }
+      },
+    });
+
+    // canceló modal → NO envía
+    if (!glosaResult.isConfirmed) return;
+
     isSending.current = true;
     setSending(true);
-    console.log("click");
+
     try {
       await onSubmit({
         destinationId: form.destinationId,
+        glosa: glosaResult.value,
         items: form.items.map((i) => ({
           productId: i.productId,
           quantity: Number(i.quantity),
         })),
       });
+
       successToast("Transferencia enviada con éxito");
       onClose();
     } catch {
