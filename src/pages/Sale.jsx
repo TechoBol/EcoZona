@@ -186,10 +186,10 @@ export default function Sales() {
   });
 
   useEffect(() => {
-    const total = filteredRows.reduce(
-      (sum, row) => sum + Number(row.total || 0),
-      0,
-    );
+    const total = filteredRows
+      .filter((row) => row.status !== "CANCELLED")
+      .reduce((sum, row) => sum + Number(row.total || 0), 0);
+  
     setFilteredTotal(total);
   }, [filteredRows]);
 

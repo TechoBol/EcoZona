@@ -24,53 +24,101 @@ export default function Kardex() {
   const [rawRows, setRawRows] = useState([]);
   const [groupBy, setGroupBy] = useState("");
 
+  const round = (value) => Number(value.toFixed(2));
+
   const rows = useMemo(() => {
+    ////////////////////////////////////////////////////////////
+    // 🔥 GENERAL
+    ////////////////////////////////////////////////////////////
+
     if (!groupBy) {
       return rawRows.map((item) => ({
         id: item.id,
+
         name: item.product,
+
         quantity: Number(item.quantity || 0),
+
         subtotal: Number(item.subtotal || 0),
+
         discount: Number(item.discount || 0),
+
         total: Number(item.total || 0),
       }));
     }
+
+    ////////////////////////////////////////////////////////////
+    // 🔥 GROUPED
+    ////////////////////////////////////////////////////////////
 
     const grouped = {};
 
     rawRows.forEach((item) => {
       const groupValue = item[groupBy] || "Sin grupo";
 
+      //////////////////////////////////////////////////////////
+      // 🔥 INIT
+      //////////////////////////////////////////////////////////
+
       if (!grouped[groupValue]) {
         grouped[groupValue] = {
           id: `${groupBy}-${groupValue}`,
+
           name: groupValue,
+
           quantity: 0,
+
           subtotal: 0,
+
           discount: 0,
+
           total: 0,
         };
       }
 
+      //////////////////////////////////////////////////////////
+      // 🔥 ACUMULAR
+      //////////////////////////////////////////////////////////
+
       grouped[groupValue].quantity += Number(item.quantity || 0);
-      grouped[groupValue].subtotal += Number(item.subtotal || 0);
-      grouped[groupValue].discount += Number(item.discount || 0);
-      grouped[groupValue].total += Number(item.total || 0);
+
+      grouped[groupValue].subtotal = round(
+        grouped[groupValue].subtotal + Number(item.subtotal || 0),
+      );
+
+      grouped[groupValue].discount = round(
+        grouped[groupValue].discount + Number(item.discount || 0),
+      );
+
+      grouped[groupValue].total = round(
+        grouped[groupValue].total + Number(item.total || 0),
+      );
     });
+
+    ////////////////////////////////////////////////////////////
+    // 🔥 RETURN
+    ////////////////////////////////////////////////////////////
 
     return Object.values(grouped);
   }, [rawRows, groupBy]);
-
   const totalGeneral = useMemo(() => {
-    return rows.reduce((acc, item) => acc + Number(item.subtotal || 0), 0);
+    return Number(
+      rows
+        .reduce((acc, item) => acc + Number(item.subtotal || 0), 0)
+        .toFixed(2),
+    );
   }, [rows]);
 
   const totalDiscount = useMemo(() => {
-    return rows.reduce((acc, item) => acc + Number(item.discount || 0), 0);
+    return Number(
+      rows
+        .reduce((acc, item) => acc + Number(item.discount || 0), 0)
+        .toFixed(2),
+    );
   }, [rows]);
 
   const totalNeto = useMemo(() => {
-    return totalGeneral - totalDiscount;
+    return Number((totalGeneral - totalDiscount).toFixed(2));
   }, [totalGeneral, totalDiscount]);
 
   const firstColumnTitle =
