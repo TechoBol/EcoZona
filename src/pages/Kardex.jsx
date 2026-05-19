@@ -139,7 +139,7 @@ export default function Kardex() {
         headerName: firstColumnTitle,
         flex: 1.8,
         minWidth: 320,
-        sortable: false,
+        sortable: true,
         renderCell: (params) => (
           <div
             style={{
@@ -161,7 +161,7 @@ export default function Kardex() {
         headerName: "Cantidad",
         width: 160,
         type: "number",
-        sortable: false,
+        sortable: true,
         renderCell: (params) => (
           <div style={{ fontSize: 14, color: "#111827", width: "100%" }}>
             {params.value}
@@ -173,7 +173,7 @@ export default function Kardex() {
         headerName: "Subtotal",
         width: 210,
         type: "number",
-        sortable: false,
+        sortable: true,
         renderCell: (params) => (
           <div style={{ fontSize: 14, color: "#64748b", width: "100%" }}>
             {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
@@ -188,7 +188,7 @@ export default function Kardex() {
         headerName: "Descuento",
         width: 180,
         type: "number",
-        sortable: false,
+        sortable: true,
         renderCell: (params) => (
           <div
             style={{
@@ -211,7 +211,7 @@ export default function Kardex() {
         headerName: "Total Neto",
         width: 210,
         type: "number",
-        sortable: false,
+        sortable: true,
         renderCell: (params) => (
           <div
             style={{
