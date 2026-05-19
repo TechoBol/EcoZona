@@ -130,7 +130,12 @@ export default function TransferDetailModal({
                   : "Desconocido"}
               </InfoValue>
             </InfoRow>
-
+            <InfoRow>
+              <InfoLabel>Glosa:</InfoLabel>
+              <InfoValue>
+                {transfer.glosa}
+              </InfoValue>
+            </InfoRow>
             {transfer.approvedBy && (
               <InfoRow>
                 <InfoLabel>Aprobado por:</InfoLabel>
