@@ -1,5 +1,5 @@
-import { useLoginStore } from "../components/store/loginStore.js";
-import { useAmazonS3 } from "./useAmazonS3.js";
+import { useLoginStore } from "../components/store/loginStore";
+import { useAmazonS3 } from "./useAmazonS3";
 import { generarPDF } from "../components/pdf/generarPDF.jsx";
 
 export function useRegeneratePdf() {

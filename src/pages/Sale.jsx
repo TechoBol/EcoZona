@@ -180,7 +180,8 @@ export default function Sales() {
       const matchEmpleado = row.employeeName.toLowerCase().includes(q);
       const matchSucursal = row.locationName.toLowerCase().includes(q);
       const matchTipo = row.typeSale?.toLowerCase().includes(q);
-      if (!matchEmpleado && !matchSucursal && !matchTipo) return false;
+      const matchVenta = row.code?.toLowerCase().includes(q);
+      if (!matchEmpleado && !matchSucursal && !matchTipo && !matchVenta) return false;
     }
     return true;
   });
@@ -590,7 +591,7 @@ export default function Sales() {
 
         <FiltersRow>
           <FilterInput
-            placeholder="Buscar por empleado, sucursal o tipo de venta..."
+            placeholder="Buscar por venta, empleado, sucursal o tipo de venta..."
             value={globalFilter}
             onChange={(e) => setGlobalFilter(e.target.value)}
           />

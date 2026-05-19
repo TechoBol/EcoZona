@@ -356,6 +356,7 @@ export const InfoLabel = styled.span`
 export const InfoValue = styled.span`
   color: ${theme.colors.textSecondary};
   text-align: right;
+  margin-bottom: 5px ;
 `;
 
 export const Section = styled.div`
