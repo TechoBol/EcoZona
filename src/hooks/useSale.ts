@@ -22,7 +22,6 @@ export const useSales = () => {
     socket.on("cartProduct", () => {
       getSales();
     });
-
     return () => {
       socket.off("cartProduct");
     };
@@ -33,13 +32,22 @@ export const useSales = () => {
   }, []);
 
   const cancelSale = async (id: number, reason: string) => {
-    return await cancelSaleService(token, id, reason);
+    await cancelSaleService(token, id, reason);
+
+    const originalSale = data.find((s: any) => s.id === id);
+
+    return Object.assign({}, originalSale, {
+      status: "CANCELLED",
+      cancelReason: reason,
+      cancelledAt: new Date().toISOString(),
+    });
   };
 
+  
   return {
     data,
     refresh: getSales,
     goToSales,
-    cancelSale
+    cancelSale,
   };
 };

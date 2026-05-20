@@ -7,7 +7,7 @@ export function useRegeneratePdf() {
   const { uploadPDF } = useAmazonS3();
 
   const regeneratePdf = async (sale: any) => {
-    // 1. Mapear details al formato que espera generarPDF
+
     const cartItems = sale.details.map((detail: any) => ({
       barcode: detail.product.barcode,
       name: detail.product.name,
@@ -21,7 +21,16 @@ export function useRegeneratePdf() {
     );
     const discount = subtotal - sale.total;
 
-    // 2. Generar PDF
+    // Datos de anulación
+    const cancellationData = sale.status === "CANCELLED"
+      ? {
+        cancelReason: sale.cancelReason,
+        cancelledAt: sale.cancelledAt,
+        cancelledBy: sale.cancelledBy?.name    
+          ?? fullName,                        
+      }
+      : null;
+
     const pdfBlob = generarPDF(
       sale,
       fullName,
@@ -29,16 +38,15 @@ export function useRegeneratePdf() {
       subtotal,
       discount,
       sale.total,
+      cancellationData,
     );
 
-    // 3. Convertir a File
     const file = new File(
       [pdfBlob],
       `venta_${sale.code}.pdf`,
       { type: "application/pdf" }
     );
 
-    // 4. Subir a S3 (sobrescribe el anterior con el mismo key)
     await uploadPDF(file, sale.code);
   };
 
