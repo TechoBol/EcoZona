@@ -42,7 +42,7 @@ export default function InventoryFisico() {
   const [desde, setDesde] = useState(dayjs("2026-04-01"));
   const [hasta, setHasta] = useState(dayjs());
 
-  /* 🔥 PRODUCT SEARCH */
+  /* PRODUCT SEARCH */
   const [productSearch, setProductSearch] = useState("");
   const [showProducts, setShowProducts] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({

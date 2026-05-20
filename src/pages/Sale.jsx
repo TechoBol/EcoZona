@@ -181,7 +181,8 @@ export default function Sales() {
       const matchSucursal = row.locationName.toLowerCase().includes(q);
       const matchTipo = row.typeSale?.toLowerCase().includes(q);
       const matchVenta = row.code?.toLowerCase().includes(q);
-      if (!matchEmpleado && !matchSucursal && !matchTipo && !matchVenta) return false;
+      if (!matchEmpleado && !matchSucursal && !matchTipo && !matchVenta)
+        return false;
     }
     return true;
   });
@@ -190,9 +191,18 @@ export default function Sales() {
     const total = filteredRows
       .filter((row) => row.status !== "CANCELLED")
       .reduce((sum, row) => sum + Number(row.total || 0), 0);
-  
+
     setFilteredTotal(total);
   }, [filteredRows]);
+
+  // Estilo reutilizable para cualquier botón bloqueado
+  const disabledStyle = {
+    background: "#f0f0f0",
+    color: "#999",
+    border: "1px solid #ddd",
+    cursor: "not-allowed",
+    opacity: 0.55,
+  };
 
   const columns = [
     {
@@ -258,7 +268,7 @@ export default function Sales() {
               color: cancelled ? "#C62828" : "#2E7D32",
             }}
           >
-            {cancelled ? "Cancelada" : "Activa"}
+            {cancelled ? "Anulada" : "Activa"}
           </span>
         );
       },
@@ -293,7 +303,7 @@ export default function Sales() {
     {
       field: "changePayment",
       headerName: "Acciones",
-      width: 160,
+      width: 220,
       sortable: false,
       filterable: false,
       disableColumnMenu: true,
@@ -305,6 +315,10 @@ export default function Sales() {
         const alreadyChanged = params.row.paymentMethodChanged;
         const alreadyDateChanged = params.row.dateChanged;
         const isCancelled = params.row.status === "CANCELLED";
+
+        // Un botón se bloquea si ya fue usado O si la venta está anulada
+        const paymentDisabled = alreadyChanged || isCancelled;
+        const dateDisabled = alreadyDateChanged || isCancelled;
 
         return (
           <div
@@ -318,6 +332,7 @@ export default function Sales() {
               flexWrap: "wrap",
             }}
           >
+            {/* Cambiar método de pago */}
             <span
               style={{
                 display: "inline-flex",
@@ -329,36 +344,35 @@ export default function Sales() {
                 fontWeight: 500,
                 whiteSpace: "nowrap",
                 lineHeight: "1",
-                cursor: alreadyChanged ? "not-allowed" : "pointer",
-                opacity: alreadyChanged ? 0.45 : 1,
-                background: alreadyChanged
-                  ? "#f0f0f0"
-                  : isQr
-                  ? "#E1F5EE"
-                  : "#E6F1FB",
-                color: alreadyChanged ? "#999" : isQr ? "#0F6E56" : "#0C447C",
-                border: `1px solid ${
-                  alreadyChanged ? "#ddd" : isQr ? "#1D9E75" : "#185FA5"
-                }`,
                 transition: "opacity 0.15s",
+                ...(paymentDisabled
+                  ? disabledStyle
+                  : {
+                      cursor: "pointer",
+                      background: isQr ? "#E1F5EE" : "#E6F1FB",
+                      color: isQr ? "#0F6E56" : "#0C447C",
+                      border: `1px solid ${isQr ? "#1D9E75" : "#185FA5"}`,
+                    }),
               }}
               onMouseEnter={(e) => {
-                if (!alreadyChanged) e.currentTarget.style.opacity = "0.7";
+                if (!paymentDisabled) e.currentTarget.style.opacity = "0.7";
               }}
               onMouseLeave={(e) => {
-                if (!alreadyChanged) e.currentTarget.style.opacity = "1";
+                if (!paymentDisabled) e.currentTarget.style.opacity = "1";
               }}
               onClick={() => {
-                if (alreadyChanged) {
+                if (paymentDisabled) {
                   errorToast(
-                    "Este método de pago ya fue cambiado anteriormente",
+                    isCancelled
+                      ? "No se puede modificar una venta anulada"
+                      : "Este método de pago ya fue cambiado anteriormente",
                   );
                   return;
                 }
                 setConfirmModal({ open: true, row: params.row });
               }}
             >
-              {alreadyChanged ? "🔒" : "→"} {opposite}
+              {paymentDisabled ? "🔒" : "→"} {opposite}
             </span>
 
             {/* Cambiar fecha */}
@@ -374,30 +388,39 @@ export default function Sales() {
                   fontWeight: 500,
                   whiteSpace: "nowrap",
                   lineHeight: "1",
-                  cursor: alreadyDateChanged ? "not-allowed" : "pointer",
-                  opacity: alreadyDateChanged ? 0.45 : 1,
-                  background: alreadyDateChanged ? "#f0f0f0" : "#FFF4E5",
-                  color: alreadyDateChanged ? "#999" : "#9A5B00",
-                  border: `1px solid ${
-                    alreadyDateChanged ? "#ddd" : "#F0B15A"
-                  }`,
+                  transition: "opacity 0.15s",
+                  ...(dateDisabled
+                    ? disabledStyle
+                    : {
+                        cursor: "pointer",
+                        background: "#FFF4E5",
+                        color: "#9A5B00",
+                        border: "1px solid #F0B15A",
+                      }),
+                }}
+                onMouseEnter={(e) => {
+                  if (!dateDisabled) e.currentTarget.style.opacity = "0.7";
+                }}
+                onMouseLeave={(e) => {
+                  if (!dateDisabled) e.currentTarget.style.opacity = "1";
                 }}
                 onClick={() => {
-                  if (alreadyDateChanged) {
-                    errorToast("La fecha ya fue modificada anteriormente");
+                  if (dateDisabled) {
+                    errorToast(
+                      isCancelled
+                        ? "No se puede modificar una venta anulada"
+                        : "La fecha ya fue modificada anteriormente",
+                    );
                     return;
                   }
-
-                  setDateModal({
-                    open: true,
-                    row: params.row,
-                  });
+                  setDateModal({ open: true, row: params.row });
                 }}
               >
-                {alreadyDateChanged ? "🔒" : "📅"} Fecha
+                {dateDisabled ? "🔒" : "📅"} Fecha
               </span>
             )}
-            {/* Cancelar venta */}
+
+            {/* Anular venta */}
             <span
               style={{
                 display: "inline-flex",
@@ -409,20 +432,23 @@ export default function Sales() {
                 fontWeight: 500,
                 whiteSpace: "nowrap",
                 lineHeight: "1",
-                cursor: isCancelled ? "not-allowed" : "pointer",
-                opacity: isCancelled ? 0.45 : 1,
-                background: isCancelled ? "#f0f0f0" : "#FDECEC",
-                color: isCancelled ? "#999" : "#C62828",
-                border: `1px solid ${isCancelled ? "#ddd" : "#E57373"}`,
+                ...(isCancelled
+                  ? disabledStyle
+                  : {
+                      cursor: "pointer",
+                      background: "#FDECEC",
+                      color: "#C62828",
+                      border: "1px solid #E57373",
+                    }),
               }}
               onClick={async () => {
                 if (isCancelled) {
-                  errorToast("La venta ya fue cancelada");
+                  errorToast("La venta ya fue anulada");
                   return;
                 }
-              
+
                 const result = await Swal.fire({
-                  title: "¿Cancelar venta?",
+                  title: "¿Anular venta?",
                   html: `
                     <p style="font-size:14px;color:#666">
                       La venta <b>${params.row.code}</b>
@@ -436,43 +462,38 @@ export default function Sales() {
                     maxlength: 250,
                   },
                   showCancelButton: true,
-                  confirmButtonText: "Cancelar venta",
+                  confirmButtonText: "Anular venta",
                   cancelButtonText: "Volver",
                   confirmButtonColor: "#d32f2f",
                   reverseButtons: true,
-              
                   inputValidator: (value) => {
                     if (!value || !value.trim()) {
                       return "Debe ingresar un motivo";
                     }
-              
                     if (value.trim().length < 5) {
                       return "Motivo demasiado corto";
                     }
-              
                     return null;
                   },
                 });
-              
+
                 if (!result.isConfirmed) return;
-              
+
                 try {
-                  await cancelSale(
+                  const updatedSale = await cancelSale(
                     params.row.id,
                     result.value,
                   );
-              
+                  await regeneratePdf(updatedSale);
                   await refresh();
                   socket.emit("newCartProduct", []);
-                  successToast(
-                    "Venta cancelada correctamente",
-                  );
+                  successToast("Venta cancelada correctamente");
                 } catch (error) {
                   errorToast(error.message);
                 }
               }}
             >
-              {isCancelled ? "🔒" : "❌"} Cancelar
+              {isCancelled ? "🔒" : "❌"} Anular
             </span>
           </div>
         );
@@ -855,6 +876,7 @@ export default function Sales() {
             </div>
           </DialogContent>
         </Dialog>
+
         {/* Modal de cambio de fecha */}
         <Dialog
           open={dateModal.open}
