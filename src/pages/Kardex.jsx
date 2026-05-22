@@ -27,10 +27,6 @@ export default function Kardex() {
   const round = (value) => Number(value.toFixed(2));
 
   const rows = useMemo(() => {
-    ////////////////////////////////////////////////////////////
-    // 🔥 GENERAL
-    ////////////////////////////////////////////////////////////
-
     if (!groupBy) {
       return rawRows.map((item) => ({
         id: item.id,
@@ -39,26 +35,76 @@ export default function Kardex() {
 
         quantity: Number(item.quantity || 0),
 
+        quantityDetail: item.quantityDetail || "",
+
+        price: Number(item.price || 0),
+
+        finalPrice: item.finalPrice || "",
+
         subtotal: Number(item.subtotal || 0),
+
+        subtotalDetail: item.subtotalDetail || "",
 
         discount: Number(item.discount || 0),
 
         total: Number(item.total || 0),
+
+        details: item.details || [],
       }));
     }
 
+    const grouped = {};
+
     ////////////////////////////////////////////////////////////
-    // 🔥 GROUPED
+    // 🔥 AGRUPAR VENDEDORES
     ////////////////////////////////////////////////////////////
 
-    const grouped = {};
+    if (groupBy === "seller") {
+      rawRows.forEach((item) => {
+        (item.sellers || []).forEach((seller) => {
+          const sellerName = seller.name || "Sin vendedor";
+
+          if (!grouped[sellerName]) {
+            grouped[sellerName] = {
+              id: `seller-${sellerName}`,
+
+              name: sellerName,
+
+              quantity: 0,
+
+              subtotal: 0,
+
+              discount: 0,
+
+              total: 0,
+            };
+          }
+
+          grouped[sellerName].quantity += Number(seller.quantity || 0);
+
+          grouped[sellerName].subtotal = round(
+            grouped[sellerName].subtotal + Number(seller.subtotal || 0),
+          );
+
+          grouped[sellerName].discount = round(
+            grouped[sellerName].discount + Number(seller.discount || 0),
+          );
+
+          grouped[sellerName].total = round(
+            grouped[sellerName].total + Number(seller.total || 0),
+          );
+        });
+      });
+
+      return Object.values(grouped);
+    }
+
+    ////////////////////////////////////////////////////////////
+    // 🔥 AGRUPACIONES NORMALES
+    ////////////////////////////////////////////////////////////
 
     rawRows.forEach((item) => {
       const groupValue = item[groupBy] || "Sin grupo";
-
-      //////////////////////////////////////////////////////////
-      // 🔥 INIT
-      //////////////////////////////////////////////////////////
 
       if (!grouped[groupValue]) {
         grouped[groupValue] = {
@@ -76,10 +122,6 @@ export default function Kardex() {
         };
       }
 
-      //////////////////////////////////////////////////////////
-      // 🔥 ACUMULAR
-      //////////////////////////////////////////////////////////
-
       grouped[groupValue].quantity += Number(item.quantity || 0);
 
       grouped[groupValue].subtotal = round(
@@ -94,10 +136,6 @@ export default function Kardex() {
         grouped[groupValue].total + Number(item.total || 0),
       );
     });
-
-    ////////////////////////////////////////////////////////////
-    // 🔥 RETURN
-    ////////////////////////////////////////////////////////////
 
     return Object.values(grouped);
   }, [rawRows, groupBy]);
@@ -133,7 +171,7 @@ export default function Kardex() {
       : "Producto";
 
   const columns = useMemo(() => {
-    return [
+    const columns = [
       {
         field: "name",
         headerName: firstColumnTitle,
@@ -150,39 +188,151 @@ export default function Kardex() {
               gap: 4,
             }}
           >
-            <div style={{ fontSize: 14, color: "#111827", lineHeight: 1.4 }}>
+            <div
+              style={{
+                fontSize: 14,
+                color: "#111827",
+                lineHeight: 1.4,
+              }}
+            >
               {String(params.value).toUpperCase()}
             </div>
           </div>
         ),
       },
+
       {
         field: "quantity",
         headerName: "Cantidad",
         width: 160,
-        type: "number",
         sortable: true,
         renderCell: (params) => (
-          <div style={{ fontSize: 14, color: "#111827", width: "100%" }}>
-            {params.value}
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              lineHeight: 1.3,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#111827",
+              }}
+            >
+              {params.row.quantity}
+            </div>
+
+            {!groupBy && params.row.quantityDetail && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#64748b",
+                }}
+              >
+                {params.row.quantityDetail}
+              </div>
+            )}
           </div>
         ),
       },
+    ];
+
+    if (groupBy === "") {
+      columns.push(
+        {
+          field: "price",
+          headerName: "Precio",
+          width: 170,
+          type: "number",
+          sortable: true,
+          renderCell: (params) => (
+            <div
+              style={{
+                fontSize: 14,
+                color: "#64748b",
+                width: "100%",
+              }}
+            >
+              {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`}
+            </div>
+          ),
+        },
+
+        {
+          field: "finalPrice",
+          headerName: "Precio Venta",
+          width: 220,
+          sortable: true,
+          renderCell: (params) => (
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "#111827",
+                lineHeight: 1.4,
+                whiteSpace: "normal",
+              }}
+            >
+              {params.value}
+            </div>
+          ),
+        },
+      );
+    }
+
+    columns.push(
       {
         field: "subtotal",
         headerName: "Subtotal",
-        width: 210,
-        type: "number",
+        width: 220,
         sortable: true,
         renderCell: (params) => (
-          <div style={{ fontSize: 14, color: "#64748b", width: "100%" }}>
-            {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`}
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              lineHeight: 1.3,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                color: "#64748b",
+                fontWeight: 700,
+              }}
+            >
+              {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`}
+            </div>
+
+            {!groupBy && params.row.subtotalDetail && (
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "#94a3b8",
+                }}
+              >
+                {params.row.subtotalDetail}
+              </div>
+            )}
           </div>
         ),
       },
+
       {
         field: "discount",
         headerName: "Descuento",
@@ -206,6 +356,7 @@ export default function Kardex() {
           </div>
         ),
       },
+
       {
         field: "total",
         headerName: "Total Neto",
@@ -228,7 +379,9 @@ export default function Kardex() {
           </div>
         ),
       },
-    ];
+    );
+
+    return columns;
   }, [groupBy, firstColumnTitle]);
 
   return (
