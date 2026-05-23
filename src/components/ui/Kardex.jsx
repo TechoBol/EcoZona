@@ -437,3 +437,75 @@ export const TotalText = styled.span`
 
   color: ${theme.colors.text};
 `;
+
+// Estilos para la parte de detalles
+export const DetailButton = styled.button`
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: #f3f4f6;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  &:hover {
+    background: #ebeef3;
+    color: #0f172a;
+  }
+`;
+
+export const DetailPopoverCard = styled.div`
+  min-width: 360px;
+  max-width: 420px;
+  background: #e8eef6;
+  border-radius: 16px;
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.25);
+  padding: 18px 18px 14px;
+  border: 1px solid #b8c5d6;
+`;
+
+export const DetailPopoverTitle = styled.h4`
+  margin: 0 0 14px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+`;
+
+export const DetailPopoverTable = styled.div`
+  width: 100%;
+`;
+
+export const DetailPopoverHead = styled.div`
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 12px;
+  padding: 0 0 10px;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+`;
+
+export const DetailPopoverRow = styled.div`
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #0f172a;
+
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+export const DetailMuted = styled.span`
+  color: #64748b;
+`;
