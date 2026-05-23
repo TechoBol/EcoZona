@@ -163,9 +163,8 @@ export default function Sales() {
   const rows = (data || []).map((sale) => ({
     ...sale,
     date: sale.date ? new Date(sale.date) : null,
-    employeeName: `${sale.employee?.name || ""} ${
-      sale.employee?.lastName || ""
-    }`.trim(),
+    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""
+      }`.trim(),
     locationName: sale.location?.name || "",
   }));
 
@@ -332,170 +331,126 @@ export default function Sales() {
               flexWrap: "wrap",
             }}
           >
-            {/* Cambiar método de pago */}
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "3px 10px",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: 500,
-                whiteSpace: "nowrap",
-                lineHeight: "1",
-                transition: "opacity 0.15s",
-                ...(paymentDisabled
-                  ? disabledStyle
-                  : {
-                      cursor: "pointer",
-                      background: isQr ? "#E1F5EE" : "#E6F1FB",
-                      color: isQr ? "#0F6E56" : "#0C447C",
-                      border: `1px solid ${isQr ? "#1D9E75" : "#185FA5"}`,
-                    }),
-              }}
-              onMouseEnter={(e) => {
-                if (!paymentDisabled) e.currentTarget.style.opacity = "0.7";
-              }}
-              onMouseLeave={(e) => {
-                if (!paymentDisabled) e.currentTarget.style.opacity = "1";
-              }}
-              onClick={() => {
-                if (paymentDisabled) {
-                  errorToast(
-                    isCancelled
-                      ? "No se puede modificar una venta anulada"
-                      : "Este método de pago ya fue cambiado anteriormente",
-                  );
-                  return;
-                }
-                setConfirmModal({ open: true, row: params.row });
-              }}
-            >
-              {paymentDisabled ? "🔒" : "→"} {opposite}
-            </span>
-
-            {/* Cambiar fecha */}
-            {permissions.canManageDateSale && (
-              <span
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "5px",
-                  padding: "3px 10px",
-                  borderRadius: "6px",
-                  fontSize: "12px",
-                  fontWeight: 500,
-                  whiteSpace: "nowrap",
-                  lineHeight: "1",
-                  transition: "opacity 0.15s",
-                  ...(dateDisabled
-                    ? disabledStyle
-                    : {
+            {!permissions.isReadOnly && (
+              <>
+                {/* Cambiar método de pago */}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "3px 10px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    whiteSpace: "nowrap",
+                    lineHeight: "1",
+                    transition: "opacity 0.15s",
+                    ...(paymentDisabled
+                      ? disabledStyle
+                      : {
                         cursor: "pointer",
-                        background: "#FFF4E5",
-                        color: "#9A5B00",
-                        border: "1px solid #F0B15A",
+                        background: isQr ? "#E1F5EE" : "#E6F1FB",
+                        color: isQr ? "#0F6E56" : "#0C447C",
+                        border: `1px solid ${isQr ? "#1D9E75" : "#185FA5"}`,
                       }),
-                }}
-                onMouseEnter={(e) => {
-                  if (!dateDisabled) e.currentTarget.style.opacity = "0.7";
-                }}
-                onMouseLeave={(e) => {
-                  if (!dateDisabled) e.currentTarget.style.opacity = "1";
-                }}
-                onClick={() => {
-                  if (dateDisabled) {
-                    errorToast(
-                      isCancelled
-                        ? "No se puede modificar una venta anulada"
-                        : "La fecha ya fue modificada anteriormente",
-                    );
-                    return;
-                  }
-                  setDateModal({ open: true, row: params.row });
-                }}
-              >
-                {dateDisabled ? "🔒" : "📅"} Fecha
-              </span>
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!paymentDisabled) e.currentTarget.style.opacity = "0.7";
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!paymentDisabled) e.currentTarget.style.opacity = "1";
+                  }}
+                  onClick={() => {
+                    if (paymentDisabled) {
+                      errorToast(
+                        isCancelled
+                          ? "No se puede modificar una venta anulada"
+                          : "Este método de pago ya fue cambiado anteriormente",
+                      );
+                      return;
+                    }
+
+                    setConfirmModal({ open: true, row: params.row });
+                  }}
+                >
+                  {paymentDisabled ? "🔒" : "→"} {opposite}
+                </span>
+
+                {/* Cambiar fecha */}
+                {permissions.canManageDateSale && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "5px",
+                      padding: "3px 10px",
+                      borderRadius: "6px",
+                      fontSize: "12px",
+                      fontWeight: 500,
+                      whiteSpace: "nowrap",
+                      lineHeight: "1",
+                      transition: "opacity 0.15s",
+                      ...(dateDisabled
+                        ? disabledStyle
+                        : {
+                          cursor: "pointer",
+                          background: "#FFF4E5",
+                          color: "#9A5B00",
+                          border: "1px solid #F0B15A",
+                        }),
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!dateDisabled) e.currentTarget.style.opacity = "0.7";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!dateDisabled) e.currentTarget.style.opacity = "1";
+                    }}
+                    onClick={() => {
+                      if (dateDisabled) {
+                        errorToast(
+                          isCancelled
+                            ? "No se puede modificar una venta anulada"
+                            : "La fecha ya fue modificada anteriormente",
+                        );
+                        return;
+                      }
+
+                      setDateModal({ open: true, row: params.row });
+                    }}
+                  >
+                    {dateDisabled ? "🔒" : "📅"} Fecha
+                  </span>
+                )}
+
+                {/* Anular venta */}
+                <span
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "3px 10px",
+                    borderRadius: "6px",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    whiteSpace: "nowrap",
+                    lineHeight: "1",
+                    ...(isCancelled
+                      ? disabledStyle
+                      : {
+                        cursor: "pointer",
+                        background: "#FDECEC",
+                        color: "#C62828",
+                        border: "1px solid #E57373",
+                      }),
+                  }}
+                >
+                  {isCancelled ? "🔒" : "❌"} Anular
+                </span>
+              </>
             )}
+          </div >
 
-            {/* Anular venta */}
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                padding: "3px 10px",
-                borderRadius: "6px",
-                fontSize: "12px",
-                fontWeight: 500,
-                whiteSpace: "nowrap",
-                lineHeight: "1",
-                ...(isCancelled
-                  ? disabledStyle
-                  : {
-                      cursor: "pointer",
-                      background: "#FDECEC",
-                      color: "#C62828",
-                      border: "1px solid #E57373",
-                    }),
-              }}
-              onClick={async () => {
-                if (isCancelled) {
-                  errorToast("La venta ya fue anulada");
-                  return;
-                }
-
-                const result = await Swal.fire({
-                  title: "¿Anular venta?",
-                  html: `
-                    <p style="font-size:14px;color:#666">
-                      La venta <b>${params.row.code}</b>
-                      será cancelada.
-                    </p>
-                  `,
-                  input: "textarea",
-                  inputLabel: "Motivo de cancelación",
-                  inputPlaceholder: "Escriba el motivo...",
-                  inputAttributes: {
-                    maxlength: 250,
-                  },
-                  showCancelButton: true,
-                  confirmButtonText: "Anular venta",
-                  cancelButtonText: "Volver",
-                  confirmButtonColor: "#d32f2f",
-                  reverseButtons: true,
-                  inputValidator: (value) => {
-                    if (!value || !value.trim()) {
-                      return "Debe ingresar un motivo";
-                    }
-                    if (value.trim().length < 5) {
-                      return "Motivo demasiado corto";
-                    }
-                    return null;
-                  },
-                });
-
-                if (!result.isConfirmed) return;
-
-                try {
-                  const updatedSale = await cancelSale(
-                    params.row.id,
-                    result.value,
-                  );
-                  await regeneratePdf(updatedSale);
-                  await refresh();
-                  socket.emit("newCartProduct", []);
-                  successToast("Venta cancelada correctamente");
-                } catch (error) {
-                  errorToast(error.message);
-                }
-              }}
-            >
-              {isCancelled ? "🔒" : "❌"} Anular
-            </span>
-          </div>
         );
       },
     },

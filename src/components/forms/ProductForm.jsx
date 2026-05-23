@@ -303,56 +303,7 @@ function ProductForm() {
               }}
             >
               Costos e inventario
-              {isEdit && (
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontSize: 12,
-                    fontWeight: 400,
-                    cursor: "pointer",
-                    color: "var(--color-text-secondary)",
-                    userSelect: "none",
-                  }}
-                >
-                  <span
-                    onClick={() => {
-                      const enabled = !inventoryEditEnabled;
-                      setInventoryEditEnabled(enabled);
-                      if (!enabled) {
-                        form.setFieldValue("price", product?.price ?? "");
-                        form.setFieldValue("stock", originalStock);
-                      } else {
-                        form.setFieldValue("stock", 0);
-                      }
-                    }}
-                    style={{
-                      position: "relative",
-                      display: "inline-block",
-                      width: 36,
-                      height: 20,
-                      borderRadius: 20,
-                      background: inventoryEditEnabled ? "#e53e3e" : "#ccc",
-                      transition: "background 0.2s",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: 3,
-                        left: inventoryEditEnabled ? 19 : 3,
-                        width: 14,
-                        height: 14,
-                        borderRadius: "50%",
-                        background: "white",
-                        transition: "left 0.2s",
-                      }}
-                    />
-                  </span>
-                </label>
-              )}
+              
             </SectionTitle>
 
             <Grid3>
