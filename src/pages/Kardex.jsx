@@ -14,9 +14,18 @@ import {
   GroupButton,
   TotalBar,
   TotalText,
+  DetailButton,
+  DetailPopoverCard,
+  DetailPopoverTitle,
+  DetailPopoverTable,
+  DetailPopoverHead,
+  DetailPopoverRow,
+  DetailMuted,
 } from "../components/ui/Kardex";
 
 import { DataGrid } from "@mui/x-data-grid";
+import { ChevronDown } from "lucide-react";
+import Popover from "@mui/material/Popover";
 
 export default function Kardex() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,7 +33,33 @@ export default function Kardex() {
   const [rawRows, setRawRows] = useState([]);
   const [groupBy, setGroupBy] = useState("");
 
+  const [detailAnchor, setDetailAnchor] = useState(null);
+  const [selectedDetailRow, setSelectedDetailRow] = useState(null);
+
   const round = (value) => Number(value.toFixed(2));
+
+  // helpers
+  const formatBs = (value) =>
+    `Bs ${Number(value || 0).toLocaleString("es-BO", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  const getLastFinalPrice = (item) => {
+    const details = item.details || [];
+    if (details.length > 0) {
+      const lastDetail = details[details.length - 1];
+      return Number(lastDetail.finalPrice || item.finalPrice || 0);
+    }
+    return Number(item.finalPrice || 0);
+  };
+  const handleOpenDetail = (event, row) => {
+    setDetailAnchor(event.currentTarget);
+    setSelectedDetailRow(row);
+  };
+  const handleCloseDetail = () => {
+    setDetailAnchor(null);
+    setSelectedDetailRow(null);
+  };
 
   const rows = useMemo(() => {
     if (!groupBy) {
@@ -39,7 +74,7 @@ export default function Kardex() {
 
         price: Number(item.price || 0),
 
-        finalPrice: item.finalPrice || "",
+        finalPrice: getLastFinalPrice(item),
 
         subtotal: Number(item.subtotal || 0),
 
@@ -204,7 +239,7 @@ export default function Kardex() {
       {
         field: "quantity",
         headerName: "Cantidad",
-        width: 160,
+        width: 140,
         sortable: true,
         renderCell: (params) => (
           <div
@@ -225,17 +260,6 @@ export default function Kardex() {
             >
               {params.row.quantity}
             </div>
-
-            {!groupBy && params.row.quantityDetail && (
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "#64748b",
-                }}
-              >
-                {params.row.quantityDetail}
-              </div>
-            )}
           </div>
         ),
       },
@@ -246,7 +270,7 @@ export default function Kardex() {
         {
           field: "price",
           headerName: "Precio",
-          width: 170,
+          width: 140,
           type: "number",
           sortable: true,
           renderCell: (params) => (
@@ -264,11 +288,11 @@ export default function Kardex() {
             </div>
           ),
         },
-
+        // precio venta
         {
           field: "finalPrice",
           headerName: "Precio Venta",
-          width: 220,
+          width: 160,
           sortable: true,
           renderCell: (params) => (
             <div
@@ -277,15 +301,35 @@ export default function Kardex() {
                 display: "flex",
                 alignItems: "center",
                 fontSize: 14,
-                fontWeight: 600,
+                fontWeight: 700,
                 color: "#111827",
-                lineHeight: 1.4,
-                whiteSpace: "normal",
               }}
             >
-              {params.value}
+              {formatBs(params.value)}
             </div>
           ),
+        },
+        // detalles
+        {
+          field: "details",
+          headerName: "Detalle",
+          width: 160,
+          sortable: false,
+          renderCell: (params) => {
+            const details = params.row.details || [];
+            if (details.length <= 1) {
+              return <DetailMuted>Sin desglose</DetailMuted>;
+            }
+            return (
+              <DetailButton
+                type="button"
+                onClick={(event) => handleOpenDetail(event, params.row)}
+              >
+                {details.length} precios
+                <ChevronDown size={15} />
+              </DetailButton>
+            );
+          },
         },
       );
     }
@@ -294,7 +338,7 @@ export default function Kardex() {
       {
         field: "subtotal",
         headerName: "Subtotal",
-        width: 220,
+        width: 200,
         sortable: true,
         renderCell: (params) => (
           <div
@@ -318,17 +362,6 @@ export default function Kardex() {
                 maximumFractionDigits: 2,
               })}`}
             </div>
-
-            {!groupBy && params.row.subtotalDetail && (
-              <div
-                style={{
-                  fontSize: 12,
-                  color: "#94a3b8",
-                }}
-              >
-                {params.row.subtotalDetail}
-              </div>
-            )}
           </div>
         ),
       },
@@ -472,6 +505,53 @@ export default function Kardex() {
               "& .MuiTablePagination-root": { fontSize: 14 },
             }}
           />
+          <Popover
+            open={Boolean(detailAnchor)}
+            anchorEl={detailAnchor}
+            onClose={handleCloseDetail}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 1,
+                  borderRadius: "16px",
+                  boxShadow: "none",
+                  background: "transparent",
+                },
+              },
+            }}
+          >
+            {selectedDetailRow && (
+              <DetailPopoverCard>
+                <DetailPopoverTitle>Detalle de venta</DetailPopoverTitle>
+                <DetailPopoverTable>
+                  <DetailPopoverHead>
+                    <span>Precio venta</span>
+                    <span style={{ textAlign: "center" }}>Cantidad</span>
+                    <span style={{ textAlign: "right" }}>Subtotal</span>
+                  </DetailPopoverHead>
+                  {(selectedDetailRow.details || []).map((detail, index) => (
+                    <DetailPopoverRow key={index}>
+                      <span>{formatBs(detail.finalPrice)}</span>
+                      <span style={{ textAlign: "center" }}>
+                        {detail.quantity}
+                      </span>
+                      <span style={{ textAlign: "right" }}>
+                        {formatBs(detail.subtotal)}
+                      </span>
+                    </DetailPopoverRow>
+                  ))}
+                </DetailPopoverTable>
+              </DetailPopoverCard>
+            )}
+          </Popover>
         </TableWrapper>
 
         <TotalBar>
