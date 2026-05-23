@@ -242,7 +242,13 @@ function ProductForm() {
         <BackButton onClick={() => navigate("/inventory", { replace: true })}>
           <ArrowLeft size={20} />
         </BackButton>
-        <Title>{isEdit ? "Editar Producto" : "Crear Producto"}</Title>
+        <Title>
+          {isEdit
+            ? inventoryEditEnabled
+              ? "Añadir Nuevo Inventario"
+              : "Editar Producto"
+            : "Crear Producto"}
+        </Title>
       </Header>
 
       <Form onSubmit={handleSubmit}>
@@ -297,56 +303,7 @@ function ProductForm() {
               }}
             >
               Costos e inventario
-              {isEdit && (
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 8,
-                    fontSize: 12,
-                    fontWeight: 400,
-                    cursor: "pointer",
-                    color: "var(--color-text-secondary)",
-                    userSelect: "none",
-                  }}
-                >
-                  <span
-                    onClick={() => {
-                      const enabled = !inventoryEditEnabled;
-                      setInventoryEditEnabled(enabled);
-                      if (!enabled) {
-                        form.setFieldValue("price", product?.price ?? "");
-                        form.setFieldValue("stock", originalStock);
-                      } else {
-                        form.setFieldValue("stock", 0);
-                      }
-                    }}
-                    style={{
-                      position: "relative",
-                      display: "inline-block",
-                      width: 36,
-                      height: 20,
-                      borderRadius: 20,
-                      background: inventoryEditEnabled ? "#e53e3e" : "#ccc",
-                      transition: "background 0.2s",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: 3,
-                        left: inventoryEditEnabled ? 19 : 3,
-                        width: 14,
-                        height: 14,
-                        borderRadius: "50%",
-                        background: "white",
-                        transition: "left 0.2s",
-                      }}
-                    />
-                  </span>
-                </label>
-              )}
+              
             </SectionTitle>
 
             <Grid3>
@@ -358,9 +315,22 @@ function ProductForm() {
                     : {}
                 }
               >
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Precio compra
+                </label>
                 <Input
                   type="number"
-                  placeholder="Precio compra"
+                  placeholder="0.00"
                   {...form.getInputProps("price")}
                   disabled={isEdit && !inventoryEditEnabled}
                 />
@@ -371,9 +341,22 @@ function ProductForm() {
 
               {/* Precio venta — siempre editable */}
               <ContainerInput>
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Precio venta
+                </label>
                 <Input
                   type="number"
-                  placeholder="Precio venta"
+                  placeholder="0.00"
                   {...form.getInputProps("finalPrice")}
                 />
                 {form.errors.finalPrice && (
@@ -389,11 +372,22 @@ function ProductForm() {
                     : {}
                 }
               >
+                <label
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    color: "var(--color-text-secondary)",
+                    marginBottom: 4,
+                    display: "block",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  {isEdit && inventoryEditEnabled ? "Nuevo stock" : "Stock"}
+                </label>
                 <Input
                   type="number"
-                  placeholder={
-                    isEdit && inventoryEditEnabled ? "Nuevo stock" : "Stock"
-                  }
+                  placeholder="0"
                   {...form.getInputProps("stock")}
                   disabled={isEdit && !inventoryEditEnabled}
                 />

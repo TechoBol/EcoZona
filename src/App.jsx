@@ -14,6 +14,8 @@ import Transfers from "./pages/Transferencias";
 import Lines from "./pages/Lines";
 import InventoryFisico from "./pages/InventoryFisico";
 import Kardex from "./pages/Kardex";
+import Importation from "./pages/Importation";
+
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -39,11 +41,9 @@ function App() {
             <Route path="/reports" element={<Sales />} />
             <Route path="/transfer" element={<Transfers />} />
             <Route path="/lines" element={<Lines />} />
-            <Route
-              path="/inventory-fisico-valorado"
-              element={<InventoryFisico />}
-            />
+            <Route path="/inventory-fisico-valorado" element={<InventoryFisico />} />
             <Route path="/kardex" element={<Kardex />} />
+            <Route path="/importation" element={<Importation />} />
           </>
         )}
 

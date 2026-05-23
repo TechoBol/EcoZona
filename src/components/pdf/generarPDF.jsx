@@ -35,7 +35,7 @@ const numeroALetras = (num) => {
       : `${centenas[c]} ${convertirGrupo(resto)}`;
   };
 
-  const convertir = (n ) => {
+  const convertir = (n) => {
     if (n < 1000) return convertirGrupo(n);
 
     if (n < 1_000_000) {
@@ -76,11 +76,13 @@ export const generarPDF = (
   cartItems,
   subtotal,
   discount,
-  total
+  total,
+  cancellationData = null,
 ) => {
 
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 14;
 
   // ── ENCABEZADO ──
@@ -130,9 +132,11 @@ export const generarPDF = (
     styles: { fontSize: 9 },
   });
 
-  const finalY = (doc).lastAutoTable.finalY || 80;
+  const finalY = doc.lastAutoTable.finalY || 80;
 
   // ── TOTALES ──
+  doc.setTextColor(0, 0, 0);
+  doc.setFont("helvetica", "normal");
   doc.text(`Subtotal: Bs ${subtotal.toFixed(2)}`, margin, finalY + 10);
   doc.text(`Descuento: Bs ${discount.toFixed(2)}`, margin, finalY + 16);
 
@@ -142,6 +146,39 @@ export const generarPDF = (
   // ── LETRAS ──
   doc.setFont("helvetica", "italic");
   doc.text(`Son: ${numeroALetras(total)}`, margin, finalY + 32);
+
+  // ── SELLO DE ANULACIÓN ──
+  if (cancellationData) {
+
+    // Marca de agua diagonal
+    doc.saveGraphicsState();
+    doc.setGState(new doc.GState({ opacity: 0.15 }));
+    doc.setTextColor(220, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(72);
+    doc.text("ANULADO", pageWidth / 2, pageHeight / 2, {
+      align: "center",
+      angle: 45,
+    });
+    doc.restoreGraphicsState();
+
+    // Bloque de datos al pie
+    doc.setTextColor(180, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+
+    const fechaAnulacion = new Date(cancellationData.cancelledAt)
+      .toLocaleString("es-BO");
+
+    const boxY = pageHeight - 30;
+
+    doc.line(margin, boxY - 4, pageWidth - margin, boxY - 4);
+    doc.text("VENTA ANULADA", margin, boxY);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Motivo: ${cancellationData.cancelReason || "—"}`, margin, boxY + 6);
+    doc.text(`Anulado por: ${cancellationData.cancelledBy || "—"}`, margin, boxY + 12);
+    doc.text(`Fecha anulación: ${fechaAnulacion}`, margin, boxY + 18);
+  }
 
   return doc.output("blob");
 };

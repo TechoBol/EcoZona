@@ -110,138 +110,139 @@ export default function Lines() {
         );
       },
     },
-    canManage ? 
-    {
-      field: "actions",
-      headerName: "Acciones",
-      width: 140,
-      sortable: false,
-      filterable: false,
-      disableColumnMenu: true,
+    canManage ?
+      {
+        field: "actions",
+        headerName: "Acciones",
+        width: 140,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
 
-      renderCell: (params) => (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: 26,
-            width: "100%",
-            marginTop: 10,
-          }}
-        >
-          <Edit
-            size={18}
+        renderCell: (params) => (
+          <div
             style={{
-              cursor: "pointer",
-              color: "#22c55e",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 26,
+              width: "100%",
+              marginTop: 10,
             }}
-            onClick={() => handleEdit(params.row)}
-          />
+          >
+            <Edit
+              size={18}
+              style={{
+                cursor: "pointer",
+                color: "#22c55e",
+              }}
+              onClick={() => handleEdit(params.row)}
+            />
 
-          <Delete
-            style={{
-              cursor: "pointer",
-              color: "#e53935",
-            }}
-            onClick={() => {
-              setDeleteId(params.row.id);
-              setOpenDelete(true);
-            }}
-          />
-        </div>
-      ),
-    }: null,
+            <Delete
+              style={{
+                cursor: "pointer",
+                color: "#e53935",
+              }}
+              onClick={() => {
+                setDeleteId(params.row.id);
+                setOpenDelete(true);
+              }}
+            />
+          </div>
+        ),
+      } : null,
   ].filter(Boolean);
 
   return (
-    <Wrapper>
-      <Header>
-        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
-        <Title>Marcas</Title>
-      </Header>
+  <Wrapper>
+    <Header>
+      <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
+      <Title>Marcas</Title>
+    </Header>
 
-      <Content>
+    <Content>
+      {!permissions.isReadOnly && (
         <Actions>
           <AddButton onClick={handleNew}>+ Nueva marca</AddButton>
         </Actions>
+      )}
 
-        <div
-          style={{
-            height: 500,
-            background: "white",
-            borderRadius: 14,
+      <div
+        style={{
+          height: 500,
+          background: "white",
+          borderRadius: 14,
+        }}
+      >
+        <DataGrid
+          rows={lines}
+          columns={columns}
+          getRowId={(row) => row.id}
+          pageSizeOptions={[5, 10, 20]}
+          slots={{
+            toolbar: GridToolbar,
           }}
-        >
-          <DataGrid
-            rows={lines}
-            columns={columns}
-            getRowId={(row) => row.id}
-            pageSizeOptions={[5, 10, 20]}
-            slots={{
-              toolbar: GridToolbar,
-            }}
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-                quickFilterProps: {
-                  debounceMs: 300,
-                },
+          slotProps={{
+            toolbar: {
+              showQuickFilter: true,
+              quickFilterProps: {
+                debounceMs: 300,
               },
-            }}
-            sx={{
-              border: "1px solid #eee",
+            },
+          }}
+          sx={{
+            border: "1px solid #eee",
 
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f8f9ff",
-                fontWeight: 700,
-              },
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f8f9ff",
+              fontWeight: 700,
+            },
 
-              "& .MuiDataGrid-toolbarContainer": {
-                padding: "10px",
-              },
+            "& .MuiDataGrid-toolbarContainer": {
+              padding: "10px",
+            },
 
-              "& .MuiInputBase-root": {
-                borderRadius: "12px",
-                backgroundColor: "#f5f5f5",
-                paddingLeft: "8px",
-              },
+            "& .MuiInputBase-root": {
+              borderRadius: "12px",
+              backgroundColor: "#f5f5f5",
+              paddingLeft: "8px",
+            },
 
-              "& .MuiDataGrid-columnHeaderTitle": {
-                fontWeight: "bold",
-              },
-            }}
-          />
-        </div>
-      </Content>
+            "& .MuiDataGrid-columnHeaderTitle": {
+              fontWeight: "bold",
+            },
+          }}
+        />
+      </div>
+    </Content>
 
-      <CreateLineModal
-        open={open}
-        onClose={handleClose}
-        form={form}
-        setForm={setForm}
-        isEdit={isEdit}
-        isLoading={isLoading}
-        onSubmit={async (data) => {
-          if (isEdit) {
-            await updateLine(editId, data);
-          } else {
-            await createLine(data);
-          }
+    <CreateLineModal
+      open={open}
+      onClose={handleClose}
+      form={form}
+      setForm={setForm}
+      isEdit={isEdit}
+      isLoading={isLoading}
+      onSubmit={async (data) => {
+        if (isEdit) {
+          await updateLine(editId, data);
+        } else {
+          await createLine(data);
+        }
 
-          handleClose();
-        }}
-      />
+        handleClose();
+      }}
+    />
 
-      <ConfirmDeleteModal
-        open={openDelete}
-        onClose={() => setOpenDelete(false)}
-        onConfirm={async () => {
-          await deleteLine(deleteId);
+    <ConfirmDeleteModal
+      open={openDelete}
+      onClose={() => setOpenDelete(false)}
+      onConfirm={async () => {
+        await deleteLine(deleteId);
 
-          setOpenDelete(false);
-        }}
-      />
-    </Wrapper>
-  );
-}
+        setOpenDelete(false);
+      }}
+    />
+  </Wrapper>
+);}

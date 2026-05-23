@@ -79,6 +79,7 @@ function Inventory() {
 
   const permissions = usePermissions();
   const canChangeLocation = permissions.isAdmin;
+  const isWarehouse = selectedLocation?.type === "WAREHOUSE";
 
   ///////////////////////////////////////
   // SUCURSAL
@@ -116,7 +117,7 @@ function Inventory() {
   const pressTimer = useRef(null);
 
   const handleMouseDown = (product) => {
-    if (!permissions.canEditProduct) return;
+    if (!permissions.canEditProduct || !isWarehouse) return;
     pressTimer.current = setTimeout(() => {
       navigate("/product/edit", {
         state: {
@@ -130,7 +131,7 @@ function Inventory() {
   const handleMouseUp = () => clearTimeout(pressTimer.current);
 
   const handleTouchStart = (product) => {
-    if (!permissions.canEditProduct) return;
+    if (!permissions.canEditProduct || !isWarehouse) return;
     pressTimer.current = setTimeout(() => {
       navigate("/product/edit", {
         state: {
@@ -364,7 +365,7 @@ function Inventory() {
         <PDFButton onClick={handleGeneratePDF}>
           <FileText size={18} />
         </PDFButton>
-        {permissions.canCreateProduct && (
+        {permissions.canCreateProduct && isWarehouse && (
           <AddProductButton onClick={() => navigate("/product")}>
             <Plus size={18} />
           </AddProductButton>
