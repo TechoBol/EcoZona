@@ -463,11 +463,11 @@ export const DetailButton = styled.button`
 export const DetailPopoverCard = styled.div`
   min-width: 360px;
   max-width: 420px;
-  background: white;
+  background: #e8eef6;
   border-radius: 16px;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.25);
   padding: 18px 18px 14px;
-  border: 1px solid #eef0f3;
+  border: 1px solid #b8c5d6;
 `;
 
 export const DetailPopoverTitle = styled.h4`
