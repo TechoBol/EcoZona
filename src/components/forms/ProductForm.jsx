@@ -111,7 +111,8 @@ function ProductForm() {
     validate: {
       name: (v) => (!v.trim() ? "Ingresa el nombre" : null),
       barcode: (v) => (!v.trim() ? "Ingresa el código" : null),
-      price: (v) => (!v || Number(v) <= 0 ? "Ingresa un precio válido" : null),
+      price: (v) =>
+        isEdit ? null : !v || Number(v) <= 0 ? "Ingresa un precio válido" : null,
       finalPrice: (v, values) =>
         !v || Number(v) <= 0
           ? "Ingresa un precio válido"
@@ -133,8 +134,6 @@ function ProductForm() {
     return null;
   }, [form.values.imageFile, s3Image, imageDeleted]);
 
-  // En edición: botón activo si cualquier campo libre cambió,
-  // o si el switch está on y price/stock cambiaron
   const hasChanges = useMemo(() => {
     if (!isEdit) return form.isValid();
 
@@ -149,8 +148,7 @@ function ProductForm() {
 
     const inventoryChanged =
       inventoryEditEnabled &&
-      (Number(form.values.price) !== Number(product?.price) ||
-        Number(form.values.stock) !== Number(originalStock));
+      Number(form.values.stock) !== Number(originalStock);
 
     return generalChanged || inventoryChanged;
   }, [
@@ -162,7 +160,6 @@ function ProductForm() {
     form.values.lineId,
     form.values.brandName,
     form.values.finalPrice,
-    form.values.price,
     form.values.stock,
     form.values.imageFile,
     product,
@@ -303,41 +300,35 @@ function ProductForm() {
               }}
             >
               Costos e inventario
-              
             </SectionTitle>
 
             <Grid3>
-              {/* Precio compra — restringido por switch */}
-              <ContainerInput
-                style={
-                  isEdit && !inventoryEditEnabled
-                    ? { opacity: 0.45, pointerEvents: "none" }
-                    : {}
-                }
-              >
-                <label
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: "var(--color-text-secondary)",
-                    marginBottom: 4,
-                    display: "block",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  Precio compra
-                </label>
-                <Input
-                  type="number"
-                  placeholder="0.00"
-                  {...form.getInputProps("price")}
-                  disabled={isEdit && !inventoryEditEnabled}
-                />
-                {form.errors.price && (
-                  <ErrorText>{form.errors.price}</ErrorText>
-                )}
-              </ContainerInput>
+              {/* Precio compra — solo visible en creación */}
+              {!isEdit && (
+                <ContainerInput>
+                  <label
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      color: "var(--color-text-secondary)",
+                      marginBottom: 4,
+                      display: "block",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    Precio compra
+                  </label>
+                  <Input
+                    type="number"
+                    placeholder="0.00"
+                    {...form.getInputProps("price")}
+                  />
+                  {form.errors.price && (
+                    <ErrorText>{form.errors.price}</ErrorText>
+                  )}
+                </ContainerInput>
+              )}
 
               {/* Precio venta — siempre editable */}
               <ContainerInput>
@@ -364,7 +355,7 @@ function ProductForm() {
                 )}
               </ContainerInput>
 
-              {/* Stock — restringido por switch */}
+              {/* Stock — restringido por switch en edición */}
               <ContainerInput
                 style={
                   isEdit && !inventoryEditEnabled
@@ -449,7 +440,7 @@ function ProductForm() {
             </Grid2>
           </Section>
 
-          {/* IMAGEN — siempre editable, en edición sin botón eliminar */}
+          {/* IMAGEN — siempre editable */}
           <Section>
             <SectionTitle>Imagen del producto</SectionTitle>
 
@@ -493,7 +484,6 @@ function ProductForm() {
                 <PreviewImage src={previewUrl} alt="Preview del producto" />
 
                 {isEdit ? (
-                  // Edición: solo cambiar imagen, sin eliminar
                   <>
                     <HiddenInput
                       type="file"
@@ -519,7 +509,6 @@ function ProductForm() {
                     </RemoveButton>
                   </>
                 ) : (
-                  // Creación: eliminar imagen
                   <RemoveButton
                     type="button"
                     onClick={() => {

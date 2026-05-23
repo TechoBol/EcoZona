@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLoginStore } from "../components/store/loginStore";
 import { bulkUpdateProductsService } from "../services/importationService";
+import { successToast, errorToast } from "../services/toasts";
 
 interface ImportProduct {
   id: number;
@@ -20,7 +21,7 @@ export const useImportation = () => {
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<ImportResult[]>([]);
 
-  const { token, location } = useLoginStore();
+  const { token } = useLoginStore();
   const navigate = useNavigate();
 
   const goToImportation = () => navigate("/importation");
@@ -38,11 +39,25 @@ export const useImportation = () => {
       }));
 
       const data = await bulkUpdateProductsService(payload, token);
-      return data;
+
+      const mapped: ImportResult[] = products.map((p) => ({
+        id: p.id,
+        status: "fulfilled",
+      }));
+      setResults(mapped);
+      return mapped;
 
     } catch (err: any) {
-      setError(err.message || "Error en la importación");
-      throw err;
+      errorToast(err.message || "Error al actualizar productos");
+
+      const failed: ImportResult[] = products.map((p) => ({
+        id: p.id,
+        status: "rejected",
+        error: err.message,
+      }));
+      setResults(failed);
+      return failed;
+
     } finally {
       setLoading(false);
     }

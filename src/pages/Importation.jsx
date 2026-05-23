@@ -3,6 +3,7 @@ import { ArrowLeft, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useImportation } from "../hooks/useImportation";
 import { useProductSearch } from "../hooks/useProductSearch";
+import socket from "../services/SocketIOConnection";
 
 import {
     Wrapper, Header, BackButton, Title,
@@ -12,6 +13,7 @@ import {
     NumberInput, RemoveButton, EmptyHint,
     Footer, FeedbackRow, ErrorText, SubmitButton,
 } from "../components/ui/Importation";
+import { successToast } from "../services/toasts";
 
 const Importation = () => {
     const navigate = useNavigate();
@@ -37,7 +39,6 @@ const Importation = () => {
         setQuery("");
     };
 
-    // ─── Guarda siempre como string ───────────────────────
     const handleChange = (id, field, value) => {
         setRows((prev) =>
             prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
@@ -46,7 +47,6 @@ const Importation = () => {
 
     const handleRemove = (id) => setRows((prev) => prev.filter((r) => r.id !== id));
 
-    // ─── Convierte a número solo al enviar ────────────────
     const handleSubmit = async () => {
         const valid = rows.filter(
             (r) => r.purchasePrice !== "" && r.stock !== ""
@@ -59,15 +59,25 @@ const Importation = () => {
             stock: Number(r.stock),
         }));
 
-        console.log("📦 Payload enviado:", payload); // ← aquí ves qué se envía
+        const res = await bulkUpdateProducts(payload);
 
-        await bulkUpdateProducts(payload);
+        const fulfilled = (res ?? results).filter((r) => r.status === "fulfilled");
+        if (fulfilled.length > 0) {
+            socket.emit("createProduct", payload);
+            setRows([]); 
+            successToast(`✓ ${fulfilled.length} producto(s) actualizados correctamente`);
+        }
+    };
+
+    const handleBack = () => {
+        setRows([]);
+        navigate(-1);
     };
 
     return (
         <Wrapper>
             <Header>
-                <BackButton onClick={() => navigate(-1)}>
+                <BackButton onClick={handleBack}>
                     <ArrowLeft size={22} />
                 </BackButton>
                 <Title>Nueva Importación</Title>
@@ -150,21 +160,6 @@ const Importation = () => {
             </TableWrapper>
 
             <Footer>
-                {results.length > 0 && (
-                    <FeedbackRow>
-                        <span style={{ color: "#69d584" }}>
-                            ✓ {results.filter((r) => r.status === "fulfilled").length} actualizados
-                        </span>
-                        {results.some((r) => r.status === "rejected") && (
-                            <span style={{ color: "#dc655f" }}>
-                                {" · "}✕ {results.filter((r) => r.status === "rejected").length} fallidos
-                            </span>
-                        )}
-                    </FeedbackRow>
-                )}
-
-                {error && <ErrorText>{error}</ErrorText>}
-
                 <SubmitButton onClick={handleSubmit} disabled={loading || rows.length === 0}>
                     {loading ? "Actualizando..." : "Actualizar"}
                 </SubmitButton>
