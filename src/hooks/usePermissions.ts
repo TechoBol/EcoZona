@@ -25,6 +25,9 @@ export const usePermissions = () => {
     canCreateTransfers: [1, 2].includes(lvl),
     canManageLinesAdmin: [1, 2].includes(lvl),
     canManageDateSale : [1, 2].includes(lvl),
+    canManageKardex: [1, 4].includes(lvl),
+    canManageImportation: [1, 2].includes(lvl),
+
     // 💰 VENTAS
     canManageSales: [1, 2, 3 , 4].includes(lvl),
     canSell: [1, 2, 3].includes(lvl),
