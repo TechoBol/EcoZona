@@ -343,9 +343,16 @@ function Inventory() {
   };
 
   const handleGeneratePDF = () => {
-    if (!products?.length) return;
-    generarInventoryPDF(products, selectedLocation, getStock);
-  };
+  if (!products?.length) return;
+
+  const sortedProducts = [...products].sort((a, b) => {
+    const barcodeA = a.barcode?.toLowerCase() ?? "";
+    const barcodeB = b.barcode?.toLowerCase() ?? "";
+    return barcodeA.localeCompare(barcodeB);
+  });
+
+  generarInventoryPDF(sortedProducts, selectedLocation, getStock);
+};
 
   ///////////////////////////////////////
   // RENDER

@@ -41,7 +41,6 @@ const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
   const { logOut } = useAuthentication();
   const permissions = usePermissions();
-
   const { goToInventory } = useInventory();
   const { goToSucursales } = useSucursales();
   const { goToTrabajadores } = useEmployees();
@@ -169,7 +168,7 @@ const UserMenu = () => {
                     {({ active }) => (
                       <MenuOption onClick={goToImportation} $active={active}>
                         <FileInput size={16} />
-                        <span>Nueva importación</span>
+                        <span>Importaciones</span>
                       </MenuOption>
                     )}
                   </Menu.Item>
