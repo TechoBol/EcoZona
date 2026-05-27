@@ -70,56 +70,56 @@ export default function Sucursales() {
 
     canEdit
       ? {
-          field: "actions",
-          headerName: "Acciones",
-          width: 140,
-          sortable: false,
-          filterable: false,
-          disableColumnMenu: true,
-          renderCell: (params) => (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginTop: "10px",
-                gap: 40,
-                width: "100%",
+        field: "actions",
+        headerName: "Acciones",
+        width: 140,
+        sortable: false,
+        filterable: false,
+        disableColumnMenu: true,
+        renderCell: (params) => (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              marginTop: "10px",
+              gap: 40,
+              width: "100%",
+            }}
+          >
+            <Edit
+              size={18}
+              style={{ cursor: "pointer", color: "#22c55e" }}
+              onClick={() => {
+                setForm({
+                  name: params.row.name,
+                  abbreviation: params.row.abbreviation,
+                  type: params.row.type,
+                });
+
+                setEditId(params.row.id);
+                setIsEdit(true);
+                setOpen(true);
               }}
-            >
-              <Edit
-                size={18}
-                style={{ cursor: "pointer", color: "#22c55e" }}
-                onClick={() => {
-                  setForm({
-                    name: params.row.name,
-                    abbreviation: params.row.abbreviation,
-                    type: params.row.type,
-                  });
+            />
 
-                  setEditId(params.row.id);
-                  setIsEdit(true);
-                  setOpen(true);
-                }}
-              />
-
-              <Delete
-                style={{ cursor: "pointer", color: "#e53935" }}
-                onClick={() => {
-                  setDeleteId(params.row.id);
-                  setOpenDelete(true);
-                }}
-              />
-            </div>
-          ),
-        }
+            <Delete
+              style={{ cursor: "pointer", color: "#e53935" }}
+              onClick={() => {
+                setDeleteId(params.row.id);
+                setOpenDelete(true);
+              }}
+            />
+          </div>
+        ),
+      }
       : null,
   ].filter(Boolean);
 
   return (
     <Wrapper>
       <Header>
-      <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
+        <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
         <Title>Sucursales</Title>
       </Header>
 
@@ -141,7 +141,7 @@ export default function Sucursales() {
             </AddButton>
           )}
         </Actions>
-        <div style={{ height: "80vh", background: "white", borderRadius: 12 }}>
+        <div style={{ flex: 1, minHeight: 0, background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={data}
             columns={columns}
