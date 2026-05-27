@@ -151,7 +151,7 @@ export default function ImportationsPage() {
             <Content>
                 <div
                     style={{
-                        height: 450,
+                        height: "80vh",
                         background: "white",
                         borderRadius: 12,
                     }}

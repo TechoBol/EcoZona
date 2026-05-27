@@ -2,7 +2,7 @@ const API = import.meta.env.VITE_API_DOMAIN;
 const BASE = `${API}/importation`;
 
 // GET /importation/get-importations
-export const getImportationsService = async (token) => {
+export const getImportationsService = async (token: string) => {
   const res = await fetch(`${BASE}/get-importations`, {
     headers: { "x-access-token": token },
   });
@@ -10,7 +10,7 @@ export const getImportationsService = async (token) => {
 };
 
 // GET /importation/get-importation/:id
-export const getImportationByIdService = async (id, token) => {
+export const getImportationByIdService = async (id: number, token: string) => {
   const res = await fetch(`${BASE}/get-importation/${id}`, {
     headers: { "x-access-token": token },
   });
@@ -18,7 +18,7 @@ export const getImportationByIdService = async (id, token) => {
 };
 
 // POST /importation/create-importation (MANUAL)
-export const createImportationManualService = async (dto, token) => {
+export const createImportationManualService = async (dto: { code: any; type?: string; products: any; }, token: string) => {
   const formData = new FormData();
   formData.append("code", dto.code);
   formData.append("type", "MANUAL");
@@ -39,7 +39,7 @@ export const createImportationManualService = async (dto, token) => {
 };
 
 // POST /importation/create-importation (EXCEL)
-export const createImportationExcelService = async (dto, token) => {
+export const createImportationExcelService = async (dto: { code: any; type?: string; file: any; }, token: string) => {
   const formData = new FormData();
   formData.append("code", dto.code);
   formData.append("type", "EXCEL");

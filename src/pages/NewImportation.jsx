@@ -3,7 +3,6 @@ import { ArrowLeft, Trash2, FileSpreadsheet, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useNewImportation } from "../hooks/useNewImportation";
 import { useProductSearch } from "../hooks/useProductSearch";
-
 import {
     Wrapper, Header, BackButton, Title,
     SearchWrapper, SearchInput, Dropdown, DropdownItem,
@@ -228,7 +227,7 @@ const Importation = () => {
                     type="text"
                     placeholder="Código de importación (ej. IMP-001)"
                     value={code}
-                    onChange={(e) => setCode(e.target.value)}
+                    onChange={(e) => setCode(e.target.value.toUpperCase())}
                 />
             </SearchWrapper>
 

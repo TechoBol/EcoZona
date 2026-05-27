@@ -141,7 +141,7 @@ export default function Roles() {
           )}
         </Actions>
 
-        <div style={{ height: 450, background: "white", borderRadius: 12 }}>
+        <div style={{ height: "80vh", background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={roles}
             columns={columns}

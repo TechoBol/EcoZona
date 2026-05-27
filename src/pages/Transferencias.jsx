@@ -242,7 +242,7 @@ export default function Transfers() {
           )}
         </Actions>
 
-        <div style={{ height: 500, background: "white", borderRadius: 12 }}>
+        <div style={{ height: "75vh", background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={rows}
             columns={columns}

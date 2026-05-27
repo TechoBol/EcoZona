@@ -141,7 +141,7 @@ export default function Sucursales() {
             </AddButton>
           )}
         </Actions>
-        <div style={{ height: 450, background: "white", borderRadius: 12 }}>
+        <div style={{ height: "80vh", background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={data}
             columns={columns}

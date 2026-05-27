@@ -6,7 +6,7 @@ import {
   createImportationManualService,
   createImportationExcelService,
 } from "../services/importationService";
-
+import socket from "../services/SocketIOConnection";
 export const useNewImportation = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -14,9 +14,10 @@ export const useNewImportation = () => {
   const { token } = useLoginStore();
   const navigate = useNavigate();
 
-  const goToImportation = () => navigate("/importation");
+  const goToImportation = (newImportation: any) =>
+    navigate("/importation", { state: { newImportation } });
 
-  const createManualImportation = async (code, products) => {
+  const createManualImportation = async (code: any, products: any) => {
     try {
       setLoading(true);
       setError(null);
@@ -24,8 +25,10 @@ export const useNewImportation = () => {
         { code, type: "MANUAL", products },
         token,
       );
+      socket.emit("newImportation", data);
+      socket.emit("createProduct", data);
       successToast("Importación creada correctamente");
-      goToImportation();
+      goToImportation(data);
       return data;
     } catch (err) {
       const msg = err.message || "Error al crear la importación";
@@ -36,7 +39,7 @@ export const useNewImportation = () => {
     }
   };
 
-  const createExcelImportation = async (code, file) => {
+  const createExcelImportation = async (code: any, file: any) => {
     try {
       setLoading(true);
       setError(null);
@@ -44,8 +47,10 @@ export const useNewImportation = () => {
         { code, type: "EXCEL", file },
         token,
       );
+      socket.emit("newImportation", data);
+      socket.emit("createProduct", data);
       successToast("Importación creada correctamente");
-      goToImportation();
+      goToImportation(data);
       return data;
     } catch (err) {
       const msg = err.message || "Error al crear la importación";

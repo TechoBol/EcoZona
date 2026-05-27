@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLoginStore } from "../components/store/loginStore";
 import { successToast, errorToast } from "../services/toasts";
 import {
     getImportationsService,
     getImportationByIdService,
 } from "../services/importationService";
+import socket from "../services/SocketIOConnection";
 
 export const useImportation = ({ fetchOnMount = false } = {}) => {
+    const location = useLocation();
     const { token } = useLoginStore();
     const navigate = useNavigate();
     const [importations, setImportations] = useState<Importation[]>([]);
     const [selectedImportation, setSelectedImportation] = useState<Importation | null>(null);
     const [loading, setLoading] = useState(false);
-    const [loadingCreate, setLoadingCreate] = useState(false);
     const [loadingDetail, setLoadingDetail] = useState(false);
 
     const getImportations = async () => {
@@ -40,35 +41,42 @@ export const useImportation = ({ fetchOnMount = false } = {}) => {
         }
     };
 
-    const createImportation = async (values: CreateImportationDTO) => {
-        setLoadingCreate(true);
-        try {
-            const newImportation = await createImportationService(values, token);
-            setImportations((prev) => [...prev, newImportation]);
-            successToast("Importación añadida con éxito");
-            return newImportation;
-        } catch {
-            errorToast("Error al añadir la importación");
-        } finally {
-            setLoadingCreate(false);
-        }
-    };
-
     const goToImportation = () => navigate("/importation");
 
     useEffect(() => {
         if (fetchOnMount) getImportations();
     }, []);
 
+    useEffect(() => {
+        if (location.state?.newImportation) {
+            setImportations((prev) => [...prev, location.state.newImportation]);
+            window.history.replaceState({}, "");
+        }
+    }, []);
+
+    useEffect(() => {
+        const handleImportation = (importation: any) => {
+            setImportations((prev) => {
+                const exists = prev.some((imp) => imp.id === importation.id);
+                if (exists) return prev;
+                return [importation, ...prev];
+            });
+        };
+
+        socket.on("importation", handleImportation);
+
+        return () => {
+            socket.off("importation", handleImportation);
+        };
+    }, []);
+
     return {
         importations,
         selectedImportation,
         loading,
-        loadingCreate,
         loadingDetail,
         getImportations,
         getImportationById,
-        createImportation,
         goToImportation,
     };
 };
