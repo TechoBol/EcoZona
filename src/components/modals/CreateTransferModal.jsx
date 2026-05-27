@@ -21,6 +21,10 @@ export default function CreateTransferModal({
   form,
   setForm,
   onSubmit,
+
+  // NUEVO
+  mode = "create",
+
   inventory = [],
   location,
   locations = [],
@@ -266,8 +270,8 @@ export default function CreateTransferModal({
         {/* ── HEADER ── */}
         <div style={{ padding: "20px 20px 12px 20px", flexShrink: 0 }}>
           <CloseButton onClick={onClose}>✖</CloseButton>
-          <ModalTitle style={{ marginBottom: "14px" }}>
-            Enviar productos
+          <ModalTitle>
+            {mode === "edit" ? "Editar transferencia" : "Enviar productos"}
           </ModalTitle>
 
           {/* Origen → Destino */}
@@ -538,7 +542,13 @@ export default function CreateTransferModal({
           }}
         >
           <SaveButton disabled={!isValid || sending} onClick={handleSubmit}>
-            {sending ? "Enviando..." : "Enviar productos"}
+            {sending
+              ? mode === "edit"
+                ? "Guardando..."
+                : "Enviando..."
+              : mode === "edit"
+              ? "Guardar cambios"
+              : "Enviar productos"}
           </SaveButton>
         </div>
       </ModalContent>

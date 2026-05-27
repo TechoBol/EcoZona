@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
-
+import CreateTransferModal from "./CreateTransferModal";
 import {
   ModalOverlay,
   ModalContent,
@@ -25,13 +25,20 @@ import {
 
 import { usePermissions } from "../../hooks/usePermissions";
 import { errorToast, successToast } from "../../services/toasts";
+import { useLoginStore } from "../../components/store/loginStore";
+import useInventory from "../../hooks/useInventory";
+import { useSucursales } from "../../hooks/useSucursales";
 
 const getStatusLabel = (status) => {
   switch (status) {
-    case "PENDING": return "Pendiente";
-    case "APPROVED": return "Aprobado";
-    case "REJECTED": return "Rechazado";
-    default: return status;
+    case "PENDING":
+      return "Pendiente";
+    case "APPROVED":
+      return "Aprobado";
+    case "REJECTED":
+      return "Rechazado";
+    default:
+      return status;
   }
 };
 
@@ -41,15 +48,23 @@ export default function TransferDetailModal({
   transfer,
   onApprove,
   onReject,
+  onUpdate,
 }) {
   const [reason, setReason] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const { location } = useLoginStore();
+  const { products: inventory } = useInventory();
+  const { data: locations } = useSucursales();
 
+  const [editForm, setEditForm] = useState({
+    destinationId: "",
+    glosa: "",
+    items: [],
+  });
   const permissions = usePermissions();
 
   // 🔐 permisos
   const canApproveReject = permissions.canApproveTransfers;
-
-  if (!open || !transfer) return null;
 
   const handleApprove = async () => {
     try {
@@ -57,26 +72,50 @@ export default function TransferDetailModal({
       successToast("Transferencia aprobada");
       onClose();
     } catch (error) {
-      errorToast(error?.response?.data?.message || error?.message || "Error al aprobar la transferencia");
+      errorToast(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Error al aprobar la transferencia",
+      );
     }
   };
 
   const handleReject = async () => {
     try {
       await onReject(transfer.id, reason);
+      setReason("")
       successToast("Transferencia rechazada");
       onClose();
     } catch (error) {
-      errorToast(error?.response?.data?.message || error?.message || "Error al rechazar la transferencia");
+      errorToast(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Error al rechazar la transferencia",
+      );
     }
   };
-
+  if (!open || !transfer) return null;
   // 💰 total
   const total =
     transfer.items?.reduce(
       (acc, item) => acc + item.quantity * (item.product?.finalPrice || 0),
       0,
     ) || 0;
+
+  const handleEdit = () => {
+    setEditForm({
+      destinationId: transfer.toLocationId,
+
+      glosa: transfer.glosa || "",
+
+      items: transfer.items.map((item) => ({
+        productId: item.productId,
+        quantity: item.quantity,
+      })),
+    });
+
+    setEditOpen(true);
+  };
 
   return (
     <ModalOverlay onClick={onClose}>
@@ -111,7 +150,14 @@ export default function TransferDetailModal({
               {new Date(transfer.createdAt).toLocaleString()}
             </InfoValue>
           </InfoRow>
-
+          {transfer.editedAt && (
+            <InfoRow>
+              <InfoLabel>Última actualización:</InfoLabel>
+              <InfoValue>
+                {new Date(transfer.editedAt).toLocaleString()}
+              </InfoValue>
+            </InfoRow>
+          )}
           <InfoRow>
             <InfoLabel>Estado:</InfoLabel>
             <StatusBadge status={transfer.status}>
@@ -132,9 +178,7 @@ export default function TransferDetailModal({
             </InfoRow>
             <InfoRow>
               <InfoLabel>Glosa:</InfoLabel>
-              <InfoValue>
-                {transfer.glosa}
-              </InfoValue>
+              <InfoValue>{transfer.glosa}</InfoValue>
             </InfoRow>
             {transfer.approvedBy && (
               <InfoRow>
@@ -220,11 +264,32 @@ export default function TransferDetailModal({
                 >
                   Rechazar
                 </SaveButton>
+                <SaveButton
+                  style={{ background: "#f39c12" }}
+                  onClick={handleEdit}
+                >
+                  Editar
+                </SaveButton>
               </ActionsRow>
             </>
           )}
         </FormGroup>
       </ModalContent>
+      <CreateTransferModal
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        form={editForm}
+        setForm={setEditForm}
+        inventory={inventory}
+        location={location}
+        locations={locations}
+        mode="edit"
+        onSubmit={async (data) => {
+          await onUpdate(transfer.id, data);
+          successToast("Transferencia actualizada");
+          setEditOpen(false);
+        }}
+      />
     </ModalOverlay>
   );
 }
