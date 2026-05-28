@@ -108,7 +108,7 @@ function Inventory() {
   const playBeep = () => {
     if (!beepRef.current) return;
     beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => { });
+    beepRef.current.play().catch(() => {});
   };
 
   ///////////////////////////////////////
@@ -201,7 +201,7 @@ function Inventory() {
     // Paralelo — todos los requests al mismo tiempo
     const loadImages = async () => {
       const newProducts = products.filter(
-        (p) => p.imageUrl && !imageUrls[p.id]
+        (p) => p.imageUrl && !imageUrls[p.id],
       );
 
       if (!newProducts.length) return;
@@ -214,7 +214,7 @@ function Inventory() {
           } catch {
             return [product.id, null];
           }
-        })
+        }),
       );
       setImageUrls((prev) => ({
         ...prev,
@@ -236,11 +236,24 @@ function Inventory() {
 
   const brands = selectedLine?.brands || [];
 
-  const visibleProducts = products.filter((product) => {
-    if (selectedLine && product.lineId !== selectedLine.id) return false;
-    if (selectedBrand && product.brandName !== selectedBrand) return false;
-    return true;
-  });
+  const visibleProducts = products
+    .filter((product) => {
+      if (selectedLine && product.lineId !== selectedLine.id) return false;
+      if (selectedBrand && product.brandName !== selectedBrand) return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const stockA = getStock(a);
+      const stockB = getStock(b);
+
+      // Mayor stock arriba
+      if (stockB !== stockA) {
+        return stockB - stockA;
+      }
+
+      // Luego orden alfabético
+      return a.name.localeCompare(b.name);
+    });
 
   const lastErrorRef = useRef({ code: "", time: 0 });
 
@@ -343,16 +356,16 @@ function Inventory() {
   };
 
   const handleGeneratePDF = () => {
-  if (!products?.length) return;
+    if (!products?.length) return;
 
-  const sortedProducts = [...products].sort((a, b) => {
-    const barcodeA = a.barcode?.toLowerCase() ?? "";
-    const barcodeB = b.barcode?.toLowerCase() ?? "";
-    return barcodeA.localeCompare(barcodeB);
-  });
+    const sortedProducts = [...products].sort((a, b) => {
+      const barcodeA = a.barcode?.toLowerCase() ?? "";
+      const barcodeB = b.barcode?.toLowerCase() ?? "";
+      return barcodeA.localeCompare(barcodeB);
+    });
 
-  generarInventoryPDF(sortedProducts, selectedLocation, getStock);
-};
+    generarInventoryPDF(sortedProducts, selectedLocation, getStock);
+  };
 
   ///////////////////////////////////////
   // RENDER
@@ -366,7 +379,9 @@ function Inventory() {
           onClick={() => canChangeLocation && setOpenLocations(!openLocations)}
         >
           <TitleText>{selectedLocation?.name || "Inventario"}</TitleText>
-          {canChangeLocation && <ChevronDown size={14} color={theme.colors.textSecondary} />}
+          {canChangeLocation && (
+            <ChevronDown size={14} color={theme.colors.textSecondary} />
+          )}
         </TitleButton>
 
         <PDFButton onClick={handleGeneratePDF}>
@@ -389,13 +404,19 @@ function Inventory() {
                   <BranchDropdownItem
                     key={loc.id}
                     $active={selectedLocation?.id === loc.id}
-                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
+                    onClick={() => {
+                      setSelectedLocation(loc);
+                      setOpenLocations(false);
+                    }}
                     style={{ borderTop: "none" }}
                   >
                     <BranchDot $active={selectedLocation?.id === loc.id} />
                     {loc.name}
                     {selectedLocation?.id === loc.id && (
-                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
+                      <Check
+                        size={13}
+                        style={{ marginLeft: "auto", color: "#1D9E75" }}
+                      />
                     )}
                   </BranchDropdownItem>
                 ))}
@@ -408,12 +429,18 @@ function Inventory() {
                   <BranchDropdownItem
                     key={loc.id}
                     $active={selectedLocation?.id === loc.id}
-                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
+                    onClick={() => {
+                      setSelectedLocation(loc);
+                      setOpenLocations(false);
+                    }}
                   >
                     <BranchDot $active={selectedLocation?.id === loc.id} />
                     {loc.name}
                     {selectedLocation?.id === loc.id && (
-                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
+                      <Check
+                        size={13}
+                        style={{ marginLeft: "auto", color: "#1D9E75" }}
+                      />
                     )}
                   </BranchDropdownItem>
                 ))}
@@ -501,7 +528,9 @@ function Inventory() {
               >
                 <ProductImage
                   key={imageUrls[product.id]}
-                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
+                  src={
+                    imageUrls[product.id] || "https://via.placeholder.com/150"
+                  }
                   loading="lazy"
                   decoding="async"
                 />
