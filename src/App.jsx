@@ -14,7 +14,9 @@ import Transfers from "./pages/Transferencias";
 import Lines from "./pages/Lines";
 import InventoryFisico from "./pages/InventoryFisico";
 import Kardex from "./pages/Kardex";
+import NewImportation from "./pages/NewImportation";
 import Importation from "./pages/Importation";
+
 
 
 function App() {
@@ -44,6 +46,7 @@ function App() {
             <Route path="/inventory-fisico-valorado" element={<InventoryFisico />} />
             <Route path="/kardex" element={<Kardex />} />
             <Route path="/importation" element={<Importation />} />
+            <Route path="/new-importation" element={<NewImportation />} />
           </>
         )}
 

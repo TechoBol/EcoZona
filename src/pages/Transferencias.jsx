@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -42,8 +42,13 @@ const getStatusLabel = (status) => {
 export default function Transfers() {
   const navigate = useNavigate();
 
-  const { data, createTransfer, approveTransfer, rejectTransfer } =
-    useTransfers();
+  const {
+    data,
+    createTransfer,
+    approveTransfer,
+    rejectTransfer,
+    updateTransfer,
+  } = useTransfers();
 
   const { products: inventory } = useInventory();
   const { location } = useLoginStore();
@@ -99,9 +104,9 @@ export default function Transfers() {
     await approveTransfer(id, location.id);
   };
 
-  const handleReject = async (id) => {
+  const handleReject = async (id , reason) => {
     if (!canApproveActions) return;
-    await rejectTransfer(id);
+    await rejectTransfer(id,reason);
   };
 
   const handleViewPDF = async (key) => {
@@ -197,7 +202,15 @@ export default function Transfers() {
       },
     },
   ];
+  useEffect(() => {
+    if (!selectedTransfer) return;
 
+    const updated = data.find((t) => t.id === selectedTransfer.id);
+
+    if (updated) {
+      setSelectedTransfer(updated);
+    }
+  }, [data]);
   return (
     <Wrapper>
       <Header>
@@ -242,7 +255,7 @@ export default function Transfers() {
           )}
         </Actions>
 
-        <div style={{ height: 500, background: "white", borderRadius: 12 }}>
+        <div style={{ height: "75vh", background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={rows}
             columns={columns}
@@ -274,6 +287,7 @@ export default function Transfers() {
         transfer={selectedTransfer}
         onApprove={handleApprove}
         onReject={handleReject}
+        onUpdate={updateTransfer}
       />
     </Wrapper>
   );

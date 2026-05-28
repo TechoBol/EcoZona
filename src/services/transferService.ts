@@ -38,7 +38,7 @@ export const getMyTransfersService = async (token: string) => {
 export const approveTransferService = async (
   id: number,
   fromLocationId: number,
-  token: string
+  token: string,
 ) => {
   const res = await fetch(`${API}/transfer/transfer-approve/${id}`, {
     method: "PUT",
@@ -60,19 +60,47 @@ export const approveTransferService = async (
 
 export const rejectTransferService = async (
   id: number,
-  token: string
+  reason: string,
+  token: string,
 ) => {
   const res = await fetch(`${API}/transfer/transfer-reject/${id}`, {
     method: "PUT",
     headers: {
       "x-access-token": token,
+      "Content-Type": "application/json",
     },
+    body: JSON.stringify({
+      rejectionReason: reason,
+    }),
   });
 
   const resData = await res.json();
 
   if (!res.ok) {
     throw new Error(resData.message || "Error rechazando transferencia");
+  }
+
+  return resData;
+};
+
+export const updateTransferService = async (
+  id: number,
+  data: any,
+  token: string,
+) => {
+  const res = await fetch(`${API}/transfer/transfers/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-token": token,
+    },
+    body: JSON.stringify(data),
+  });
+
+  const resData = await res.json();
+
+  if (!res.ok) {
+    throw new Error(resData.message || "Error actualizando transferencia");
   }
 
   return resData;

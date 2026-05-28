@@ -1,73 +1,82 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useLoginStore } from "../components/store/loginStore";
-import { bulkUpdateProductsService } from "../services/importationService";
 import { successToast, errorToast } from "../services/toasts";
+import {
+    getImportationsService,
+    getImportationByIdService,
+} from "../services/importationService";
+import socket from "../services/SocketIOConnection";
 
-interface ImportProduct {
-  id: number;
-  purchasePrice: number;
-  stock: number;
-}
+export const useImportation = ({ fetchOnMount = false } = {}) => {
+    const location = useLocation();
+    const { token } = useLoginStore();
+    const navigate = useNavigate();
+    const [importations, setImportations] = useState<Importation[]>([]);
+    const [selectedImportation, setSelectedImportation] = useState<Importation | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [loadingDetail, setLoadingDetail] = useState(false);
 
-interface ImportResult {
-  id: number;
-  status: "fulfilled" | "rejected";
-  error?: string;
-}
+    const getImportations = async () => {
+        setLoading(true);
+        try {
+            const res = await getImportationsService(token);
+            setImportations(res);
+        } catch {
+            errorToast("Error al obtener las importaciones");
+        } finally {
+            setLoading(false);
+        }
+    };
 
-export const useImportation = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [results, setResults] = useState<ImportResult[]>([]);
+    const getImportationById = async (id: number) => {
+        setLoadingDetail(true);
+        try {
+            const res = await getImportationByIdService(id, token);
+            setSelectedImportation(res);
+        } catch {
+            errorToast("Error al obtener el detalle de la importación");
+        } finally {
+            setLoadingDetail(false);
+        }
+    };
 
-  const { token } = useLoginStore();
-  const navigate = useNavigate();
+    const goToImportation = () => navigate("/importation");
 
-  const goToImportation = () => navigate("/importation");
+    useEffect(() => {
+        if (fetchOnMount) getImportations();
+    }, []);
 
-  const bulkUpdateProducts = async (products: ImportProduct[]) => {
-    try {
-      setLoading(true);
-      setError(null);
-      setResults([]);
+    useEffect(() => {
+        if (location.state?.newImportation) {
+            setImportations((prev) => [...prev, location.state.newImportation]);
+            window.history.replaceState({}, "");
+        }
+    }, []);
 
-      const payload = products.map((p) => ({
-        id: p.id,
-        purchasePrice: p.purchasePrice,
-        stock: p.stock,
-      }));
+    useEffect(() => {
+        const handleImportation = (importation: any) => {
+            setImportations((prev) => {
+                const exists = prev.some((imp) => imp.id === importation.id);
+                if (exists) return prev;
+                return [importation, ...prev];
+            });
+        };
 
-      const data = await bulkUpdateProductsService(payload, token);
+        socket.on("importation", handleImportation);
 
-      const mapped: ImportResult[] = products.map((p) => ({
-        id: p.id,
-        status: "fulfilled",
-      }));
-      setResults(mapped);
-      return mapped;
+        return () => {
+            socket.off("importation", handleImportation);
+        };
+    }, []);
 
-    } catch (err: any) {
-      errorToast(err.message || "Error al actualizar productos");
-
-      const failed: ImportResult[] = products.map((p) => ({
-        id: p.id,
-        status: "rejected",
-        error: err.message,
-      }));
-      setResults(failed);
-      return failed;
-
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return {
-    bulkUpdateProducts,
-    loading,
-    error,
-    results,
-    goToImportation,
-  };
+    return {
+        importations,
+        selectedImportation,
+        loading,
+        loadingDetail,
+        getImportations,
+        getImportationById,
+        goToImportation,
+    };
 };

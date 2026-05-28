@@ -202,7 +202,7 @@ export default function KardexFiltersModal({
 
             <Row>
               <Label>
-                Línea
+                Marca
               </Label>
 
               <ModalSelect
@@ -246,7 +246,7 @@ export default function KardexFiltersModal({
 
             <Row>
               <Label>
-                Marca
+                Línea
               </Label>
 
               <ModalSelect

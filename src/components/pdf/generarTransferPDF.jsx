@@ -1,107 +1,236 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const theme = {
+  primary: [242, 12, 31],
+  secondary: [242, 114, 125],
+  dark: [13, 13, 13],
+  gray: [107, 114, 128],
+  light: [243, 244, 246],
+  success: [105, 213, 132],
+  warning: [245, 158, 11],
+  error: [220, 101, 95],
+};
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case "APPROVED":
+      return theme.success;
+    case "REJECTED":
+      return theme.error;
+    default:
+      return theme.warning;
+  }
+};
+
+const getStatusLabel = (status) => {
+  switch (status) {
+    case "PENDING":
+      return "Pendiente";
+    case "APPROVED":
+      return "Aprobado";
+    case "REJECTED":
+      return "Rechazado";
+    default:
+      return status;
+  }
+};
+
 export const generarTransferPDF = (transfer) => {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const margin = 14;
 
-  // ─────────────────────────
-  // ENCABEZADO
-  // ─────────────────────────
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(12);
+  let y = 18;
 
-  // Título
+  // HEADER
+  doc.setFillColor(...theme.primary);
+  doc.rect(0, 0, pageWidth, 22, "F");
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text("Comprobante de Transferencia", pageWidth / 2, 20, {
+  doc.setTextColor(255);
+  doc.setFontSize(14);
+  doc.text("ECOZONA - TRANSFERENCIAS", pageWidth / 2, 14, {
     align: "center",
   });
 
-  // Fecha y página
-  const fechaActual = new Date().toLocaleString("es-BO");
+  y = 34;
+  doc.setTextColor(...theme.dark);
 
-  doc.setFontSize(9);
-  doc.text(fechaActual, pageWidth - margin, 15, { align: "right" });
-
-  // ─────────────────────────
-  // DATOS PRINCIPALES
-  // ─────────────────────────
-  let y = 30;
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Sucursal - Almacen de Origen:", margin, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(transfer.fromLocation?.name || "—", margin + 80, y);
-
-  y += 7;
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Sucursal - Almacen de Destino:", margin, y);
-  doc.setFont("helvetica", "normal");
-  doc.text(transfer.toLocation?.name || "—", margin + 85, y);
-
-  // Número y fecha
-  doc.setFont("helvetica", "bold");
-  doc.text("Numero:", pageWidth - 70, 30);
-  doc.setFont("helvetica", "normal");
-  doc.text(transfer.transferCode || "—", pageWidth - 40, 30);
-
-  doc.setFont("helvetica", "bold");
-  doc.text("Fecha:", pageWidth - 70, 37);
-  doc.setFont("helvetica", "normal");
-  doc.text(
-    new Date(transfer.createdAt).toLocaleDateString("es-BO"),
-    pageWidth - 40,
-    37,
-  );
-
-  // marca
-  doc.line(margin, 42, pageWidth - margin, 42);
-
-  // ─────────────────────────
-  // TABLA DE ITEMS
-  // ─────────────────────────
-  const tableData = (transfer.items || []).map((item) => [
-    item.product.barcode || "—",
-    item.product.name,
-    item.quantity,
-  ]);
-
-  autoTable(doc, {
-    startY: 45,
-    head: [["Codigo", "Producto", "Cantidad"]],
-    body: tableData,
-    styles: { fontSize: 9 },
+  // TITLE
+  doc.setFontSize(16);
+  doc.text("COMPROBANTE DE TRANSFERENCIA", pageWidth / 2, y, {
+    align: "center",
   });
 
-  const finalY = doc.lastAutoTable.finalY || 80;
+  y += 10;
 
-  // ─────────────────────────
-  // GLOSA
-  // ─────────────────────────
-  doc.setFont("helvetica", "bold");
-  doc.text("Glosa:", margin, finalY + 10);
+  // STATUS
+  const statusColor = getStatusColor(transfer.status);
 
-  doc.setFont("helvetica", "normal");
-  doc.text(`${transfer.glosa}`, margin + 20, finalY + 10);
+  doc.setFillColor(...statusColor);
+  doc.roundedRect(pageWidth - 60, y - 6, 45, 10, 2, 2, "F");
 
-  // ─────────────────────────
-  // FIRMAS
-  // ─────────────────────────
-  const firmaY = finalY + 40;
+  doc.setTextColor(255);
+  doc.setFontSize(9);
+  doc.text(getStatusLabel(transfer.status), pageWidth - 37, y, {
+    align: "center",
+  });
 
-  const colSpacing = (pageWidth - margin * 2) / 3;
+  doc.setTextColor(...theme.dark);
 
-  const drawFirma = (text, x) => {
-    doc.line(x, firmaY, x + 60, firmaY);
-    doc.text(text, x + 30, firmaY + 5, { align: "center" });
+  // INFO PRINCIPAL
+  const info = [
+    ["Código", transfer.transferCode || `TR-${transfer.id}`],
+    ["Origen", transfer.fromLocation?.name || "—"],
+    ["Destino", transfer.toLocation?.name || "—"],
+    [
+      "Fecha solicitud",
+      transfer.createdAt
+        ? new Date(transfer.createdAt).toLocaleString("es-BO")
+        : "—",
+    ],
+    [
+      "Ultima Actualizacion",
+      transfer.editedAt
+        ? new Date(transfer.editedAt).toLocaleString("es-BO")
+        : "—",
+    ],
+    [
+      "Solicitado por",
+      `${transfer.requestedBy?.name || ""} ${
+        transfer.requestedBy?.lastName || ""
+      }`,
+    ],
+  ];
+
+  // 🔥 FECHA DINÁMICA
+  if (transfer.status === "APPROVED" && transfer.approvedAt) {
+    info.push([
+      "Fecha aprobación",
+      new Date(transfer.approvedAt).toLocaleString("es-BO"),
+    ]);
+  }
+
+  if (transfer.status === "REJECTED" && transfer.approvedAt) {
+    info.push([
+      "Fecha rechazo",
+      new Date(transfer.approvedAt).toLocaleString("es-BO"),
+    ]);
+  }
+
+  // 🔥 USUARIO DINÁMICO
+  if (transfer.status === "APPROVED" && transfer.approvedBy) {
+    info.push([
+      "Aprobado por",
+      `${transfer.approvedBy.name} ${transfer.approvedBy.lastName}`,
+    ]);
+  }
+
+  if (transfer.status === "REJECTED" && transfer.approvedBy) {
+    info.push([
+      "Rechazado por",
+      `${transfer.approvedBy.name} ${transfer.approvedBy.lastName}`,
+    ]);
+  }
+
+  let infoY = y + 10;
+
+  info.forEach(([label, value]) => {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text(`${label}:`, margin, infoY);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(String(value || "—"), margin + 50, infoY);
+
+    infoY += 6;
+  });
+
+  // TABLE
+  autoTable(doc, {
+    startY: infoY + 8,
+    head: [["Código", "Producto", "Cantidad"]],
+    body: (transfer.items || []).map((i) => [
+      i.product?.barcode || "—",
+      i.product?.name || "—",
+      i.quantity,
+    ]),
+    styles: {
+      fontSize: 9,
+      cellPadding: 3,
+    },
+    headStyles: {
+      fillColor: theme.primary,
+      textColor: 255,
+    },
+    alternateRowStyles: {
+      fillColor: theme.light,
+    },
+  });
+
+  const finalY = doc.lastAutoTable.finalY || infoY + 10;
+
+  // 🔥 GLOSA (DEBAJO DE TABLA)
+  let glosaY = finalY + 10;
+
+  if (transfer.glosa) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.text("Glosa:", margin, glosaY);
+
+    doc.setFont("helvetica", "normal");
+
+    const splitGlosa = doc.splitTextToSize(
+      transfer.glosa,
+      pageWidth - margin * 2,
+    );
+
+    doc.text(splitGlosa, margin, glosaY + 5);
+
+    glosaY += splitGlosa.length * 5 + 10;
+  }
+  // 🔥 MOTIVO DE RECHAZO (SOLO SI ES REJECTED)
+  if (transfer.status === "REJECTED" && transfer.rejectionReason) {
+    let motivoY = glosaY;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(...theme.error);
+    doc.text("Motivo de rechazo:", margin, motivoY);
+
+    doc.setFont("helvetica", "normal");
+
+    const splitMotivo = doc.splitTextToSize(
+      transfer.rejectionReason,
+      pageWidth - margin * 2,
+    );
+
+    doc.text(splitMotivo, margin, motivoY + 5);
+
+    // ajustar cursor
+    glosaY += splitMotivo.length * 5 + 10;
+  }
+  // FIRMA SECTION
+  const firmaY = glosaY + 15;
+  const colWidth = (pageWidth - margin * 2) / 3;
+
+  const firma = (text, x) => {
+    doc.setDrawColor(...theme.gray);
+    doc.line(x, firmaY, x + 55, firmaY);
+
+    doc.setFontSize(9);
+    doc.text(text, x + 27, firmaY + 6, { align: "center" });
   };
 
-  drawFirma("Supervisor", margin);
-  drawFirma("Encargado Almacen de Origen", margin + colSpacing);
-  drawFirma("Encargado Almacen de Destino", margin + colSpacing * 2);
+  firma("Supervisor", margin);
+
+  firma(
+    "Encargado Almacen Origen",
+    margin + colWidth,
+  );
+
+  firma("Encargado Almacén Destino", margin + colWidth * 2);
 
   return doc.output("blob");
 };

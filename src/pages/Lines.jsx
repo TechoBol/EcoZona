@@ -170,7 +170,7 @@ export default function Lines() {
 
       <div
         style={{
-          height: 500,
+          height: "75vh",
           background: "white",
           borderRadius: 14,
         }}

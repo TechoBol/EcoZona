@@ -5,6 +5,7 @@ import {
   getMyTransfersService,
   approveTransferService,
   rejectTransferService,
+  updateTransferService,
 } from "../services/transferService";
 import { useNavigate } from "react-router-dom";
 import { generarTransferPDF } from "../components/pdf/generarTransferPDF";
@@ -31,7 +32,7 @@ export const useTransfers = () => {
   const createTransfer = async (values: any) => {
     const transfer = await createTransferService(values, token);
     const pdfBlob = generarTransferPDF(transfer);
-    console.log("aca")
+    console.log("aca");
     // 3. Convertir a File
     const file = new File([pdfBlob], `transfer_${transfer.transferCode}.pdf`, {
       type: "application/pdf",
@@ -41,13 +42,16 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
-    socket.emit("newTranfer", "Nueva transferencia " + transfer.transferCode +"  solicitada");
+    socket.emit(
+      "newTranfer",
+      "Nueva transferencia " + transfer.transferCode + "  solicitada",
+    );
     await getTransfers();
   };
 
   const approveTransfer = async (id: number, fromLocationId: number) => {
     const transfer = await approveTransferService(id, fromLocationId, token);
-    console.log(transfer)
+    console.log(transfer);
     const pdfBlob = generarTransferPDF(transfer);
 
     // 3. Convertir a File
@@ -59,19 +63,57 @@ export const useTransfers = () => {
     const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
 
     console.log("PDF Transfer subido:", pdfKey);
-    socket.emit("newTranfer", "Transferencia " + transfer.transferCode +" aprobada");
+    socket.emit(
+      "newTranfer",
+      "Transferencia " + transfer.transferCode + " aprobada",
+    );
     await getTransfers();
   };
 
-  const rejectTransfer = async (id: number) => {
-    const transfer = await rejectTransferService(id, token);
-    socket.emit("newTranfer", "Transferencia " + transfer.transferCode +"  rechazada");
+  const rejectTransfer = async (id: number , reason : string) => {
+    const transfer = await rejectTransferService(id,reason, token);
+    const pdfBlob = generarTransferPDF(transfer);
+
+    // 3. Convertir a File
+    const file = new File([pdfBlob], `transfer_${transfer.transferCode}.pdf`, {
+      type: "application/pdf",
+    });
+
+    // 4. Subir a S3
+    const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
+
+    console.log("PDF Transfer subido:", pdfKey);
+    socket.emit(
+      "newTranfer",
+      "Transferencia " + transfer.transferCode + "  rechazada",
+    );
     await getTransfers();
+  };
+
+  const updateTransfer = async (id: number, values: any) => {
+    const transfer = await updateTransferService(id, values, token);
+    const pdfBlob = generarTransferPDF(transfer);
+    console.log("aca");
+    // 3. Convertir a File
+    const file = new File([pdfBlob], `transfer_${transfer.transferCode}.pdf`, {
+      type: "application/pdf",
+    });
+
+    // 4. Subir a S3
+    const pdfKey = await uploadPDFTranfer(file, transfer.transferCode);
+
+    console.log("PDF Transfer subido:", pdfKey);
+    socket.emit(
+      "newTranfer",
+      "Transferencia " + transfer.transferCode + " aprobada",
+    );
+    await getTransfers();
+    return transfer;
   };
 
   useEffect(() => {
     socket.on("transfer", (mensaje) => {
-      notificationToast(mensaje)
+      notificationToast(mensaje);
       setTransferNotification(true);
       getTransfers();
     });
@@ -90,6 +132,7 @@ export const useTransfers = () => {
   );
   return {
     data,
+    updateTransfer,
     createTransfer,
     goToTransfer,
     approveTransfer,

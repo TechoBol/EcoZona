@@ -14,9 +14,19 @@ import {
   GroupButton,
   TotalBar,
   TotalText,
+  DetailButton,
+  DetailPopoverCard,
+  DetailPopoverTitle,
+  DetailPopoverTable,
+  DetailPopoverHead,
+  DetailPopoverRow,
+  DetailMuted,
 } from "../components/ui/Kardex";
 
 import { DataGrid } from "@mui/x-data-grid";
+import { ChevronDown } from "lucide-react";
+import Popover from "@mui/material/Popover";
+import { usePermissions } from "../hooks/usePermissions";
 
 export default function Kardex() {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -24,7 +34,33 @@ export default function Kardex() {
   const [rawRows, setRawRows] = useState([]);
   const [groupBy, setGroupBy] = useState("");
 
+  const [detailAnchor, setDetailAnchor] = useState(null);
+  const [selectedDetailRow, setSelectedDetailRow] = useState(null);
+  const { canManageKardexUtil } = usePermissions();
   const round = (value) => Number(value.toFixed(2));
+
+  // helpers
+  const formatBs = (value) =>
+    `Bs ${Number(value || 0).toLocaleString("es-BO", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  const getLastFinalPrice = (item) => {
+    const details = item.details || [];
+    if (details.length > 0) {
+      const lastDetail = details[details.length - 1];
+      return Number(lastDetail.finalPrice || item.finalPrice || 0);
+    }
+    return Number(item.finalPrice || 0);
+  };
+  const handleOpenDetail = (event, row) => {
+    setDetailAnchor(event.currentTarget);
+    setSelectedDetailRow(row);
+  };
+  const handleCloseDetail = () => {
+    setDetailAnchor(null);
+    setSelectedDetailRow(null);
+  };
 
   const rows = useMemo(() => {
     ////////////////////////////////////////////////////////////
@@ -32,19 +68,42 @@ export default function Kardex() {
     ////////////////////////////////////////////////////////////
 
     if (!groupBy) {
-      return rawRows.map((item) => ({
-        id: item.id,
+      return rawRows.map((item) => {
+        const quantity = Number(item.quantity || 0);
+        const price = Number(item.price || 0);
+        const finalPrice = getLastFinalPrice(item);
 
-        name: item.product,
+        const utilityUnit = finalPrice - price;
+        const utilityTotal = utilityUnit * quantity;
 
-        quantity: Number(item.quantity || 0),
+        return {
+          id: item.id,
 
-        subtotal: Number(item.subtotal || 0),
+          name: item.product,
 
-        discount: Number(item.discount || 0),
+          quantity,
 
-        total: Number(item.total || 0),
-      }));
+          quantityDetail: item.quantityDetail || "",
+
+          price,
+
+          finalPrice,
+
+          utility: utilityUnit,
+
+          utilityTotal,
+
+          subtotal: Number(item.subtotal || 0),
+
+          subtotalDetail: item.subtotalDetail || "",
+
+          discount: Number(item.discount || 0),
+
+          total: Number(item.total || 0),
+
+          details: item.details || [],
+        };
+      });
     }
 
     ////////////////////////////////////////////////////////////
@@ -53,12 +112,154 @@ export default function Kardex() {
 
     const grouped = {};
 
+    ////////////////////////////////////////////////////////////
+    // 🔥 VENDEDORES
+    ////////////////////////////////////////////////////////////
+
+    if (groupBy === "seller") {
+      rawRows.forEach((item) => {
+        (item.sellers || []).forEach((seller) => {
+          const sellerName = seller.name || "Sin vendedor";
+
+          if (!grouped[sellerName]) {
+            grouped[sellerName] = {
+              id: `seller-${sellerName}`,
+
+              name: sellerName,
+
+              quantity: 0,
+
+              subtotal: 0,
+
+              discount: 0,
+
+              total: 0,
+            };
+          }
+
+          grouped[sellerName].quantity += Number(seller.quantity || 0);
+
+          grouped[sellerName].subtotal = round(
+            grouped[sellerName].subtotal + Number(seller.subtotal || 0),
+          );
+
+          grouped[sellerName].discount = round(
+            grouped[sellerName].discount + Number(seller.discount || 0),
+          );
+
+          grouped[sellerName].total = round(
+            grouped[sellerName].total + Number(seller.total || 0),
+          );
+        });
+      });
+
+      return Object.values(grouped);
+    }
+
+    ////////////////////////////////////////////////////////////
+    // 🔥 FECHAS
+    ////////////////////////////////////////////////////////////
+
+    if (groupBy === "date") {
+      rawRows.forEach((item) => {
+        (item.dates || []).forEach((dateItem) => {
+          const date = dateItem.date || "Sin fecha";
+
+          if (!grouped[date]) {
+            grouped[date] = {
+              id: `date-${date}`,
+
+              name: date,
+
+              quantity: 0,
+
+              subtotal: 0,
+
+              discount: 0,
+
+              total: 0,
+            };
+          }
+
+          grouped[date].quantity += Number(dateItem.quantity || 0);
+
+          grouped[date].subtotal = round(
+            grouped[date].subtotal + Number(dateItem.subtotal || 0),
+          );
+
+          grouped[date].discount = round(
+            grouped[date].discount + Number(dateItem.discount || 0),
+          );
+
+          grouped[date].total = round(
+            grouped[date].total + Number(dateItem.total || 0),
+          );
+        });
+      });
+
+      return Object.values(grouped).sort((a, b) => {
+        const [dayA, monthA, yearA] = a.name.split("/");
+
+        const [dayB, monthB, yearB] = b.name.split("/");
+
+        const dateA = new Date(`${yearA}-${monthA}-${dayA}`);
+
+        const dateB = new Date(`${yearB}-${monthB}-${dayB}`);
+
+        return dateB - dateA;
+      });
+    }
+
+    ////////////////////////////////////////////////////////////
+    // 🔥 MESES
+    ////////////////////////////////////////////////////////////
+
+    if (groupBy === "month") {
+      rawRows.forEach((item) => {
+        (item.dates || []).forEach((dateItem) => {
+          const month = dateItem.month || "Sin mes";
+
+          if (!grouped[month]) {
+            grouped[month] = {
+              id: `month-${month}`,
+
+              name: month,
+
+              quantity: 0,
+
+              subtotal: 0,
+
+              discount: 0,
+
+              total: 0,
+            };
+          }
+
+          grouped[month].quantity += Number(dateItem.quantity || 0);
+
+          grouped[month].subtotal = round(
+            grouped[month].subtotal + Number(dateItem.subtotal || 0),
+          );
+
+          grouped[month].discount = round(
+            grouped[month].discount + Number(dateItem.discount || 0),
+          );
+
+          grouped[month].total = round(
+            grouped[month].total + Number(dateItem.total || 0),
+          );
+        });
+      });
+
+      return Object.values(grouped);
+    }
+
+    ////////////////////////////////////////////////////////////
+    // 🔥 AGRUPACIONES NORMALES
+    ////////////////////////////////////////////////////////////
+
     rawRows.forEach((item) => {
       const groupValue = item[groupBy] || "Sin grupo";
-
-      //////////////////////////////////////////////////////////
-      // 🔥 INIT
-      //////////////////////////////////////////////////////////
 
       if (!grouped[groupValue]) {
         grouped[groupValue] = {
@@ -76,10 +277,6 @@ export default function Kardex() {
         };
       }
 
-      //////////////////////////////////////////////////////////
-      // 🔥 ACUMULAR
-      //////////////////////////////////////////////////////////
-
       grouped[groupValue].quantity += Number(item.quantity || 0);
 
       grouped[groupValue].subtotal = round(
@@ -94,10 +291,6 @@ export default function Kardex() {
         grouped[groupValue].total + Number(item.total || 0),
       );
     });
-
-    ////////////////////////////////////////////////////////////
-    // 🔥 RETURN
-    ////////////////////////////////////////////////////////////
 
     return Object.values(grouped);
   }, [rawRows, groupBy]);
@@ -121,6 +314,14 @@ export default function Kardex() {
     return Number((totalGeneral - totalDiscount).toFixed(2));
   }, [totalGeneral, totalDiscount]);
 
+  const totalUtility = useMemo(() => {
+    return Number(
+      rows
+        .reduce((acc, item) => acc + Number(item.utilityTotal || 0), 0)
+        .toFixed(2),
+    );
+  }, [rows]);
+
   const firstColumnTitle =
     groupBy === "seller"
       ? "Vendedor"
@@ -130,10 +331,14 @@ export default function Kardex() {
       ? "Marca"
       : groupBy === "branch"
       ? "Sucursal"
+      : groupBy === "date"
+      ? "Fecha"
+      : groupBy === "month"
+      ? "Mes"
       : "Producto";
 
   const columns = useMemo(() => {
-    return [
+    const columns = [
       {
         field: "name",
         headerName: firstColumnTitle,
@@ -150,44 +355,263 @@ export default function Kardex() {
               gap: 4,
             }}
           >
-            <div style={{ fontSize: 14, color: "#111827", lineHeight: 1.4 }}>
+            <div
+              style={{
+                fontSize: 14,
+                color: "#111827",
+                lineHeight: 1.4,
+              }}
+            >
               {String(params.value).toUpperCase()}
             </div>
           </div>
         ),
       },
+
       {
         field: "quantity",
         headerName: "Cantidad",
-        width: 160,
-        type: "number",
+        width: 140,
         sortable: true,
         renderCell: (params) => (
-          <div style={{ fontSize: 14, color: "#111827", width: "100%" }}>
-            {params.value}
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              lineHeight: 1.3,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#111827",
+              }}
+            >
+              {params.row.quantity}
+            </div>
           </div>
         ),
       },
+    ];
+
+    if (groupBy === "") {
+      if (canManageKardexUtil) {
+        columns.push(
+          {
+            field: "price",
+            headerName: "Costo unit.",
+            width: 140,
+            sortable: true,
+            renderCell: (params) => (
+              <div
+                style={{
+                  fontSize: 14,
+                  color: "#64748b",
+                  width: "100%",
+                }}
+              >
+                {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+              </div>
+            ),
+          },
+
+          {
+            field: "finalPrice",
+            headerName: "Precio Venta",
+            width: 160,
+            sortable: true,
+            renderCell: (params) => (
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#111827",
+                }}
+              >
+                {formatBs(params.value)}
+              </div>
+            ),
+          },
+
+          {
+            field: "utility",
+            headerName: "Utilidad",
+            width: 160,
+            sortable: true,
+            renderCell: (params) => (
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: "#64748b",
+                }}
+              >
+                {formatBs(params.value)}
+              </div>
+            ),
+          },
+
+          {
+            field: "utilityPercent",
+            headerName: "% Utilidad",
+            width: 150,
+            sortable: true,
+            valueGetter: (_, row) => {
+              const cost = Number(row.price || 0);
+              const sale = Number(row.finalPrice || 0);
+
+              if (cost === 0) return 0;
+
+              return ((sale - cost) / cost) * 100;
+            },
+            renderCell: (params) => {
+              const value = Number(params.value || 0);
+
+              let color = "#dc2626"; // rojo
+
+              if (value >= 80) {
+                color = "#16a34a"; // verde
+              } else if (value >= 30) {
+                color = "#ca8a04"; // amarillo
+              }
+
+              return (
+                <div
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    color,
+                  }}
+                >
+                  {`${value.toLocaleString("es-BO", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}%`}
+                </div>
+              );
+            },
+          },
+          {
+            field: "utilityTotal",
+            headerName: "Utilidad Total",
+            width: 180,
+            sortable: true,
+            renderCell: (params) => (
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: 14,
+                  fontWeight: 700,
+                  
+                }}
+              >
+                {formatBs(params.value)}
+              </div>
+            ),
+          },
+        );
+      } else {
+        // Usuarios sin permiso solo ven precio de venta
+        columns.push({
+          field: "finalPrice",
+          headerName: "Precio Venta",
+          width: 160,
+          sortable: true,
+          renderCell: (params) => (
+            <div
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                fontSize: 14,
+                fontWeight: 700,
+                color: "#111827",
+              }}
+            >
+              {formatBs(params.value)}
+            </div>
+          ),
+        });
+      }
+
+      columns.push({
+        field: "details",
+        headerName: "Detalle",
+        width: 160,
+        sortable: false,
+        renderCell: (params) => {
+          const details = params.row.details || [];
+
+          if (details.length <= 1) {
+            return <DetailMuted>Sin desglose</DetailMuted>;
+          }
+
+          return (
+            <DetailButton
+              type="button"
+              onClick={(event) => handleOpenDetail(event, params.row)}
+            >
+              {details.length} precios
+              <ChevronDown size={15} />
+            </DetailButton>
+          );
+        },
+      });
+    }
+
+    columns.push(
       {
         field: "subtotal",
         headerName: "Subtotal",
-        width: 210,
-        type: "number",
+        width: 150,
         sortable: true,
         renderCell: (params) => (
-          <div style={{ fontSize: 14, color: "#64748b", width: "100%" }}>
-            {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`}
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              lineHeight: 1.3,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 14,
+                color: "#64748b",
+                fontWeight: 700,
+              }}
+            >
+              {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`}
+            </div>
           </div>
         ),
       },
+
       {
         field: "discount",
         headerName: "Descuento",
-        width: 180,
-        type: "number",
+        width: 150,
         sortable: true,
         renderCell: (params) => (
           <div
@@ -206,11 +630,11 @@ export default function Kardex() {
           </div>
         ),
       },
+
       {
         field: "total",
-        headerName: "Total Neto",
-        width: 210,
-        type: "number",
+        headerName: "Total",
+        width: 150,
         sortable: true,
         renderCell: (params) => (
           <div
@@ -228,7 +652,9 @@ export default function Kardex() {
           </div>
         ),
       },
-    ];
+    );
+
+    return columns;
   }, [groupBy, firstColumnTitle]);
 
   return (
@@ -254,19 +680,32 @@ export default function Kardex() {
             $active={groupBy === "line"}
             onClick={() => setGroupBy("line")}
           >
-            Líneas
+            Marcas
           </GroupButton>
           <GroupButton
             $active={groupBy === "brand"}
             onClick={() => setGroupBy("brand")}
           >
-            Marcas
+            Líneas
           </GroupButton>
           <GroupButton
             $active={groupBy === "branch"}
             onClick={() => setGroupBy("branch")}
           >
             Sucursales
+          </GroupButton>
+          <GroupButton
+            $active={groupBy === "date"}
+            onClick={() => setGroupBy("date")}
+          >
+            Fechas
+          </GroupButton>
+
+          <GroupButton
+            $active={groupBy === "month"}
+            onClick={() => setGroupBy("month")}
+          >
+            Meses
           </GroupButton>
         </GroupBar>
 
@@ -319,9 +758,76 @@ export default function Kardex() {
               "& .MuiTablePagination-root": { fontSize: 14 },
             }}
           />
+          <Popover
+            open={Boolean(detailAnchor)}
+            anchorEl={detailAnchor}
+            onClose={handleCloseDetail}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            transformOrigin={{
+              vertical: "top",
+              horizontal: "left",
+            }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 1,
+                  borderRadius: "16px",
+                  boxShadow: "none",
+                  background: "transparent",
+                },
+              },
+            }}
+          >
+            {selectedDetailRow && (
+              <DetailPopoverCard>
+                <DetailPopoverTitle>Detalle de venta</DetailPopoverTitle>
+
+                <DetailPopoverTable>
+                  <DetailPopoverHead>
+                    <span>Precio venta</span>
+                    <span style={{ textAlign: "center" }}>Cantidad</span>
+                    <span style={{ textAlign: "right" }}>Subtotal</span>
+                  </DetailPopoverHead>
+
+                  {[...(selectedDetailRow.details || [])]
+                    .reverse()
+                    .map((detail, index) => (
+                      <DetailPopoverRow key={index}>
+                        <span>{formatBs(detail.finalPrice)}</span>
+
+                        <span style={{ textAlign: "center" }}>
+                          {detail.quantity}
+                        </span>
+
+                        <span style={{ textAlign: "right" }}>
+                          {formatBs(detail.subtotal)}
+                        </span>
+                      </DetailPopoverRow>
+                    ))}
+                </DetailPopoverTable>
+              </DetailPopoverCard>
+            )}
+          </Popover>
         </TableWrapper>
 
         <TotalBar>
+          {groupBy === "" && canManageKardexUtil && (
+            <>
+              <TotalText $bold style={{ color: "#16a34a" }}>
+                Total Utilidad
+              </TotalText>
+
+              <TotalText style={{ color: "#16a34a", fontWeight: 700 }}>
+                {`Bs ${totalUtility.toLocaleString("es-BO", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}`}
+              </TotalText>
+            </>
+          )}
           <TotalText $bold>Subtotal</TotalText>
           <TotalText>
             {`Bs ${totalGeneral.toLocaleString("es-BO", {
@@ -335,6 +841,7 @@ export default function Kardex() {
               <TotalText $bold style={{ color: "#dc2626" }}>
                 Descuentos
               </TotalText>
+
               <TotalText style={{ color: "#dc2626" }}>
                 {`- Bs ${totalDiscount.toLocaleString("es-BO", {
                   minimumFractionDigits: 2,
@@ -345,8 +852,9 @@ export default function Kardex() {
           )}
 
           <TotalText $bold style={{ color: "#0f766e" }}>
-            Total Neto
+            Total
           </TotalText>
+
           <TotalText style={{ color: "#0f766e", fontWeight: 700 }}>
             {`Bs ${totalNeto.toLocaleString("es-BO", {
               minimumFractionDigits: 2,
