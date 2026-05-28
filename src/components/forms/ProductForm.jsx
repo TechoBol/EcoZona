@@ -317,7 +317,7 @@ function ProductForm() {
                       letterSpacing: "0.05em",
                     }}
                   >
-                    Precio compra
+                    Costo Unit.
                   </label>
                   <Input
                     type="number"
