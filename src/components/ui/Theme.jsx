@@ -7,10 +7,12 @@ export const theme = {
     surface: "#F3F4F6",
 
     text: "#0D0D0D",
-    textSecondary: "gray",
+    textSecondary: "#6B7280",
 
-    success: "#69d584",
+    success: "#319B34",
     error: "#dc655f",
     warning: "#F59E0B",
+
+    border: "#E5E7EB",
   },
 };

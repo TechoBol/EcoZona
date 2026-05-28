@@ -21,7 +21,7 @@ export const useCart = () => {
     try {
       setLoading(true);
       setError(null);
-      console.log(data)
+
       const payload = {
         ...data,
         locationId: location.id,
@@ -31,7 +31,6 @@ export const useCart = () => {
       const venta = await createSaleService(payload, token);
 
       // 2. Generar PDF
-      console.log(venta.code)
       const pdfBlob = generarPDF(
         venta.sale,
         fullName,
@@ -50,8 +49,6 @@ export const useCart = () => {
 
       // 4. Subir a S3
       const pdfKey = await uploadPDF(file, venta.sale.code);
-
-      console.log("PDF subido:", pdfKey);
       return venta.sale;
     } catch (err) {
       setError("Error creando venta");

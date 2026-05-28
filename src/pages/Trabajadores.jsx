@@ -189,7 +189,7 @@ export default function Employees() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </FiltersRow>
-        <div style={{ height: 500, background: "white", borderRadius: 12 }}>
+        <div style={{ height: "70vh", background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={rows}
             columns={columns}

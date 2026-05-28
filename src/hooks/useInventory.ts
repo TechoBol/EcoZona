@@ -93,7 +93,7 @@ const useInventory = () => {
   // SOCKET — usa mutate en vez de fetchProducts
   //////////////////////////////
   useEffect(() => {
-    const handleRefresh = () => mutate();  // Revalida el caché de SWR
+    const handleRefresh = () => mutate();
 
     const handleTransfer = (mensaje: string) => {
       notificationToast(mensaje);

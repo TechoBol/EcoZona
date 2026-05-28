@@ -573,7 +573,7 @@ export default function Sales() {
           />
         </FiltersRow>
 
-        <div style={{ height: 500, background: "white", borderRadius: 12 }}>
+        <div style={{ height: "65vh", background: "white", borderRadius: 12 }}>
           <DataGrid
             rows={filteredRows}
             columns={columns}
