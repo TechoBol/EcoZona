@@ -82,7 +82,7 @@ export default function Kardex() {
           name: item.product,
 
           quantity,
-
+          barcode: item.barcode,
           quantityDetail: item.quantityDetail || "",
 
           price,
@@ -338,7 +338,38 @@ export default function Kardex() {
       : "Producto";
 
   const columns = useMemo(() => {
-    const columns = [
+    const columns = [];
+
+    ////////////////////////////////////////////////////////
+    // CODIGO DE BARRAS SOLO EN GENERAL
+    ////////////////////////////////////////////////////////
+
+    if (groupBy === "") {
+      columns.push({
+        field: "barcode",
+        headerName: "Código",
+        width: 180,
+        sortable: true,
+        renderCell: (params) => (
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              fontWeight: 600,
+            }}
+          >
+            {params.value || "-"}
+          </div>
+        ),
+      });
+    }
+
+    ////////////////////////////////////////////////////////
+    // NOMBRE
+    ////////////////////////////////////////////////////////
+
+    columns.push(
       {
         field: "name",
         headerName: firstColumnTitle,
@@ -362,7 +393,7 @@ export default function Kardex() {
                 lineHeight: 1.4,
               }}
             >
-              {String(params.value).toUpperCase()}
+              {String(params.value || "").toUpperCase()}
             </div>
           </div>
         ),
@@ -395,7 +426,11 @@ export default function Kardex() {
           </div>
         ),
       },
-    ];
+    );
+
+    ////////////////////////////////////////////////////////
+    // COLUMNAS DE GENERAL
+    ////////////////////////////////////////////////////////
 
     if (groupBy === "") {
       if (canManageKardexUtil) {
@@ -472,20 +507,17 @@ export default function Kardex() {
               const cost = Number(row.price || 0);
               const sale = Number(row.finalPrice || 0);
 
-              if (cost === 0) return 0;
+              if (!cost) return 0;
 
               return ((sale - cost) / cost) * 100;
             },
             renderCell: (params) => {
               const value = Number(params.value || 0);
 
-              let color = "#dc2626"; // rojo
+              let color = "#dc2626";
 
-              if (value >= 80) {
-                color = "#16a34a"; // verde
-              } else if (value >= 30) {
-                color = "#ca8a04"; // amarillo
-              }
+              if (value >= 80) color = "#16a34a";
+              else if (value >= 30) color = "#ca8a04";
 
               return (
                 <div
@@ -498,14 +530,12 @@ export default function Kardex() {
                     color,
                   }}
                 >
-                  {`${value.toLocaleString("es-BO", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}%`}
+                  {value.toFixed(2)}%
                 </div>
               );
             },
           },
+
           {
             field: "utilityTotal",
             headerName: "Utilidad Total",
@@ -519,7 +549,6 @@ export default function Kardex() {
                   alignItems: "center",
                   fontSize: 14,
                   fontWeight: 700,
-                  
                 }}
               >
                 {formatBs(params.value)}
@@ -528,7 +557,6 @@ export default function Kardex() {
           },
         );
       } else {
-        // Usuarios sin permiso solo ven precio de venta
         columns.push({
           field: "finalPrice",
           headerName: "Precio Venta",
@@ -576,87 +604,30 @@ export default function Kardex() {
       });
     }
 
+    ////////////////////////////////////////////////////////
+    // TOTALES
+    ////////////////////////////////////////////////////////
+
     columns.push(
       {
         field: "subtotal",
         headerName: "Subtotal",
         width: 150,
-        sortable: true,
-        renderCell: (params) => (
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              lineHeight: 1.3,
-            }}
-          >
-            <div
-              style={{
-                fontSize: 14,
-                color: "#64748b",
-                fontWeight: 700,
-              }}
-            >
-              {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}`}
-            </div>
-          </div>
-        ),
       },
-
       {
         field: "discount",
         headerName: "Descuento",
         width: 150,
-        sortable: true,
-        renderCell: (params) => (
-          <div
-            style={{
-              fontSize: 14,
-              color: Number(params.value) > 0 ? "#dc2626" : "#9ca3af",
-              width: "100%",
-            }}
-          >
-            {Number(params.value) > 0
-              ? `- Bs ${Number(params.value).toLocaleString("es-BO", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}`
-              : "—"}
-          </div>
-        ),
       },
-
       {
         field: "total",
         headerName: "Total",
         width: 150,
-        sortable: true,
-        renderCell: (params) => (
-          <div
-            style={{
-              fontSize: 14,
-              fontWeight: 700,
-              color: "#0f766e",
-              width: "100%",
-            }}
-          >
-            {`Bs ${Number(params.value || 0).toLocaleString("es-BO", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}`}
-          </div>
-        ),
       },
     );
 
     return columns;
-  }, [groupBy, firstColumnTitle]);
-
+  }, [groupBy, firstColumnTitle, canManageKardexUtil]);
   return (
     <Wrapper>
       <Header>
