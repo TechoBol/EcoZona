@@ -19,7 +19,7 @@ export const useAmazonS3 = () => {
     }),
   );
 
-  const uploadPDF = async (file: File, code:string) => {
+  const uploadPDF = async (file: File, code: string) => {
     const key = `ECOZONA/SALES/${code}.pdf`;
 
     const signedUrl = await getSignedUrl(
@@ -29,7 +29,7 @@ export const useAmazonS3 = () => {
         Key: key,
         ContentType: "application/pdf",
       }),
-      { expiresIn: 3600 }
+      { expiresIn: 3600 },
     );
 
     const response = await fetch(signedUrl, {
@@ -44,8 +44,32 @@ export const useAmazonS3 = () => {
 
     return key;
   };
+  const uploadPDFCruce = async (file: File, code: string) => {
+    const key = `ECOZONA/AJUSTE/${code}.pdf`;
 
-  const uploadPDFTranfer = async (file: File, code:string) => {
+    const signedUrl = await getSignedUrl(
+      s3Ref.current,
+      new PutObjectCommand({
+        Bucket: import.meta.env.VITE_S3_BUCKET_NAME,
+        Key: key,
+        ContentType: "application/pdf",
+      }),
+      { expiresIn: 3600 },
+    );
+
+    const response = await fetch(signedUrl, {
+      method: "PUT",
+      body: file,
+      headers: {
+        "Content-Type": "application/pdf",
+      },
+    });
+
+    if (!response.ok) throw new Error("Error al subir el PDF");
+
+    return key;
+  };
+  const uploadPDFTranfer = async (file: File, code: string) => {
     const key = `ECOZONA/TRANSFERENCIAS/${code}.pdf`;
 
     const signedUrl = await getSignedUrl(
@@ -55,7 +79,7 @@ export const useAmazonS3 = () => {
         Key: key,
         ContentType: "application/pdf",
       }),
-      { expiresIn: 3600 }
+      { expiresIn: 3600 },
     );
 
     const response = await fetch(signedUrl, {
@@ -109,5 +133,11 @@ export const useAmazonS3 = () => {
     return signedUrl;
   };
 
-  return { uploadProductImage, getFileUrl, uploadPDF,uploadPDFTranfer };
+  return {
+    uploadProductImage,
+    getFileUrl,
+    uploadPDF,
+    uploadPDFTranfer,
+    uploadPDFCruce,
+  };
 };

@@ -542,3 +542,55 @@ export const ChipX = styled.span`
   opacity: 0.7;
   margin-left: 2px;
 `;
+
+export const ExportButtonWrapper = styled.div`
+  position: relative;
+`;
+
+export const ExportMenu = styled.div`
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: ${theme.colors.background};
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+  overflow: hidden;
+  min-width: 160px;
+  z-index: 50;
+  animation: popIn 0.18s ease both;
+
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+`;
+
+export const ExportMenuItem = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: ${theme.colors.text};
+  background: transparent;
+  border: none;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+
+  &:first-child {
+    border-top: none;
+  }
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  svg {
+    color: ${theme.colors.textSecondary};
+    flex-shrink: 0;
+  }
+`;

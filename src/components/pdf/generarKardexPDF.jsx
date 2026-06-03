@@ -177,7 +177,6 @@ export const generarKardexPDF = ({
 
       body: grupo.kardex.map((row) => {
         let codigo = "";
-
         if (row.detalle?.includes("VENTA")) {
           codigo = row.detalle.replace("VENTA ", "");
         }
@@ -186,15 +185,24 @@ export const generarKardexPDF = ({
           codigo = row.codigoMovimiento || "";
         }
 
+        if (row.detalle?.includes("AJUSTE")) {
+          codigo = row.detalle
+            .replace("AJUSTE INVENTARIO ENTRADA", "")
+            .replace("AJUSTE INVENTARIO SALIDA", "")
+            .trim();
+        }
+
         return [
           codigo,
 
           dayjs(row.fecha).format("DD/MM/YYYY"),
 
-          row.detalle?.includes("VENTA")
+          row.detalle?.startsWith("VENTA ")
             ? "CONSUMIDOR FINAL"
             : row.detalle?.includes("TRANSFERENCIA")
             ? "TRANSFERENCIA"
+            : row.detalle?.includes("AJUSTE INVENTARIO")
+            ? "AJUSTE INVENTARIO"
             : "",
 
           row.detalle.replace(/→/g, "A"),

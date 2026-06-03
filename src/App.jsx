@@ -16,8 +16,7 @@ import InventoryFisico from "./pages/InventoryFisico";
 import Kardex from "./pages/Kardex";
 import NewImportation from "./pages/NewImportation";
 import Importation from "./pages/Importation";
-
-
+import CruceInventario from "./pages/CurceInventario";
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -43,10 +42,14 @@ function App() {
             <Route path="/reports" element={<Sales />} />
             <Route path="/transfer" element={<Transfers />} />
             <Route path="/lines" element={<Lines />} />
-            <Route path="/inventory-fisico-valorado" element={<InventoryFisico />} />
+            <Route
+              path="/inventory-fisico-valorado"
+              element={<InventoryFisico />}
+            />
             <Route path="/kardex" element={<Kardex />} />
             <Route path="/importation" element={<Importation />} />
             <Route path="/new-importation" element={<NewImportation />} />
+            <Route path="/cross-inventory" element={<CruceInventario />} />
           </>
         )}
 
