@@ -6,48 +6,22 @@ import { useLoginStore } from "../components/store/loginStore";
 import { useSucursales } from "../hooks/useSucursales";
 import { theme } from "../components/ui/Theme";
 import { generarInventoryPDF } from "../components/pdf/generarInventoryPDF";
+import { generarInventoryExcel } from "../components/excel/generarInventoryExcel";
 
 import {
-  Wrapper,
-  Header,
-  SearchBar,
-  SearchInput,
-  ScanButton,
-  ScrollArea,
-  ProductsGrid,
-  Card,
-  ProductImage,
-  ProductInfo,
-  ProductName,
-  ProductCode,
-  ProductFooter,
-  Price,
-  Stock,
-  BottomActions,
-  PDFButton,
-  AddProductButton,
-  ScannerButton,
-  AddToCartButton,
-  ScannerOverlay,
-  FilterRow,
-  FilterChip,
-  FilterChipActive,
-  ChevronSep,
-  ChipX,
-  TitleButton,
-  TitleText,
-  BranchDropdown,
-  BranchDropdownHeader,
-  BranchDropdownItem,
-  BranchDot,
-  Overlay,
+  Wrapper, Header, SearchBar, SearchInput, ScanButton, ScrollArea,
+  ProductsGrid, Card, ProductImage, ProductInfo, ProductName, ProductCode,
+  ProductFooter, Price, Stock, BottomActions, PDFButton, AddProductButton,
+  ScannerButton, AddToCartButton, ScannerOverlay, FilterRow, FilterChip,
+  FilterChipActive, ChevronSep, ChipX, TitleButton, TitleText, BranchDropdown,
+  BranchDropdownHeader, BranchDropdownItem, BranchDot, Overlay,
+  ExportButtonWrapper, ExportMenu, ExportMenuItem,
 } from "../components/ui/Inventory";
 
-import { ScanLine, Plus, FileText, ChevronDown, Check } from "lucide-react";
+import { ScanLine, Plus, FileText, ChevronDown, Check, Grid } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
-
 import BarcodeReader from "../components/Scanner/BarcodeReader";
 import MultiBarCodeReader from "../components/Scanner/MultiBarCodeReader";
 import { usePermissions } from "../hooks/usePermissions";
@@ -56,26 +30,21 @@ function Inventory() {
   const navigate = useNavigate();
   const { location, role, level } = useLoginStore();
   const { data: locations } = useSucursales();
-
   const addToCart = useCartStore((state) => state.addToCart);
-
-  const { products, search, setSearch, onFilterTextBoxChanged } =
-    useInventory();
+  const { products, search, setSearch, onFilterTextBoxChanged } = useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [scanCartMode, setScanCartMode] = useState(false);
   const [scannedProducts, setScannedProducts] = useState([]);
   const [lastScanned, setLastScanned] = useState({ code: "", time: 0 });
-
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [openLocations, setOpenLocations] = useState(false);
-
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedBrand, setSelectedBrand] = useState(null);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   const permissions = usePermissions();
   const canChangeLocation = permissions.isAdmin;
@@ -86,7 +55,6 @@ function Inventory() {
   ///////////////////////////////////////
   useEffect(() => {
     if (!locations.length) return;
-
     if (canChangeLocation) {
       const defaultLoc = locations.find((l) => l.id === 1) || locations[0];
       setSelectedLocation(defaultLoc);
@@ -119,12 +87,7 @@ function Inventory() {
   const handleMouseDown = (product) => {
     if (!permissions.canEditProduct || !isWarehouse) return;
     pressTimer.current = setTimeout(() => {
-      navigate("/product/edit", {
-        state: {
-          product,
-          locationId: selectedLocation?.id,
-        },
-      });
+      navigate("/product/edit", { state: { product, locationId: selectedLocation?.id } });
     }, 700);
   };
 
@@ -133,12 +96,7 @@ function Inventory() {
   const handleTouchStart = (product) => {
     if (!permissions.canEditProduct || !isWarehouse) return;
     pressTimer.current = setTimeout(() => {
-      navigate("/product/edit", {
-        state: {
-          product,
-          locationId: selectedLocation?.id,
-        },
-      });
+      navigate("/product/edit", { state: { product, locationId: selectedLocation?.id } });
     }, 700);
   };
 
@@ -150,11 +108,7 @@ function Inventory() {
   ///////////////////////////////////////
   const getStock = (product) => {
     if (!selectedLocation) return 0;
-
-    const found = product.inventories?.find(
-      (inv) => inv.locationId === selectedLocation.id,
-    );
-
+    const found = product.inventories?.find((inv) => inv.locationId === selectedLocation.id);
     return found?.quantity || 0;
   };
 
@@ -164,8 +118,7 @@ function Inventory() {
   const toggleSelect = (product) => {
     setSelectedProducts((prev) => {
       const exists = prev.some((p) => p.id === product.id);
-      if (exists) return prev.filter((p) => p.id !== product.id);
-      return [...prev, product];
+      return exists ? prev.filter((p) => p.id !== product.id) : [...prev, product];
     });
   };
 
@@ -188,24 +141,18 @@ function Inventory() {
   };
 
   ///////////////////////////////////////
-  // IMÁGENES — carga paralela + cache
+  // IMÁGENES
   ///////////////////////////////////////
   const [imageUrls, setImageUrls] = useState({});
-  const urlCacheRef = useRef({}); // cache persistente entre renders
+  const urlCacheRef = useRef({});
   const { getFileUrl } = useAmazonS3();
   const loadingImagesRef = useRef(new Set());
 
   useEffect(() => {
     if (!products.length) return;
-
-    // Paralelo — todos los requests al mismo tiempo
     const loadImages = async () => {
-      const newProducts = products.filter(
-        (p) => p.imageUrl && !imageUrls[p.id],
-      );
-
+      const newProducts = products.filter((p) => p.imageUrl && !imageUrls[p.id]);
       if (!newProducts.length) return;
-
       const results = await Promise.all(
         newProducts.map(async (product) => {
           try {
@@ -214,14 +161,10 @@ function Inventory() {
           } catch {
             return [product.id, null];
           }
-        }),
+        })
       );
-      setImageUrls((prev) => ({
-        ...prev,
-        ...Object.fromEntries(results),
-      }));
+      setImageUrls((prev) => ({ ...prev, ...Object.fromEntries(results) }));
     };
-
     loadImages();
   }, [products]);
 
@@ -230,7 +173,7 @@ function Inventory() {
   ///////////////////////////////////////
   const lines = [
     ...new Map(
-      products.filter((p) => p.line).map((p) => [p.line.id, p.line]),
+      products.filter((p) => p.line).map((p) => [p.line.id, p.line])
     ).values(),
   ];
 
@@ -245,13 +188,7 @@ function Inventory() {
     .sort((a, b) => {
       const stockA = getStock(a);
       const stockB = getStock(b);
-
-      // Mayor stock arriba
-      if (stockB !== stockA) {
-        return stockB - stockA;
-      }
-
-      // Luego orden alfabético
+      if (stockB !== stockA) return stockB - stockA;
       return a.name.localeCompare(b.name);
     });
 
@@ -263,108 +200,82 @@ function Inventory() {
   const handleBarcodeDetected = (code) => {
     const cleanCode = code.trim();
     const now = Date.now();
-
     if (lastScanned.code === cleanCode && now - lastScanned.time < 1200) return;
-
     setLastScanned({ code: cleanCode, time: now });
 
     const found = products.find(
-      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase(),
+      (p) => p.barcode?.toLowerCase() === cleanCode.toLowerCase()
     );
-
     if (!found) return;
 
     playBeep();
 
-    // MODO CARRITO
     if (scanCartMode) {
       const stock = getStock(found);
-
-      // VALIDACIÓN SOLO AQUÍ
       if (stock === 0) {
         const now = Date.now();
-
-        if (
-          lastErrorRef.current.code !== cleanCode ||
-          now - lastErrorRef.current.time > 1500
-        ) {
+        if (lastErrorRef.current.code !== cleanCode || now - lastErrorRef.current.time > 1500) {
           lastErrorRef.current = { code: cleanCode, time: now };
         }
-
         setErrorProductId(found.id);
         setTimeout(() => setErrorProductId(null), 400);
-
         return;
       }
-
       setScannedProducts((prev) => {
         const exists = prev.find((p) => p.id === found.id);
-
         if (exists) {
-          if ((exists.quantity || 1) >= stock) {
-            return prev;
-          }
+          if ((exists.quantity || 1) >= stock) return prev;
           return prev.map((p) =>
-            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p,
+            p.id === found.id ? { ...p, quantity: (p.quantity || 1) + 1 } : p
           );
         }
-
         return [...prev, { ...found, quantity: 1 }];
       });
-
       return;
     }
 
-    // MODO BÚSQUEDA (SIN VALIDAR STOCK)
     setSearch(cleanCode);
     setScanning(false);
   };
 
-  const openSearchScanner = () => {
-    setScanCartMode(false);
-    setScanning(true);
-  };
-
-  const openCartScanner = () => {
-    setScannedProducts([]);
-    setScanCartMode(true);
-    setScanning(true);
-  };
-
-  const closeScanner = () => {
-    setScanning(false);
-    setScanCartMode(false);
-  };
+  const openSearchScanner = () => { setScanCartMode(false); setScanning(true); };
+  const openCartScanner = () => { setScannedProducts([]); setScanCartMode(true); setScanning(true); };
+  const closeScanner = () => { setScanning(false); setScanCartMode(false); };
 
   ///////////////////////////////////////
   // CONFIRMAR ESCANEO → CARRITO
   ///////////////////////////////////////
-  const totalScannedUnits = scannedProducts.reduce(
-    (sum, p) => sum + (p.quantity || 1),
-    0,
-  );
+  const totalScannedUnits = scannedProducts.reduce((sum, p) => sum + (p.quantity || 1), 0);
 
   const handleConfirmScanned = () => {
     scannedProducts.forEach((product) => {
-      for (let i = 0; i < (product.quantity || 1); i++) {
-        addToCart(product);
-      }
+      for (let i = 0; i < (product.quantity || 1); i++) addToCart(product);
     });
     setScannedProducts([]);
     closeScanner();
     navigate("/cart");
   };
 
-  const handleGeneratePDF = () => {
-    if (!products?.length) return;
-
-    const sortedProducts = [...products].sort((a, b) => {
+  ///////////////////////////////////////
+  // EXPORTAR
+  ///////////////////////////////////////
+  const getSortedProducts = () =>
+    [...products].sort((a, b) => {
       const barcodeA = a.barcode?.toLowerCase() ?? "";
       const barcodeB = b.barcode?.toLowerCase() ?? "";
       return barcodeA.localeCompare(barcodeB);
     });
 
-    generarInventoryPDF(sortedProducts, selectedLocation, getStock);
+  const handleGeneratePDF = () => {
+    if (!products?.length) return;
+    generarInventoryPDF(getSortedProducts(), selectedLocation, getStock);
+    setExportMenuOpen(false);
+  };
+
+  const handleGenerateExcel = () => {
+    if (!products?.length) return;
+    generarInventoryExcel(getSortedProducts(), selectedLocation, getStock);
+    setExportMenuOpen(false);
   };
 
   ///////////////////////////////////////
@@ -375,18 +286,32 @@ function Inventory() {
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
 
-        <TitleButton
-          onClick={() => canChangeLocation && setOpenLocations(!openLocations)}
-        >
+        <TitleButton onClick={() => canChangeLocation && setOpenLocations(!openLocations)}>
           <TitleText>{selectedLocation?.name || "Inventario"}</TitleText>
-          {canChangeLocation && (
-            <ChevronDown size={14} color={theme.colors.textSecondary} />
-          )}
+          {canChangeLocation && <ChevronDown size={14} color={theme.colors.textSecondary} />}
         </TitleButton>
 
-        <PDFButton onClick={handleGeneratePDF}>
-          <FileText size={18} />
-        </PDFButton>
+        <ExportButtonWrapper>
+          <PDFButton onClick={() => setExportMenuOpen((v) => !v)}>
+            <FileText size={18} />
+          </PDFButton>
+          {exportMenuOpen && (
+            <>
+              <Overlay onClick={() => setExportMenuOpen(false)} />
+              <ExportMenu>
+                <ExportMenuItem onClick={handleGeneratePDF}>
+                  <FileText size={14} />
+                  Exportar PDF
+                </ExportMenuItem>
+                <ExportMenuItem onClick={handleGenerateExcel}>
+                  <Grid size={14} />
+                  Exportar Excel
+                </ExportMenuItem>
+              </ExportMenu>
+            </>
+          )}
+        </ExportButtonWrapper>
+
         {permissions.canCreateProduct && isWarehouse && (
           <AddProductButton onClick={() => navigate("/product")}>
             <Plus size={18} />
@@ -397,31 +322,22 @@ function Inventory() {
           <>
             <Overlay onClick={() => setOpenLocations(false)} />
             <BranchDropdown>
-              {/* Almacen Central primero, sin header */}
               {locations
                 .filter((l) => l.id === 1)
                 .map((loc) => (
                   <BranchDropdownItem
                     key={loc.id}
                     $active={selectedLocation?.id === loc.id}
-                    onClick={() => {
-                      setSelectedLocation(loc);
-                      setOpenLocations(false);
-                    }}
+                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
                     style={{ borderTop: "none" }}
                   >
                     <BranchDot $active={selectedLocation?.id === loc.id} />
                     {loc.name}
                     {selectedLocation?.id === loc.id && (
-                      <Check
-                        size={13}
-                        style={{ marginLeft: "auto", color: "#1D9E75" }}
-                      />
+                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
                     )}
                   </BranchDropdownItem>
                 ))}
-
-              {/* Sucursales */}
               <BranchDropdownHeader>Sucursales</BranchDropdownHeader>
               {locations
                 .filter((l) => l.id !== 1)
@@ -429,18 +345,12 @@ function Inventory() {
                   <BranchDropdownItem
                     key={loc.id}
                     $active={selectedLocation?.id === loc.id}
-                    onClick={() => {
-                      setSelectedLocation(loc);
-                      setOpenLocations(false);
-                    }}
+                    onClick={() => { setSelectedLocation(loc); setOpenLocations(false); }}
                   >
                     <BranchDot $active={selectedLocation?.id === loc.id} />
                     {loc.name}
                     {selectedLocation?.id === loc.id && (
-                      <Check
-                        size={13}
-                        style={{ marginLeft: "auto", color: "#1D9E75" }}
-                      />
+                      <Check size={13} style={{ marginLeft: "auto", color: "#1D9E75" }} />
                     )}
                   </BranchDropdownItem>
                 ))}
@@ -449,7 +359,6 @@ function Inventory() {
         )}
       </Header>
 
-      {/* SEARCH */}
       <SearchBar>
         <SearchInput
           placeholder="Buscar producto..."
@@ -461,44 +370,30 @@ function Inventory() {
         </ScanButton>
       </SearchBar>
 
-      {/* FILTRO BREADCRUMB */}
       <FilterRow>
         {!selectedLine ? (
           lines.map((line, i) => (
             <FilterChip
               key={line.id}
               style={{ animationDelay: `${i * 45}ms` }}
-              onClick={() => {
-                setSelectedLine(line);
-                setSelectedBrand(null);
-                setSearch("");
-              }}
+              onClick={() => { setSelectedLine(line); setSelectedBrand(null); setSearch(""); }}
             >
               {line.name}
             </FilterChip>
           ))
         ) : (
           <>
-            <FilterChipActive
-              onClick={() => {
-                setSelectedLine(null);
-                setSelectedBrand(null);
-              }}
-            >
+            <FilterChipActive onClick={() => { setSelectedLine(null); setSelectedBrand(null); }}>
               {selectedLine.name}
               <ChipX>✕</ChipX>
             </FilterChipActive>
-
             <ChevronSep>›</ChevronSep>
-
             {brands.map((brand, i) => (
               <FilterChip
                 key={brand}
                 $active={selectedBrand === brand}
                 style={{ animationDelay: `${i * 45}ms` }}
-                onClick={() =>
-                  setSelectedBrand(selectedBrand === brand ? null : brand)
-                }
+                onClick={() => setSelectedBrand(selectedBrand === brand ? null : brand)}
               >
                 {brand}
                 {selectedBrand === brand && <ChipX>✕</ChipX>}
@@ -508,7 +403,6 @@ function Inventory() {
         )}
       </FilterRow>
 
-      {/* PRODUCTOS */}
       <ScrollArea>
         <ProductsGrid>
           {visibleProducts.map((product) => {
@@ -528,9 +422,7 @@ function Inventory() {
               >
                 <ProductImage
                   key={imageUrls[product.id]}
-                  src={
-                    imageUrls[product.id] || "https://via.placeholder.com/150"
-                  }
+                  src={imageUrls[product.id] || "https://via.placeholder.com/150"}
                   loading="lazy"
                   decoding="async"
                 />
@@ -548,7 +440,6 @@ function Inventory() {
         </ProductsGrid>
       </ScrollArea>
 
-      {/* FOOTER */}
       <BottomActions>
         {permissions.canSell && (
           <>
@@ -562,15 +453,11 @@ function Inventory() {
         )}
       </BottomActions>
 
-      {/* MODAL SCANNER */}
       {scanning && (
         <ScannerOverlay>
           {scanCartMode ? (
             <>
-              <MultiBarCodeReader
-                onDetected={handleBarcodeDetected}
-                onClose={closeScanner}
-              />
+              <MultiBarCodeReader onDetected={handleBarcodeDetected} onClose={closeScanner} />
               {scannedProducts.length > 0 && (
                 <div
                   onClick={handleConfirmScanned}
@@ -591,16 +478,12 @@ function Inventory() {
                     whiteSpace: "nowrap",
                   }}
                 >
-                  Añadir {totalScannedUnits} producto
-                  {totalScannedUnits !== 1 ? "s" : ""} al carrito
+                  Añadir {totalScannedUnits} producto{totalScannedUnits !== 1 ? "s" : ""} al carrito
                 </div>
               )}
             </>
           ) : (
-            <BarcodeReader
-              onDetected={handleBarcodeDetected}
-              onClose={closeScanner}
-            />
+            <BarcodeReader onDetected={handleBarcodeDetected} onClose={closeScanner} />
           )}
         </ScannerOverlay>
       )}
