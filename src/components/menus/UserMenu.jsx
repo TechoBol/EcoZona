@@ -12,6 +12,7 @@ import {
   Tag,
   FileInput,
   BarChart3,
+  Cross,
 } from "lucide-react";
 import { MdOutlineInventory2, MdOutlineInventory } from "react-icons/md";
 import {
@@ -36,6 +37,7 @@ import { useInventoryFisico } from "../../hooks/useInventoryFisico";
 import { useNotificationStore } from "../store/notificationStore";
 import { useKardex } from "../../hooks/useKardex";
 import { useImportation } from "../../hooks/useImportation";
+import { useInventoryCross } from "../../hooks/useInventoryCross";
 
 const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
@@ -51,6 +53,7 @@ const UserMenu = () => {
   const { goToInventoryFisico } = useInventoryFisico();
   const { goToKardex } = useKardex();
   const { goToImportation } = useImportation();
+  const { goToCrosses } = useInventoryCross();
 
   const hasTransferNotification = useNotificationStore(
     (state) => state.hasTransferNotification,
@@ -115,14 +118,13 @@ const UserMenu = () => {
             <Menu.Items
               style={{
                 position: "absolute",
-                top: "calc(100% + 10px)",
+                top: "25px",
                 left: 0,
                 minWidth: "220px",
                 zIndex: 100,
               }}
             >
               <Dropdown>
-
                 {/* INFO USUARIO */}
                 <UserInfo>
                   <Name>{fullName}</Name>
@@ -130,8 +132,20 @@ const UserMenu = () => {
                 </UserInfo>
 
                 {/* ── PRINCIPAL ── */}
-                <div style={{ borderTop: "1px solid #e5e7eb", margin: "4px 0" }} />
-                <p style={{ fontSize: 10, color: "#9ca3af", padding: "2px 12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Principal</p>
+                <div
+                  style={{ borderTop: "1px solid #e5e7eb", margin: "4px 0" }}
+                />
+                <p
+                  style={{
+                    fontSize: 10,
+                    color: "#9ca3af",
+                    padding: "2px 12px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Principal
+                </p>
 
                 <Menu.Item>
                   {({ active }) => (
@@ -145,7 +159,10 @@ const UserMenu = () => {
                 {permissions.canManageInventaryFisico && (
                   <Menu.Item>
                     {({ active }) => (
-                      <MenuOption onClick={goToInventoryFisico} $active={active}>
+                      <MenuOption
+                        onClick={goToInventoryFisico}
+                        $active={active}
+                      >
                         <MdOutlineInventory size={16} />
                         <span>Inventario Fisico - Valorado</span>
                       </MenuOption>
@@ -172,61 +189,94 @@ const UserMenu = () => {
                       </MenuOption>
                     )}
                   </Menu.Item>
-
                 )}
 
                 {/* ── ADMINISTRACIÓN ── */}
                 {(permissions.canManageBranches ||
                   permissions.canManageEmployees ||
                   permissions.canManageRoles) && (
-                    <>
-                      <div style={{ borderTop: "1px solid #e5e7eb", margin: "4px 0" }} />
-                      <p style={{ fontSize: 10, color: "#9ca3af", padding: "2px 12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Administración</p>
+                  <>
+                    <div
+                      style={{
+                        borderTop: "1px solid #e5e7eb",
+                        margin: "4px 0",
+                      }}
+                    />
+                    <p
+                      style={{
+                        fontSize: 10,
+                        color: "#9ca3af",
+                        padding: "2px 12px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      Administración
+                    </p>
 
-                      {permissions.canManageBranches && (
-                        <Menu.Item>
-                          {({ active }) => (
-                            <MenuOption onClick={goToSucursales} $active={active}>
-                              <Building2 size={16} />
-                              <span>Administrar sucursales</span>
-                            </MenuOption>
-                          )}
-                        </Menu.Item>
-                      )}
+                    {permissions.canManageBranches && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <MenuOption onClick={goToSucursales} $active={active}>
+                            <Building2 size={16} />
+                            <span>Administrar sucursales</span>
+                          </MenuOption>
+                        )}
+                      </Menu.Item>
+                    )}
 
-                      {permissions.canManageEmployees && (
-                        <Menu.Item>
-                          {({ active }) => (
-                            <MenuOption onClick={goToTrabajadores} $active={active}>
-                              <Users size={16} />
-                              <span>Administrar trabajadores</span>
-                            </MenuOption>
-                          )}
-                        </Menu.Item>
-                      )}
+                    {permissions.canManageEmployees && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <MenuOption
+                            onClick={goToTrabajadores}
+                            $active={active}
+                          >
+                            <Users size={16} />
+                            <span>Administrar trabajadores</span>
+                          </MenuOption>
+                        )}
+                      </Menu.Item>
+                    )}
 
-                      {permissions.canManageRoles && (
-                        <Menu.Item>
-                          {({ active }) => (
-                            <MenuOption onClick={goToRoles} $active={active}>
-                              <Users size={16} />
-                              <span>Administrar roles</span>
-                            </MenuOption>
-                          )}
-                        </Menu.Item>
-                      )}
-                    </>
-                  )}
+                    {permissions.canManageRoles && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <MenuOption onClick={goToRoles} $active={active}>
+                            <Users size={16} />
+                            <span>Administrar roles</span>
+                          </MenuOption>
+                        )}
+                      </Menu.Item>
+                    )}
+                  </>
+                )}
 
                 {/* ── OPERACIONES ── */}
                 {(permissions.canManageTransfers ||
                   permissions.canManageLines ||
                   permissions.canManageSales) && (
-                    <>
-                      <div style={{ borderTop: "1px solid #e5e7eb", margin: "4px 0" }} />
-                      <p style={{ fontSize: 10, color: "#9ca3af", padding: "2px 12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Operaciones</p>
+                  <>
+                    <div
+                      style={{
+                        borderTop: "1px solid #e5e7eb",
+                        margin: "4px 0",
+                      }}
+                    />
+                    <p
+                      style={{
+                        fontSize: 10,
+                        color: "#9ca3af",
+                        padding: "2px 12px",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.05em",
+                      }}
+                    >
+                      Operaciones
+                    </p>
 
-                      {permissions.canManageTransfers && (
+                    {permissions.canManageTransfers && (
+                      <>
                         <Menu.Item>
                           {({ active }) => (
                             <MenuOption
@@ -242,7 +292,8 @@ const UserMenu = () => {
                                 <span
                                   style={{
                                     fontSize: 10,
-                                    background: "var(--color-background-danger)",
+                                    background:
+                                      "var(--color-background-danger)",
                                     color: "var(--color-text-danger)",
                                     borderRadius: 99,
                                     padding: "1px 7px",
@@ -255,34 +306,50 @@ const UserMenu = () => {
                             </MenuOption>
                           )}
                         </Menu.Item>
-                      )}
-
-                      {permissions.canManageLines && (
                         <Menu.Item>
                           {({ active }) => (
-                            <MenuOption onClick={goToLines} $active={active}>
-                              <Tag size={16} />
-                              <span>Administrar marcas</span>
+                            <MenuOption
+                              onClick={() => {
+                                goToCrosses();
+                              }}
+                              $active={active}
+                            >
+                              <Cross size={16} />
+                              <span>Ajuste de inventario</span>
                             </MenuOption>
                           )}
                         </Menu.Item>
-                      )}
+                      </>
+                    )}
 
-                      {permissions.canManageSales && (
-                        <Menu.Item>
-                          {({ active }) => (
-                            <MenuOption onClick={goToSales} $active={active}>
-                              <ShoppingCart size={16} />
-                              <span>Administrar ventas</span>
-                            </MenuOption>
-                          )}
-                        </Menu.Item>
-                      )}
-                    </>
-                  )}
+                    {permissions.canManageLines && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <MenuOption onClick={goToLines} $active={active}>
+                            <Tag size={16} />
+                            <span>Administrar marcas</span>
+                          </MenuOption>
+                        )}
+                      </Menu.Item>
+                    )}
+
+                    {permissions.canManageSales && (
+                      <Menu.Item>
+                        {({ active }) => (
+                          <MenuOption onClick={goToSales} $active={active}>
+                            <ShoppingCart size={16} />
+                            <span>Administrar ventas</span>
+                          </MenuOption>
+                        )}
+                      </Menu.Item>
+                    )}
+                  </>
+                )}
 
                 {/* ── LOGOUT ── */}
-                <div style={{ borderTop: "1px solid #e5e7eb", margin: "4px 0" }} />
+                <div
+                  style={{ borderTop: "1px solid #e5e7eb", margin: "4px 0" }}
+                />
                 <Menu.Item>
                   {({ active }) => (
                     <LogoutButton onClick={logOut} $active={active}>
@@ -291,7 +358,6 @@ const UserMenu = () => {
                     </LogoutButton>
                   )}
                 </Menu.Item>
-
               </Dropdown>
             </Menu.Items>
           </Transition>
