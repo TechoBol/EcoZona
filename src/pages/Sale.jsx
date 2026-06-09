@@ -163,8 +163,9 @@ export default function Sales() {
   const rows = (data || []).map((sale) => ({
     ...sale,
     date: sale.date ? new Date(sale.date) : null,
-    employeeName: `${sale.employee?.name || ""} ${sale.employee?.lastName || ""
-      }`.trim(),
+    employeeName: `${sale.employee?.name || ""} ${
+      sale.employee?.lastName || ""
+    }`.trim(),
     locationName: sale.location?.name || "",
   }));
 
@@ -349,11 +350,11 @@ export default function Sales() {
                     ...(paymentDisabled
                       ? disabledStyle
                       : {
-                        cursor: "pointer",
-                        background: isQr ? "#E1F5EE" : "#E6F1FB",
-                        color: isQr ? "#0F6E56" : "#0C447C",
-                        border: `1px solid ${isQr ? "#1D9E75" : "#185FA5"}`,
-                      }),
+                          cursor: "pointer",
+                          background: isQr ? "#E1F5EE" : "#E6F1FB",
+                          color: isQr ? "#0F6E56" : "#0C447C",
+                          border: `1px solid ${isQr ? "#1D9E75" : "#185FA5"}`,
+                        }),
                   }}
                   onMouseEnter={(e) => {
                     if (!paymentDisabled) e.currentTarget.style.opacity = "0.7";
@@ -394,11 +395,11 @@ export default function Sales() {
                       ...(dateDisabled
                         ? disabledStyle
                         : {
-                          cursor: "pointer",
-                          background: "#FFF4E5",
-                          color: "#9A5B00",
-                          border: "1px solid #F0B15A",
-                        }),
+                            cursor: "pointer",
+                            background: "#FFF4E5",
+                            color: "#9A5B00",
+                            border: "1px solid #F0B15A",
+                          }),
                     }}
                     onMouseEnter={(e) => {
                       if (!dateDisabled) e.currentTarget.style.opacity = "0.7";
@@ -438,19 +439,69 @@ export default function Sales() {
                     ...(isCancelled
                       ? disabledStyle
                       : {
-                        cursor: "pointer",
-                        background: "#FDECEC",
-                        color: "#C62828",
-                        border: "1px solid #E57373",
-                      }),
+                          cursor: "pointer",
+                          background: "#FDECEC",
+                          color: "#C62828",
+                          border: "1px solid #E57373",
+                        }),
+                  }}
+                  onClick={async () => {
+                    if (isCancelled) {
+                      errorToast("La venta ya fue cancelada");
+                      return;
+                    }
+
+                    const result = await Swal.fire({
+                      title: "¿Cancelar venta?",
+                      html: `
+                    <p style="font-size:14px;color:#666">
+                      La venta <b>${params.row.code}</b>
+                      será cancelada.
+                    </p>
+                  `,
+                      input: "textarea",
+                      inputLabel: "Motivo de cancelación",
+                      inputPlaceholder: "Escriba el motivo...",
+                      inputAttributes: {
+                        maxlength: 250,
+                      },
+                      showCancelButton: true,
+                      confirmButtonText: "Cancelar venta",
+                      cancelButtonText: "Volver",
+                      confirmButtonColor: "#d32f2f",
+                      reverseButtons: true,
+
+                      inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                          return "Debe ingresar un motivo";
+                        }
+
+                        if (value.trim().length < 5) {
+                          return "Motivo demasiado corto";
+                        }
+
+                        return null;
+                      },
+                    });
+
+                    if (!result.isConfirmed) return;
+
+                    try {
+                      const cancel = await cancelSale(params.row.id, result.value);
+                      await regeneratePdf(cancel);
+                      await refresh();
+                      socket.emit("newCartProduct", []);
+                      successToast("Venta cancelada correctamente");
+                    } catch (error) {
+                      errorToast(error.message);
+                    }
                   }}
                 >
                   {isCancelled ? "🔒" : "❌"} Anular
                 </span>
               </>
             )}
-          </div >
-
+          </div>
         );
       },
     },
