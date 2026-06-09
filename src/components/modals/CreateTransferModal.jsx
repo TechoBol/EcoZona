@@ -710,7 +710,7 @@ export default function CreateTransferModal({
             }}
           >
             {locations
-              .filter((l) => l.id !== location?.id)
+              .filter((l) => l.id !== form.origenId)
               .map((l) => (
                 <div
                   key={l.id}
