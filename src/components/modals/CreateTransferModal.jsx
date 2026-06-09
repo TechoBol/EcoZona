@@ -34,17 +34,25 @@ export default function CreateTransferModal({
   const [sending, setSending] = useState(false);
   const isSending = useRef(false); // bloqueo instant00e1neo sin esperar re-render
   const [showDestinations, setShowDestinations] = useState(false);
+  const [showOrigen, setShowOrigen] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
   const [destDropdownPos, setDestDropdownPos] = useState({
     top: 0,
     left: 0,
     width: 0,
   });
+  const [oriDropdownPos, setOriDropdownPos] = useState({
+    top: 0,
+    left: 0,
+    width: 0,
+  });
 
   const inputRefs = useRef({});
+  const origenTriggerRef = useRef(null);
   const destinationTriggerRef = useRef(null);
   const productDropdownRef = useRef(null);
   const destDropdownRef = useRef(null);
+  const oriDropdownRef = useRef(null);
 
   const permissions = usePermissions();
   const viewTo = permissions.isAdmin;
@@ -69,6 +77,15 @@ export default function CreateTransferModal({
       ) {
         setShowDestinations(false);
       }
+      if (
+        showOrigen &&
+        oriDropdownRef.current &&
+        !oriDropdownRef.current.contains(e.target) &&
+        origenTriggerRef.current &&
+        !origenTriggerRef.current.contains(e.target)
+      ) {
+        setShowOrigen(false);
+      }
     };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
@@ -79,9 +96,15 @@ export default function CreateTransferModal({
   // ── stock ──────────────────────────────────────────────────────────
   const getStock = (product) => {
     if (!product?.inventories) return 0;
+
+    const origenId = Number(form.origenId);
+
+    if (!origenId) return 0;
+
     const found = product.inventories.find(
-      (inv) => inv.locationId === location?.id,
+      (inv) => inv.locationId === origenId,
     );
+
     return found?.quantity || 0;
   };
 
@@ -154,6 +177,17 @@ export default function CreateTransferModal({
     setShowDestinations(true);
   };
 
+  const openOriDropdown = () => {
+    const el = origenTriggerRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    setOriDropdownPos({
+      top: rect.bottom + 4,
+      left: rect.left,
+      width: rect.width,
+    });
+    setShowOrigen(true);
+  };
   // ── validación ─────────────────────────────────────────────────────
   const isValid = viewTo
     ? form.destinationId &&
@@ -192,6 +226,7 @@ export default function CreateTransferModal({
 
     try {
       await onSubmit({
+        origenId: form.origenId,
         destinationId: form.destinationId,
         glosa: glosaResult.value,
         items: form.items.map((i) => ({
@@ -302,15 +337,21 @@ export default function CreateTransferModal({
                   Desde
                 </div>
                 <div
+                  ref={origenTriggerRef}
+                  onClick={openOriDropdown}
                   style={{
                     fontWeight: 600,
                     fontSize: "14px",
+                    cursor: "pointer",
+                    color: form.origenId ? "#1a1a1a" : "#999",
                     whiteSpace: "nowrap",
                     overflow: "hidden",
                     textOverflow: "ellipsis",
+                    userSelect: "none",
                   }}
                 >
-                  {location?.name}
+                  {locations.find((l) => l.id === Number(form.origenId))
+                    ?.name || "Seleccionar origen..."}
                 </div>
               </div>
 
@@ -694,6 +735,49 @@ export default function CreateTransferModal({
                   {l.name}
                 </div>
               ))}
+          </div>,
+          document.body,
+        )}
+
+      {showOrigen &&
+        createPortal(
+          <div
+            ref={oriDropdownRef}
+            style={{
+              ...dropdownStyle,
+              top: oriDropdownPos.top,
+              left: oriDropdownPos.left,
+              width: Math.max(destDropdownPos.width, 180),
+            }}
+          >
+            {locations.map((l) => (
+              <div
+                key={l.id}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  setForm({
+                    ...form,
+                    origenId: l.id,
+                  });
+
+                  setShowOrigen(false);
+                }}
+                style={{
+                  padding: "10px 14px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  borderBottom: "1px solid #f5f5f5",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f8f8f8")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+              >
+                {l.name}
+              </div>
+            ))}
           </div>,
           document.body,
         )}
