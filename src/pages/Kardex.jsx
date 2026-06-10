@@ -73,34 +73,27 @@ export default function Kardex() {
         const price = Number(item.price || 0);
         const finalPrice = getLastFinalPrice(item);
 
-        const utilityUnit = finalPrice - price;
-        const utilityTotal = utilityUnit * quantity;
+        const totalCost = quantity * price;
+
+        const utilityTotal = Number(item.subtotal || 0) - totalCost;
+
+        const utilityUnit = quantity > 0 ? utilityTotal / quantity : 0;
 
         return {
           id: item.id,
-
           name: item.product,
-
           quantity,
           barcode: item.barcode,
           quantityDetail: item.quantityDetail || "",
-
           price,
-
+          totalCost,
           finalPrice,
-
           utility: utilityUnit,
-
           utilityTotal,
-
           subtotal: Number(item.subtotal || 0),
-
           subtotalDetail: item.subtotalDetail || "",
-
           discount: Number(item.discount || 0),
-
           total: Number(item.total || 0),
-
           details: item.details || [],
         };
       });
@@ -222,15 +215,10 @@ export default function Kardex() {
           if (!grouped[month]) {
             grouped[month] = {
               id: `month-${month}`,
-
               name: month,
-
               quantity: 0,
-
               subtotal: 0,
-
               discount: 0,
-
               total: 0,
             };
           }
@@ -251,7 +239,31 @@ export default function Kardex() {
         });
       });
 
-      return Object.values(grouped);
+      const monthMap = {
+        ENERO: 0,
+        FEBRERO: 1,
+        MARZO: 2,
+        ABRIL: 3,
+        MAYO: 4,
+        JUNIO: 5,
+        JULIO: 6,
+        AGOSTO: 7,
+        SEPTIEMBRE: 8,
+        OCTUBRE: 9,
+        NOVIEMBRE: 10,
+        DICIEMBRE: 11,
+      };
+
+      return Object.values(grouped).sort((a, b) => {
+        const [monthA, , yearA] = a.name.split(" ");
+        const [monthB, , yearB] = b.name.split(" ");
+
+        const dateA = new Date(Number(yearA), monthMap[monthA.toUpperCase()]);
+
+        const dateB = new Date(Number(yearB), monthMap[monthB.toUpperCase()]);
+
+        return dateB - dateA;
+      });
     }
 
     ////////////////////////////////////////////////////////////
@@ -318,6 +330,14 @@ export default function Kardex() {
     return Number(
       rows
         .reduce((acc, item) => acc + Number(item.utilityTotal || 0), 0)
+        .toFixed(2),
+    );
+  }, [rows]);
+
+  const totalCostGeneral = useMemo(() => {
+    return Number(
+      rows
+        .reduce((acc, item) => acc + Number(item.totalCost || 0), 0)
         .toFixed(2),
     );
   }, [rows]);
@@ -455,7 +475,24 @@ export default function Kardex() {
               </div>
             ),
           },
-
+          {
+            field: "totalCost",
+            headerName: "Costo Total",
+            width: 160,
+            sortable: true,
+            renderCell: (params) => (
+              <div
+                style={{
+                  fontSize: 14,
+                  color: "#64748b",
+                  width: "100%",
+                  fontWeight: 600,
+                }}
+              >
+                {formatBs(params.value)}
+              </div>
+            ),
+          },
           {
             field: "finalPrice",
             headerName: "Precio Venta",
@@ -628,6 +665,15 @@ export default function Kardex() {
 
     return columns;
   }, [groupBy, firstColumnTitle, canManageKardexUtil]);
+
+  console.log({
+    cost: totalCostGeneral,
+    utility: totalUtility,
+    subtotal: totalGeneral,
+    discount: totalDiscount,
+    total: totalNeto,
+  });
+
   return (
     <Wrapper>
       <Header>
@@ -787,11 +833,14 @@ export default function Kardex() {
         <TotalBar>
           {groupBy === "" && canManageKardexUtil && (
             <>
+              <TotalText $bold>Costo Total: </TotalText>
+              <TotalText>{formatBs(totalCostGeneral)}</TotalText>
+
               <TotalText $bold style={{ color: "#16a34a" }}>
-                Total Utilidad
+                Total Utilidad:
               </TotalText>
 
-              <TotalText style={{ color: "#16a34a", fontWeight: 700 }}>
+              <TotalText style={{ color: "#16a34a" }}>
                 {`Bs ${totalUtility.toLocaleString("es-BO", {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2,
