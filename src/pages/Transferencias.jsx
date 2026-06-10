@@ -110,7 +110,7 @@ export default function Transfers() {
   };
 
   const handleViewPDF = async (key) => {
-    const url = await getFileUrl("SUPERSTOCK/TRANSFERENCIAS/" + key + ".pdf");
+    const url = await getFileUrl("ECOZONA/TRANSFERENCIAS/" + key + ".pdf");
     window.open(url, "_blank");
   };
 
