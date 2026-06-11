@@ -17,7 +17,7 @@ export default function ImportationDetailModal({ open, onClose, importation, loa
     const handleExportPDF = () => exportImportationPDF(importation);
 
     return (
-        <ModalOverlay onClick={onClose}>
+        <ModalOverlay>
             <ModalContent onClick={(e) => e.stopPropagation()}>
                 <CloseButton onClick={onClose}>
                     <X size={18} />

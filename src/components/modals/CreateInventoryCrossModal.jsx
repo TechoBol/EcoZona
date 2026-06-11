@@ -220,7 +220,7 @@ export default function CreateInventoryCrossModal({
   };
 
   return (
-    <ModalOverlay onClick={onClose}>
+    <ModalOverlay>
       <ModalContent
         style={{
           width: "700px",

@@ -62,7 +62,7 @@ export default function CreateEmployeeModal({
   if (!open) return null;
 
   return (
-    <ModalOverlay onClick={onClose}>
+    <ModalOverlay>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={onClose}>
           <X size={18} />

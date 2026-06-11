@@ -114,7 +114,7 @@ export default function CreateLineModal({
   if (!open) return null;
 
   return (
-    <ModalOverlay onClick={handleClose}>
+    <ModalOverlay>
       <ModalContent
         onClick={(e) => e.stopPropagation()}
         style={{

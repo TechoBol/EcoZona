@@ -79,7 +79,7 @@ export default function CreateLocationModal({
   if (!open) return null;
 
   return (
-    <ModalOverlay onClick={handleClose}>
+    <ModalOverlay>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <CloseButton onClick={handleClose}>
           <X size={18} />
