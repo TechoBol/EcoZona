@@ -25,7 +25,7 @@ export default function ConfirmDeleteModal({
   if (!open) return null;
 
   return (
-    <ModalOverlay onClick={onClose}>
+    <ModalOverlay>
       <ModalContent onClick={(e) => e.stopPropagation()}>
         <ModalTitle>¿Eliminar sucursal?</ModalTitle>
 
