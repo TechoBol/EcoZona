@@ -87,7 +87,7 @@ export const generarPDFCruce = (cross) => {
       fmtCost(cross.destinationAverageCost),
       fmtStock(cross.destinationStockBefore),
       `+ ${cross.quantity}`,
-      fmtStock(destinationStockAfter),l 
+      fmtStock(destinationStockAfter),
     ],
   ];
 
