@@ -89,7 +89,7 @@ export default function CreateTransferModal({
     };
     document.addEventListener("mousedown", handle);
     return () => document.removeEventListener("mousedown", handle);
-  }, [activeIndex, showDestinations]);
+  }, [activeIndex, showDestinations , showOrigen]);
 
   if (!open) return null;
 
