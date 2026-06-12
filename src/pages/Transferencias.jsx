@@ -175,7 +175,7 @@ export default function Transfers() {
       renderCell: (params) => {
         return (
           <div style={{ display: "flex", gap: "6px" }}>
-            {(view === "all" || isReadOnly) && (
+            
               <PiInfoBold
                 size={20}
                 onClick={() => handleViewDetail(params.row)}
@@ -186,7 +186,6 @@ export default function Transfers() {
                   marginRight: "10px",
                 }}
               />
-            )}
 
             <BsFillFileEarmarkPdfFill
               size={20}
