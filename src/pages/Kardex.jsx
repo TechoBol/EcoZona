@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 
 import UserMenu from "../components/menus/UserMenu";
 import KardexFiltersModal from "../components/modals/KardexFiltersModal";
-
+import { generarVentasPDF } from "../components/pdf/generarKardexVentasPDF";
+import { generarVentasExcel } from "../components/excel/generarKardexVentasExcel";
 import {
   Wrapper,
   Header,
@@ -21,8 +22,9 @@ import {
   DetailPopoverHead,
   DetailPopoverRow,
   DetailMuted,
+  Actions,
 } from "../components/ui/Kardex";
-
+import { Filter, FileSpreadsheet, FileText } from "lucide-react";
 import { DataGrid } from "@mui/x-data-grid";
 import { ChevronDown } from "lucide-react";
 import Popover from "@mui/material/Popover";
@@ -265,7 +267,44 @@ export default function Kardex() {
         return dateB - dateA;
       });
     }
+    ////////////////////////////////////////////////////////////
+    // 🔥 SUCURSALES
+    ////////////////////////////////////////////////////////////
 
+    if (groupBy === "branch") {
+      rawRows.forEach((item) => {
+        (item.branches || []).forEach((branch) => {
+          const branchName = branch.name;
+
+          if (!grouped[branchName]) {
+            grouped[branchName] = {
+              id: `branch-${branchName}`,
+              name: branchName,
+              quantity: 0,
+              subtotal: 0,
+              discount: 0,
+              total: 0,
+            };
+          }
+
+          grouped[branchName].quantity += Number(branch.quantity || 0);
+
+          grouped[branchName].subtotal = round(
+            grouped[branchName].subtotal + Number(branch.subtotal || 0),
+          );
+
+          grouped[branchName].discount = round(
+            grouped[branchName].discount + Number(branch.discount || 0),
+          );
+
+          grouped[branchName].total = round(
+            grouped[branchName].total + Number(branch.total || 0),
+          );
+        });
+      });
+
+      return Object.values(grouped);
+    }
     ////////////////////////////////////////////////////////////
     // 🔥 AGRUPACIONES NORMALES
     ////////////////////////////////////////////////////////////
@@ -678,10 +717,26 @@ export default function Kardex() {
     <Wrapper>
       <Header>
         <UserMenu isOpen={menuOpen} setIsOpen={setMenuOpen} />
-        <Title>Matriz de Ventas</Title>
-        <AddButton onClick={() => setOpenFilters(true)}>Filtros</AddButton>
-      </Header>
 
+        <Title>Matriz de Ventas</Title>
+
+        <Actions>
+          <AddButton onClick={() => setOpenFilters(true)}>
+            <Filter size={18} />
+            Filtros
+          </AddButton>
+
+          <AddButton onClick={() => generarVentasPDF(rawRows)}>
+            <FileText size={20} />
+            PDF
+          </AddButton>
+
+          <AddButton onClick={() => generarVentasExcel(rawRows)}>
+            <FileSpreadsheet size={20} />
+            EXCEL
+          </AddButton>
+        </Actions>
+      </Header>
       <Content>
         <GroupBar>
           <GroupButton $active={groupBy === ""} onClick={() => setGroupBy("")}>

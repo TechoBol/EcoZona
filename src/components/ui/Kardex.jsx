@@ -111,6 +111,10 @@ export const AddButton = styled.button`
   cursor: pointer;
   transition: all 0.2s ease;
 
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
   &:hover {
     opacity: 0.95;
   }
@@ -118,6 +122,13 @@ export const AddButton = styled.button`
   &:active {
     transform: scale(0.97);
   }
+`;
+
+export const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
 `;
 
 //////////////////////////////////////////
