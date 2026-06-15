@@ -181,7 +181,7 @@ const PublicCart = () => {
         if (!item.imageUrl) continue;
         if (imageUrls[item.id]) continue;
 
-        const isS3Key = item.imageUrl.startsWith("SUPERSTOCK/");
+        const isS3Key = item.imageUrl.startsWith("ECOZONA/");
 
         if (!isS3Key) {
           urls[item.id] = null;
