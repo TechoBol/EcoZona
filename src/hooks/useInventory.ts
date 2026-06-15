@@ -6,9 +6,11 @@ import socket from "../services/SocketIOConnection";
 import { useInventoryStore } from "../components/store/inventoryStore";
 import { notificationToast } from "../services/toasts";
 import { useNavigate } from "react-router-dom";
+import { createPublicInventoryLinkService } from "../services/employeeService";
 
-// Fetcher fuera del hook para que SWR lo pueda cachear por key
 const fetcher = ([_, token]: [string, string]) => getProducts(token);
+
+const FRONT_URL = import.meta.env.VITE_FRONT_URL;
 
 const useInventory = () => {
   const { token } = useLoginStore();
@@ -22,18 +24,37 @@ const useInventory = () => {
   //////////////////////////////
   // SWR
   //////////////////////////////
-  const { data: products = [], isLoading, mutate } = useSWR(
-    token ? ["products", token] : null,  // null = no fetches si no hay token
+  const {
+    data: products = [],
+    isLoading,
+    mutate,
+  } = useSWR(
+    token ? ["products", token] : null, // null = no fetches si no hay token
     fetcher,
     {
-      revalidateOnFocus: false,      // No refetch al cambiar de pestaña
-      dedupingInterval: 5000,        // Evita requests duplicados en 5s
+      revalidateOnFocus: false, // No refetch al cambiar de pestaña
+      dedupingInterval: 5000, // Evita requests duplicados en 5s
       onSuccess: (data) => {
-        setProducts(data);           // Sincroniza tu store global igual que antes
+        setProducts(data); // Sincroniza tu store global igual que antes
       },
-    }
+    },
   );
 
+  const handleShare = async () => {
+    try {
+      const response = await createPublicInventoryLinkService(token);
+
+      const shareUrl = `${FRONT_URL}/inventory/${response.token}`;
+      console.log(shareUrl);
+      await navigator.clipboard.writeText(shareUrl);
+
+      notificationToast("Enlace copiado al portapapeles");
+    } catch (error) {
+      console.error(error);
+      notificationToast("Error al generar el enlace");
+    }
+  };
+  
   //////////////////////////////
   // FILTRO
   //////////////////////////////
@@ -46,7 +67,7 @@ const useInventory = () => {
     const filtered = products.filter(
       (product: any) =>
         (product.name || "").toLowerCase().includes(search.toLowerCase()) ||
-        (product.barcode || "").toLowerCase().includes(search.toLowerCase())
+        (product.barcode || "").toLowerCase().includes(search.toLowerCase()),
     );
 
     setFilteredProducts(filtered);
@@ -119,6 +140,7 @@ const useInventory = () => {
     onFilterTextBoxChanged,
     refresh: mutate,
     goToInventory,
+    handleShare,
   };
 };
 
