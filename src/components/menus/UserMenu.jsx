@@ -34,6 +34,7 @@ import { useTransfers } from "../../hooks/useTransfers";
 import { useLines } from "../../hooks/useLine";
 import { usePermissions } from "../../hooks/usePermissions";
 import { useInventoryFisico } from "../../hooks/useInventoryFisico";
+import { useInventoryValorado } from "../../hooks/useInventoryValorado";
 import { useNotificationStore } from "../store/notificationStore";
 import { useKardex } from "../../hooks/useKardex";
 import { useImportation } from "../../hooks/useImportation";
@@ -51,6 +52,7 @@ const UserMenu = () => {
   const { goToTransfer } = useTransfers();
   const { goToLines } = useLines();
   const { goToInventoryFisico } = useInventoryFisico();
+  const { goToInventoryValorado } = useInventoryValorado();
   const { goToKardex } = useKardex();
   const { goToImportation } = useImportation();
   const { goToCrosses } = useInventoryCross();
@@ -157,17 +159,30 @@ const UserMenu = () => {
                 </Menu.Item>
 
                 {permissions.canManageInventaryFisico && (
-                  <Menu.Item>
-                    {({ active }) => (
-                      <MenuOption
-                        onClick={goToInventoryFisico}
-                        $active={active}
-                      >
-                        <MdOutlineInventory size={16} />
-                        <span>Inventario Fisico - Valorado</span>
-                      </MenuOption>
-                    )}
-                  </Menu.Item>
+                  <>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <MenuOption
+                          onClick={goToInventoryValorado}
+                          $active={active}
+                        >
+                          <MdOutlineInventory size={16} />
+                          <span>Inventario Valorado</span>
+                        </MenuOption>
+                      )}
+                    </Menu.Item>
+                    <Menu.Item>
+                      {({ active }) => (
+                        <MenuOption
+                          onClick={goToInventoryFisico}
+                          $active={active}
+                        >
+                          <MdOutlineInventory size={16} />
+                          <span>Inventario Fisico - Valorado</span>
+                        </MenuOption>
+                      )}
+                    </Menu.Item>
+                  </>
                 )}
                 {permissions.canManageKardex && (
                   <Menu.Item>

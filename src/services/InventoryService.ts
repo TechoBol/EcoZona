@@ -28,6 +28,34 @@ export const getProducts = async (token?: string) => {
   }
 };
 
+export const getPublicProducts = async (token?: string) => {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_DOMAIN}/product/get-public-products`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-token": token,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      errorToast("Iniciar sesion de nuevo");
+      return [];
+    }
+
+    const data = await response.json();
+    return data || [];
+
+  } catch (error) {
+    console.error("Error:", error);
+    errorToast("Error de conexión");
+    return [];
+  }
+};
+
 export const inventoryCrossService = async (
   payload: {
     originProductCode: number;
@@ -68,7 +96,7 @@ export const inventoryCrossService = async (
 };
 
 export const getInventoryCrossesService =
-  async (token) => {
+  async (token: string) => {
     const response = await fetch(
       `${import.meta.env.VITE_API_DOMAIN}/product/inventory-cross`,
       {

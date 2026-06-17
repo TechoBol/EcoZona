@@ -55,3 +55,19 @@ export const deleteEmployeeService = async (id: number, token: string) => {
   if (!res.ok) throw new Error("Error al eliminar el empleado");
   return res.json();
 };
+
+export const createPublicInventoryLinkService = async (token: string) => {
+  const res = await fetch(`${API}/employee/public-inventory-links`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-access-token": token,
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Error al generar el enlace público.");
+  }
+
+  return res.json();
+};

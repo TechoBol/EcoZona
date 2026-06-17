@@ -15,9 +15,8 @@ export const Wrapper = styled.div`
 export const Header = styled.div`
   position: relative;
   display: grid;
-  grid-template-columns: auto 1fr auto auto;  // ← 4 columnas
+  grid-template-columns: auto 1fr auto auto; // ← 4 columnas
   align-items: center;
-  gap: 8px;  // espacio entre los botones de la derecha
   padding: 0 10px;
   margin-bottom: 20px;
 `;
@@ -35,13 +34,16 @@ export const TitleButton = styled.div`
 `;
 
 export const TitleText = styled.h1`
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+
   font-family: var(--font-title);
   font-size: 20px;
   font-weight: 700;
   color: ${theme.colors.text};
-  white-space: nowrap;
-  text-overflow: ellipsis;
   margin: 0;
+  white-space: nowrap;
 
   @media (max-width: 400px) {
     font-size: 15px;
@@ -78,7 +80,8 @@ export const BranchDropdownItem = styled.button`
   gap: 10px;
   padding: 10px 14px;
   font-size: 13px;
-  color: ${({ $active }) => ($active ? theme.colors.text : theme.colors.textSecondary)};
+  color: ${({ $active }) =>
+    $active ? theme.colors.text : theme.colors.textSecondary};
   font-weight: ${({ $active }) => ($active ? "600" : "400")};
   background: transparent;
   border: none;
@@ -236,10 +239,10 @@ export const Card = styled.div`
   background: ${theme.colors.background};
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   overflow: hidden;
-  
+
   border: 2px solid
     ${(props) =>
-    props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
+      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -257,11 +260,21 @@ export const Card = styled.div`
   `}
 
   @keyframes shake {
-    0%   { transform: translateX(0); }
-    25%  { transform: translateX(-4px); }
-    50%  { transform: translateX(4px); }
-    75%  { transform: translateX(-3px); }
-    100% { transform: translateX(0); }
+    0% {
+      transform: translateX(0);
+    }
+    25% {
+      transform: translateX(-4px);
+    }
+    50% {
+      transform: translateX(4px);
+    }
+    75% {
+      transform: translateX(-3px);
+    }
+    100% {
+      transform: translateX(0);
+    }
   }
 `;
 
@@ -292,7 +305,7 @@ export const ProductImage = styled.img`
   -webkit-user-select: none;
   user-select: none;
   pointer-events: none;
-    @media (min-width: 768px) {
+  @media (min-width: 768px) {
     height: 200px;
   }
 `;
@@ -380,8 +393,12 @@ export const AddProductButton = styled.button`
   align-items: center;
   cursor: pointer;
 
-  &:active { transform: scale(0.95); }
-  &:hover  { opacity: 0.9; }
+  &:active {
+    transform: scale(0.95);
+  }
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 /* PDF Button */
@@ -397,8 +414,12 @@ export const PDFButton = styled.button`
   align-items: center;
   cursor: pointer;
 
-  &:active { transform: scale(0.95); }
-  &:hover  { opacity: 0.9; }
+  &:active {
+    transform: scale(0.95);
+  }
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 /* Scanner Button */
@@ -415,8 +436,12 @@ export const ScannerButton = styled.button`
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 
-  &:active { transform: scale(0.95); }
-  &:hover  { opacity: 0.9; }
+  &:active {
+    transform: scale(0.95);
+  }
+  &:hover {
+    opacity: 0.9;
+  }
 `;
 
 /* Principal Button */
@@ -436,7 +461,9 @@ export const AddToCartButton = styled.button`
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(61, 68, 201, 0.25);
 
-  &:active { transform: scale(0.98); }
+  &:active {
+    transform: scale(0.98);
+  }
 `;
 
 /* Scanner Overlay */
@@ -500,11 +527,19 @@ export const FilterChip = styled.button`
   transition: background 0.18s, border-color 0.18s, color 0.18s, transform 0.12s;
 
   @keyframes chipIn {
-    from { opacity: 0; transform: translateY(6px) scale(0.92); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+      opacity: 0;
+      transform: translateY(6px) scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
-  &:active { transform: scale(0.95); }
+  &:active {
+    transform: scale(0.95);
+  }
 
   &:hover {
     border-color: ${theme.colors.primary};
@@ -532,8 +567,14 @@ export const ChevronSep = styled.span`
   animation: chevronIn 0.2s ease both;
 
   @keyframes chevronIn {
-    from { opacity: 0; transform: scale(0.7); }
-    to   { opacity: 1; transform: scale(1); }
+    from {
+      opacity: 0;
+      transform: scale(0.7);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
 `;
 
@@ -560,8 +601,14 @@ export const ExportMenu = styled.div`
   animation: popIn 0.18s ease both;
 
   @keyframes popIn {
-    from { opacity: 0; transform: translateY(-6px) scale(0.96); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+      opacity: 0;
+      transform: translateY(-6px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 `;
 
@@ -593,4 +640,26 @@ export const ExportMenuItem = styled.button`
     color: ${theme.colors.textSecondary};
     flex-shrink: 0;
   }
+`;
+
+export const ShareButton = styled.button`
+ width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  color: ${theme.colors.text};
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &:active { transform: scale(0.95); }
+  &:hover  { opacity: 0.9; }
+`;
+export const RightActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
 `;
