@@ -10,6 +10,7 @@ export const usePermissions = () => {
     "Gerente General",
     "Gerente Operaciones",
     "Subgerente Tecnico",
+    "Auditor Interno"
   ];
 
   return {
