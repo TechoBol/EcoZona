@@ -288,3 +288,82 @@ export const ProductSubtotal = styled.span`
   font-weight: 600;
   color: ${theme.colors.text};
 `;
+
+export const CustomerSection = styled.div`
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  background: ${theme.colors.card};
+  border: 1px solid ${theme.colors.border};
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+export const Input = styled.input`
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+
+  border: 1px solid ${theme.colors.border};
+  border-radius: 10px;
+
+  background: ${theme.colors.background};
+  color: ${theme.colors.text};
+
+  font-size: 14px;
+
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+  }
+
+  &::placeholder {
+    color: ${theme.colors.textSecondary};
+  }
+`;
+export const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 90px;
+  resize: vertical;
+
+  padding: 12px;
+
+  border: 1px solid ${theme.colors.border};
+  border-radius: 10px;
+
+  background: ${theme.colors.background};
+  color: ${theme.colors.text};
+
+  font-size: 14px;
+  font-family: inherit;
+
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: ${theme.colors.primary};
+  }
+
+  &::placeholder {
+    color: ${theme.colors.textSecondary};
+  }
+`;
+export const InputGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+export const Label = styled.label`
+  font-size: 13px;
+  font-weight: 600;
+  color: ${theme.colors.textSecondary};
+`;
+export const SectionTitle = styled.h3`
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: ${theme.colors.text};
+`;
