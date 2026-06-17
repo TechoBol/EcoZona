@@ -38,7 +38,7 @@ export const usePermissions = () => {
 
     // 🔥 UTILIDADES KARDEX
     canManageKardexUtil:
-      [1].includes(lvl) && canViewKardexUtilRoles.includes(role),
+      [1,4].includes(lvl) && canViewKardexUtilRoles.includes(role),
 
     // 💰 VENTAS
     canManageSales: [1, 2, 3, 4].includes(lvl),
