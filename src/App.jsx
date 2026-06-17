@@ -16,7 +16,10 @@ import InventoryFisico from "./pages/InventoryFisico";
 import Kardex from "./pages/Kardex";
 import NewImportation from "./pages/NewImportation";
 import Importation from "./pages/Importation";
+import PublicInventory from "./pages/PublicInventory";
+import PublicCart from "./pages/PublicCart";
 import CruceInventario from "./pages/CurceInventario";
+import InventoryValorado from "./pages/InventoryValorado";
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -29,6 +32,8 @@ function App() {
           path="/login"
           element={isLoggedIn ? <Navigate to="/inventory" /> : <Login />}
         />
+        <Route path="/inventory/:token" element={<PublicInventory />} />
+        <Route path="/cart/:token" element={<PublicCart />} />
 
         {isLoggedIn && (
           <>
@@ -43,6 +48,9 @@ function App() {
             <Route path="/transfer" element={<Transfers />} />
             <Route path="/lines" element={<Lines />} />
             <Route
+              path="/inventory-valorado"
+              element={<InventoryValorado />}
+            /><Route
               path="/inventory-fisico-valorado"
               element={<InventoryFisico />}
             />
