@@ -20,6 +20,10 @@ import { useLines } from "../hooks/useLine";
 import useInventory from "../hooks/useInventory";
 import UserMenu from "../components/menus/UserMenu";
 import { useInventoryValorado } from "../hooks/useInventoryValorado";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs from "dayjs";
 
 export default function InventoryValorado() {
   const { data: sucursales } = useSucursales();
@@ -33,6 +37,8 @@ export default function InventoryValorado() {
     marca: "",
     linea: "",
   });
+
+  const [hasta, setHasta] = useState(dayjs());
 
   /* PRODUCT SEARCH */
   const [productSearch, setProductSearch] = useState("");
@@ -111,6 +117,8 @@ export default function InventoryValorado() {
       lineName: lineaSeleccionada?.name || "TODAS",
 
       brand: filters.marca || "TODAS",
+      hasta: hasta ? hasta.toISOString() : null, 
+
     });
   };
 
@@ -199,6 +207,18 @@ export default function InventoryValorado() {
               ))}
             </Select>
           </Row>
+          <DateRow>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+              label="Hasta"
+              format="DD/MM/YYYY"
+              value={hasta}
+              onChange={(v) => v && setHasta(v)}
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+            </LocalizationProvider>
+            
+          </DateRow>
         </Section>
 
         <Section>

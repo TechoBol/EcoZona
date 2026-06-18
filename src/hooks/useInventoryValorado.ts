@@ -3,7 +3,7 @@ import { useLoginStore } from "../components/store/loginStore";
 import { useNavigate } from "react-router-dom";
 import { getInventoryValoradoService } from "../services/productService";
 import { generarInventarioValoradoPDF } from "../components/pdf/generarInventarioValoradoPDF.jsx";
-
+import { generarInventarioValoradoExcel } from "../components/excel/generarInventoryValoradoExcel.jsx"
 export const useInventoryValorado = () => {
   const { token } = useLoginStore();
 
@@ -31,6 +31,22 @@ export const useInventoryValorado = () => {
         marca: payload.brand || "TODAS",
 
         producto: payload.productName || "TODOS",
+
+        hasta: payload.hasta
+      });
+
+      generarInventarioValoradoExcel({
+        data: inventory,
+
+        sucursal: payload.locationName || "TODAS",
+
+        linea: payload.lineName || "TODAS",
+
+        marca: payload.brand || "TODAS",
+
+        producto: payload.productName || "TODOS",
+
+        hasta: payload.hasta
       });
     } catch (err: any) {
       console.error(err);
