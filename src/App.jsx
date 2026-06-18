@@ -20,6 +20,8 @@ import PublicInventory from "./pages/PublicInventory";
 import PublicCart from "./pages/PublicCart";
 import CruceInventario from "./pages/CurceInventario";
 import InventoryValorado from "./pages/InventoryValorado";
+import ProductDetail from "./pages/ProductDetail";
+import AddedToCart from "./pages/AddedToCart";
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -58,6 +60,8 @@ function App() {
             <Route path="/importation" element={<Importation />} />
             <Route path="/new-importation" element={<NewImportation />} />
             <Route path="/cross-inventory" element={<CruceInventario />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/added-to-cart" element={<AddedToCart />} />
           </>
         )}
 

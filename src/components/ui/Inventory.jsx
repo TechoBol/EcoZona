@@ -232,6 +232,7 @@ export const ProductsGrid = styled.div`
 
 /* Card */
 export const Card = styled.div`
+  position: relative;
   display: flex;
   flex-direction: column;
   border-radius: 14px;
@@ -242,7 +243,7 @@ export const Card = styled.div`
 
   border: 2px solid
     ${(props) =>
-      props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
+    props.$error ? "#dc655f" : props.$selected ? "#69d584" : "transparent"};
 
   transition: all 0.2s ease;
 
@@ -662,4 +663,31 @@ export const RightActions = styled.div`
   align-items: center;
   gap: 8px;
   margin-left: auto;
+`;
+
+export const DetailButton = styled.button`
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: ${theme.colors.textSecondary};
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+
+  &:focus {
+    outline: none;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
 `;
