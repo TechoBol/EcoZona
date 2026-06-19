@@ -20,6 +20,7 @@ import PublicInventory from "./pages/PublicInventory";
 import PublicCart from "./pages/PublicCart";
 import CruceInventario from "./pages/CurceInventario";
 import InventoryValorado from "./pages/InventoryValorado";
+import MarginProfit from "./pages/MarginProfit";
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -58,6 +59,7 @@ function App() {
             <Route path="/importation" element={<Importation />} />
             <Route path="/new-importation" element={<NewImportation />} />
             <Route path="/cross-inventory" element={<CruceInventario />} />
+            <Route path="/margin-profit" element={<MarginProfit />} />
           </>
         )}
 
