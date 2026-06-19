@@ -21,6 +21,8 @@ import PublicCart from "./pages/PublicCart";
 import CruceInventario from "./pages/CurceInventario";
 import InventoryValorado from "./pages/InventoryValorado";
 import MarginProfit from "./pages/MarginProfit";
+import ProductDetail from "./pages/ProductDetail";
+import AddedToCart from "./pages/AddedToCart";
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -48,18 +50,15 @@ function App() {
             <Route path="/reports" element={<Sales />} />
             <Route path="/transfer" element={<Transfers />} />
             <Route path="/lines" element={<Lines />} />
-            <Route
-              path="/inventory-valorado"
-              element={<InventoryValorado />}
-            /><Route
-              path="/inventory-fisico-valorado"
-              element={<InventoryFisico />}
-            />
+            <Route path="/inventory-valorado" element={<InventoryValorado />} />
+            <Route path="/inventory-fisico-valorado" element={<InventoryFisico />} />
             <Route path="/kardex" element={<Kardex />} />
             <Route path="/importation" element={<Importation />} />
             <Route path="/new-importation" element={<NewImportation />} />
             <Route path="/cross-inventory" element={<CruceInventario />} />
             <Route path="/margin-profit" element={<MarginProfit />} />
+            <Route path="/product/:id" element={<ProductDetail />} />
+            <Route path="/added-to-cart" element={<AddedToCart />} />
           </>
         )}
 
