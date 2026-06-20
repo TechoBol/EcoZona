@@ -40,11 +40,11 @@ export const usePermissions = () => {
     canManageLinesAdmin: [1, 2].includes(lvl),
     canManageDateSale: [1, 2].includes(lvl),
     canManageKardex: [1, 4].includes(lvl),
-    canManageImportation: [1, 2].includes(lvl),
+    canManageImportation: [1, 2,4].includes(lvl),
 
     // 🔥 UTILIDADES KARDEX
     canManageKardexUtil:
-      [1].includes(lvl) && canViewKardexUtilRoles.includes(role),
+      [1,4].includes(lvl) && canViewKardexUtilRoles.includes(role),
     canManageUtil: [1].includes(lvl) && canViewUtilRoles.includes(role),
 
     // 💰 VENTAS
