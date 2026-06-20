@@ -47,6 +47,7 @@ import {
   ExportMenuItem,
   ShareButton,
   RightActions,
+  DetailButton,
 } from "../components/ui/Inventory";
 
 import {
@@ -57,6 +58,7 @@ import {
   Check,
   Grid,
   Share2,
+  MoreVertical,
 } from "lucide-react";
 import UserMenu from "../components/menus/UserMenu";
 import { useCartStore } from "../components/store/cartStore";
@@ -70,8 +72,7 @@ function Inventory() {
   const { location, role, level } = useLoginStore();
   const { data: locations } = useSucursales();
   const addToCart = useCartStore((state) => state.addToCart);
-  const { products, search, setSearch, onFilterTextBoxChanged,handleShare  } =
-    useInventory();
+  const { products, search, setSearch, onFilterTextBoxChanged, handleShare } = useInventory();
 
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [errorProductId, setErrorProductId] = useState(null);
@@ -89,6 +90,7 @@ function Inventory() {
   const permissions = usePermissions();
   const canChangeLocation = permissions.isAdmin;
   const isWarehouse = selectedLocation?.type === "WAREHOUSE";
+  const cartItems = useCartStore((state) => state.cartItems);
 
   ///////////////////////////////////////
   // SUCURSAL
@@ -116,7 +118,7 @@ function Inventory() {
   const playBeep = () => {
     if (!beepRef.current) return;
     beepRef.current.currentTime = 0;
-    beepRef.current.play().catch(() => {});
+    beepRef.current.play().catch(() => { });
   };
 
   ///////////////////////////////////////
@@ -345,6 +347,17 @@ function Inventory() {
   };
 
   ///////////////////////////////////////
+  // LEER EL CONTADOR DESDE CARTSTORE PARA MOSTRAR CANT PRODUCTOS CORRECTOS
+  ///////////////////////////////////////
+  const totalCartItems = useCartStore((state) =>
+    state.cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0)
+  );
+
+  const newSelections = selectedProducts.filter(
+    (sp) => !cartItems.some((ci) => ci.id === sp.id)
+  ).length;
+
+  ///////////////////////////////////////
   // RENDER
   ///////////////////////////////////////
   return (
@@ -532,6 +545,15 @@ function Inventory() {
                     <Stock>Cant: {stock}</Stock>
                   </ProductFooter>
                 </ProductInfo>
+                {/* BOTÓN DETALLE */}
+                <DetailButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/product/${product.id}`);
+                  }}
+                >
+                  <MoreVertical size={16} />
+                </DetailButton>
               </Card>
             );
           })}
@@ -545,7 +567,7 @@ function Inventory() {
               <ScanLine size={22} />
             </ScannerButton>
             <AddToCartButton onClick={handleGoToCart}>
-              Ir al carrito ({selectedProducts.length})
+              Ir al carrito ({totalCartItems + newSelections})
             </AddToCartButton>
           </>
         )}

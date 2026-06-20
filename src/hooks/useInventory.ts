@@ -54,7 +54,7 @@ const useInventory = () => {
       notificationToast("Error al generar el enlace");
     }
   };
-  
+
   //////////////////////////////
   // FILTRO
   //////////////////////////////
@@ -81,6 +81,7 @@ const useInventory = () => {
   };
 
   const goToInventory = () => navigate("/inventory");
+  const goToMargin = () => navigate("/margin-profit");
 
   //////////////////////////////
   // SCANNER GLOBAL
@@ -124,11 +125,14 @@ const useInventory = () => {
     socket.on("newProduct", handleRefresh);
     socket.on("cartProduct", handleRefresh);
     socket.on("transfer", handleTransfer);
-
+    socket.on("updateProductMargin", (updatedProduct) => {
+      mutate()
+    });
     return () => {
       socket.off("newProduct", handleRefresh);
       socket.off("cartProduct", handleRefresh);
       socket.off("transfer", handleTransfer);
+      socket.off("updateProductMargin");
     };
   }, [mutate]);
 
@@ -140,6 +144,7 @@ const useInventory = () => {
     onFilterTextBoxChanged,
     refresh: mutate,
     goToInventory,
+    goToMargin,
     handleShare,
   };
 };

@@ -13,6 +13,7 @@ import {
   FileInput,
   BarChart3,
   Cross,
+  ChartBarBig  ,
 } from "lucide-react";
 import { MdOutlineInventory2, MdOutlineInventory } from "react-icons/md";
 import {
@@ -44,7 +45,7 @@ const UserMenu = () => {
   const { fullName, role } = useLoginStore() || {};
   const { logOut } = useAuthentication();
   const permissions = usePermissions();
-  const { goToInventory } = useInventory();
+  const { goToInventory, goToMargin } = useInventory();
   const { goToSucursales } = useSucursales();
   const { goToTrabajadores } = useEmployees();
   const { goToRoles } = useRoles();
@@ -190,6 +191,17 @@ const UserMenu = () => {
                       <MenuOption onClick={goToKardex} $active={active}>
                         <BarChart3 size={16} />
                         <span>Matriz de ventas</span>
+                      </MenuOption>
+                    )}
+                  </Menu.Item>
+                )}
+
+                {permissions.canManageUtil && (
+                  <Menu.Item>
+                    {({ active }) => (
+                      <MenuOption onClick={goToMargin} $active={active}>
+                        <ChartBarBig  size={16} />
+                        <span>Margenes y utilidades</span>
                       </MenuOption>
                     )}
                   </Menu.Item>
