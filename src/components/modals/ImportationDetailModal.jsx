@@ -83,7 +83,7 @@ export default function ImportationDetailModal({ open, onClose, importation, loa
                                                     <td>{item.product.name}</td>
                                                     <td>{item.quantity} unid.</td>
                                                     <td>Bs {item.unitCost}</td>
-                                                    <td>Bs {(item.quantity * item.unitCost).toFixed(2)}</td>
+                                                    <td>Bs {(item.quantity * item.unitCost).toFixed(4)}</td>
                                                 </tr>
                                             ))}
                                             <TotalRow>
@@ -94,7 +94,7 @@ export default function ImportationDetailModal({ open, onClose, importation, loa
                                                     Total
                                                 </td>
                                                 <td style={{ whiteSpace: "nowrap", minWidth: "120px" }}>
-                                                    Bs. {total.toFixed(2)}
+                                                    Bs. {total.toFixed(4)}
                                                 </td>
                                             </TotalRow>
                                         </ProductTableBody>

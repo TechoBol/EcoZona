@@ -109,7 +109,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         ],
       };
     }),
-
+    
   // LIMPIAR CARRITO
   clearCart: () => set({ cartItems: [] }),
 }));
