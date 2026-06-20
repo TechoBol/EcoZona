@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   createProductService,
+  updateMargenService,
   updateProductService,
 } from "../services/productService";
 import { useLoginStore } from "../components/store/loginStore";
@@ -69,6 +70,23 @@ export const useProduct = () => {
       setLoading(false);
     }
   };
+    const updateMargen = async (id: number, data: any) => {
+    try {
+      setError(null);
+
+      const payload = {
+        ...data,
+      };
+
+      const result = await updateMargenService(id, payload, token);
+      return result;
+    } catch (err) {
+      setError("Error actualizando producto");
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
   return {
     createProduct,
     subirArchivo,
@@ -76,5 +94,6 @@ export const useProduct = () => {
     setLoading,
     error,
     updateProduct,
+    updateMargen
   };
 };

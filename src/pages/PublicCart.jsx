@@ -2,39 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Trash2, Plus, Minus, ArrowLeft } from "lucide-react";
 
 import {
-  Wrapper,
-  Header,
-  Title,
-  ProductList,
-  ProductCard,
-  ProductImage,
-  RightSection,
-  TopRow,
-  ProductText,
-  ProductName,
-  ProductPrice,
-  QuantityControls,
-  QuantityText,
-  Button,
-  DeleteButton,
-  Footer,
-  SummaryRow,
-  Total,
-  CheckoutButton,
-  DiscountInput,
-  DiscountPrefix,
-  BackButton,
-  ProductPriceRow,
-  PriceDivider,
-  ProductSubtotal,
-  CustomerSection,
-  SectionTitle,
-  InputGroup,
-  Label,
-  Input,
-  TextArea,
-} from "../components/ui/Cart";
-
+  Wrapper, Header, Title, BackButton, CartBadge,
+  ProductList, SectionLabel,
+  ProductCard, ProductImage, RightSection, TopRow,
+  ProductText, ProductName, ProductPriceRow, ProductPrice,
+  PriceDivider, ProductSubtotal,
+  QuantityControls, QuantityText, Button, DeleteButton,
+  Footer, CustomerSection, SectionTitle,
+  InputGroup, TwoColumnRow, Label, Input, TextArea, PhonePrefix,
+  SummaryCard, SummaryRow, Total, CheckoutButton,
+} from "../components/ui/PublicCart";
+import { notificationToast } from "../services/toasts";
+import { theme } from "../components/ui/Theme";
 import { useCartStore } from "../components/store/cartStore";
 import { useNavigate } from "react-router-dom";
 import { usePublicCart } from "../hooks/usePublicCart";
@@ -123,6 +102,18 @@ const PublicCart = () => {
     }
   };
 
+  const handleIncrease = (item) => {
+    const blocked = increaseQty(item.id);
+    if (blocked) {
+      const stock = item.inventories?.[0]?.quantity ?? item.stock;
+      notificationToast(
+        stock != null
+          ? `Solo hay ${stock} unidades disponibles`
+          : "No hay más stock disponible"
+      );
+    }
+  };
+
   const finalizarVenta = async ({ metodoPago, codigoTransaccion }) => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -208,39 +199,25 @@ const PublicCart = () => {
   const [customerDocument, setCustomerDocument] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
   const [customerNote, setCustomerNote] = useState("");
+
   return (
     <Wrapper>
       <Header>
-        <BackButton
-          onClick={() => navigate("/inventory/" + token, { replace: true })}
-        >
-          <ArrowLeft size={22} />
+        <BackButton onClick={() => navigate("/inventory/" + token, { replace: true })}>
+          <ArrowLeft size={18} />
         </BackButton>
-        <Title>Venta</Title>
+        <Title>Tu carrito</Title>
+        <CartBadge>{cartItems.length} {cartItems.length === 1 ? "producto" : "productos"}</CartBadge>
       </Header>
 
       <ProductList>
+        <SectionLabel>Productos seleccionados</SectionLabel>
+
         {cartItems.length === 0 ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              textAlign: "center",
-              flex: 1,
-              height: "100%",
-              padding: "20px",
-              minHeight: "60vh",
-              color: "gray",
-              gap: "10px",
-            }}
-          >
-            <div style={{ fontSize: "50px" }}>🛒</div>
-            <h3 style={{ margin: 0 }}>Ups... el carrito está vacío</h3>
-            <p style={{ margin: 0, fontSize: "14px" }}>
-              Es hora de llenarlo. 🚀
-            </p>
+          <div style={{ textAlign: "center", padding: "40px 20px", color: theme.colors.textSecondary }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🛒</div>
+            <p style={{ fontWeight: 600 }}>El carrito está vacío</p>
+            <p style={{ fontSize: 13, marginTop: 4 }}>Vuelve al inventario y agrega productos.</p>
           </div>
         ) : (
           cartItems.map((item) => (
@@ -249,43 +226,29 @@ const PublicCart = () => {
                 src={imageUrls[item.id] || "https://via.placeholder.com/150"}
                 alt={item.name}
               />
-
               <RightSection>
                 <TopRow>
                   <ProductText>
                     <ProductName>{item.name}</ProductName>
                     <ProductPriceRow>
                       <ProductPrice>Bs {item.finalPrice}</ProductPrice>
-                      <PriceDivider>|</PriceDivider>
-                      <ProductSubtotal>
-                        Bs {(item.finalPrice * item.quantity).toFixed(2)}
-                      </ProductSubtotal>
+                      <PriceDivider>·</PriceDivider>
+                      <ProductSubtotal>Bs {(item.finalPrice * item.quantity).toFixed(2)}</ProductSubtotal>
                     </ProductPriceRow>
                   </ProductText>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "flex-end",
-                      gap: 6,
-                    }}
-                  >
-                    <QuantityControls>
-                      <Button onClick={() => decreaseQty(item.id)}>
-                        <Minus size={18} />
-                      </Button>
-                      <QuantityText>{item.quantity}</QuantityText>
-                      <Button onClick={() => increaseQty(item.id)}>
-                        <Plus size={18} />
-                      </Button>
-                    </QuantityControls>
-
-                    <DeleteButton onClick={() => removeItem(item.id)}>
-                      <Trash2 size={18} />
-                    </DeleteButton>
-                  </div>
+                  <DeleteButton onClick={() => removeItem(item.id)}>
+                    <Trash2 size={16} />
+                  </DeleteButton>
                 </TopRow>
+                <QuantityControls>
+                  <Button onClick={() => decreaseQty(item.id)}>
+                    <Minus size={18} />
+                  </Button>
+                  <QuantityText>{item.quantity}</QuantityText>
+                  <Button onClick={() => handleIncrease(item)}>
+                    <Plus size={18} />
+                  </Button>
+                </QuantityControls>
               </RightSection>
             </ProductCard>
           ))
@@ -293,72 +256,58 @@ const PublicCart = () => {
       </ProductList>
 
       <Footer>
+        <SectionLabel>Datos del cliente</SectionLabel>
         <CustomerSection>
-          <SectionTitle>Datos del cliente</SectionTitle>
+          <SectionTitle>Información de contacto</SectionTitle>
 
           <InputGroup>
             <Label>Nombre completo</Label>
-
-            <Input
-              placeholder="Ingresa tu nombre"
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-            />
+            <Input placeholder="Ej: Juan Pérez" value={customerName} onChange={(e) => setCustomerName(e.target.value)} />
           </InputGroup>
 
-          <InputGroup>
-            <Label>Teléfono</Label>
-
-            <Input
-              placeholder="77777777"
-              value={customerPhone}
-              onChange={(e) => setCustomerPhone(e.target.value)}
-            />
-          </InputGroup>
-
-          <InputGroup>
-            <Label>CI / NIT</Label>
-
-            <Input
-              placeholder="Opcional"
-              value={customerDocument}
-              onChange={(e) => setCustomerDocument(e.target.value)}
-            />
-          </InputGroup>
+          <TwoColumnRow>
+            <InputGroup>
+              <Label>Teléfono</Label>
+              <PhonePrefix>
+                <span>🇧🇴</span>
+                <input placeholder="7XXXXXXX" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} maxLength={8} inputMode="numeric" />
+              </PhonePrefix>
+            </InputGroup>
+            <InputGroup>
+              <Label>CI / NIT</Label>
+              <Input placeholder="Ej: 123456789" value={customerDocument} onChange={(e) => setCustomerDocument(e.target.value)} />
+            </InputGroup>
+          </TwoColumnRow>
 
           <InputGroup>
             <Label>Dirección</Label>
-
-            <Input
-              placeholder="Opcional"
-              value={customerAddress}
-              onChange={(e) => setCustomerAddress(e.target.value)}
-            />
+            <Input placeholder="Ej: Av. Ayacucho #123, Cochabamba" value={customerAddress} onChange={(e) => setCustomerAddress(e.target.value)} />
           </InputGroup>
 
           <InputGroup>
             <Label>Nota del pedido</Label>
-
-            <TextArea
-              placeholder="Ej: entregar por la tarde..."
-              value={customerNote}
-              onChange={(e) => setCustomerNote(e.target.value)}
-            />
+            <TextArea placeholder="Ej: entregar por la tarde..." value={customerNote} onChange={(e) => setCustomerNote(e.target.value)} />
           </InputGroup>
         </CustomerSection>
-        <SummaryRow>
-          <span>Subtotal:</span>
-          <span>Bs {subtotal.toFixed(2)}</span>
-        </SummaryRow>
 
-        <Total>
-          <span>Total:</span>
-          <span>Bs {total.toFixed(2)}</span>
-        </Total>
-
-        <CheckoutButton onClick={handleCheckout} disabled={isProcessing}>
-          {isProcessing ? "Procesando..." : "Finalizar Venta"}
-        </CheckoutButton>
+        <SectionLabel>Resumen</SectionLabel>
+        <SummaryCard>
+          <SummaryRow>
+            <span>Subtotal ({cartItems.length} items)</span>
+            <span>Bs {subtotal.toFixed(2)}</span>
+          </SummaryRow>
+          <SummaryRow>
+            <span>Envío</span>
+            <span style={{ color: theme.colors.primary }}>A coordinar</span>
+          </SummaryRow>
+          <Total>
+            <span>Total</span>
+            <span>Bs {total.toFixed(2)}</span>
+          </Total>
+          <CheckoutButton onClick={handleCheckout} disabled={isProcessing}>
+            {isProcessing ? "Procesando..." : "Finalizar pedido"}
+          </CheckoutButton>
+        </SummaryCard>
       </Footer>
     </Wrapper>
   );

@@ -330,7 +330,6 @@ export default function MarginProfit() {
         field: "profitMargin",
         headerName: "% Utilidad",
         editable: true,
-        type: "number",
         flex: 0.8,
         minWidth: 120,
         cellClassName: getPercentCellClassName,
@@ -347,7 +346,7 @@ export default function MarginProfit() {
 
       {
         field: "quantityPercent",
-        headerName: "% +5",
+        headerName: "%",
         flex: 0.8,
         minWidth: 100,
         cellClassName: getPercentCellClassName,
@@ -361,11 +360,41 @@ export default function MarginProfit() {
         minWidth: 170,
         editable: true,
         valueFormatter: (params) => formatMoney(params),
+        renderEditCell: (params) => {
+          return (
+            <input
+              type="number"
+              defaultValue={params.row.quantityDiscount}
+              autoFocus
+              onChange={(e) => {
+                setEditingDiscounts((prev) => ({
+                  ...prev,
+
+                  [params.id]: Number(e.target.value),
+                }));
+              }}
+              onBlur={() => {
+                params.api.stopCellEditMode({
+                  id: params.id,
+
+                  field: "quantityPrice",
+                });
+              }}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                outline: "none",
+                padding: "0 8px",
+              }}
+            />
+          );
+        },
       },
 
       {
         field: "bossPercent",
-        headerName: "% Jefe",
+        headerName: "%",
         flex: 0.8,
         minWidth: 100,
         cellClassName: getPercentCellClassName,
@@ -379,6 +408,36 @@ export default function MarginProfit() {
         minWidth: 150,
         editable: true,
         valueFormatter: (params) => formatMoney(params),
+        renderEditCell: (params) => {
+          return (
+            <input
+              type="number"
+              defaultValue={params.row.bossDiscount}
+              autoFocus
+              onChange={(e) => {
+                setEditingBossDiscounts((prev) => ({
+                  ...prev,
+
+                  [params.id]: Number(e.target.value),
+                }));
+              }}
+              onBlur={() => {
+                params.api.stopCellEditMode({
+                  id: params.id,
+
+                  field: "bossPrice",
+                });
+              }}
+              style={{
+                width: "100%",
+                height: "100%",
+                border: "none",
+                outline: "none",
+                padding: "0 8px",
+              }}
+            />
+          );
+        },
       },
     ],
     [],
@@ -444,6 +503,20 @@ export default function MarginProfit() {
             },
             "& .MuiDataGrid-columnHeaderTitle": {
               fontWeight: "bold",
+            },
+            "& .percent-cell-danger": {
+              backgroundColor: "#ffe5e5",
+              color: "#d32f2f",
+            },
+
+            "& .percent-cell-warning": {
+              backgroundColor: "#fff4db",
+              color: "#f57c00",
+            },
+
+            "& .percent-cell-success": {
+              backgroundColor: "#e8f5e9",
+              color: "#2e7d32",
             },
           }}
         />

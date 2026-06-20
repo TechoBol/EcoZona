@@ -35,6 +35,7 @@ import { useCart } from "../hooks/useCart";
 import { useAmazonS3 } from "../hooks/useAmazonS3";
 import Swal from "sweetalert2";
 import socket from "../services/SocketIOConnection";
+import { notificationToast } from "../services/toasts";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -55,6 +56,18 @@ const Cart = () => {
   const discountValue = Number(descuento || 0);
   const total = Math.max(0, subtotal - discountValue);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleIncrease = (item) => {
+    const blocked = increaseQty(item.id);
+    if (blocked) {
+      const stock = item.inventories?.[0]?.quantity ?? item.stock;
+      notificationToast(
+        stock != null
+          ? `Solo hay ${stock} unidades disponibles`
+          : "No hay más stock disponible"
+      );
+    }
+  };
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
@@ -251,7 +264,7 @@ const Cart = () => {
                         <Minus size={18} />
                       </Button>
                       <QuantityText>{item.quantity}</QuantityText>
-                      <Button onClick={() => increaseQty(item.id)}>
+                      <Button onClick={() => handleIncrease(item)}>
                         <Plus size={18} />
                       </Button>
                     </QuantityControls>

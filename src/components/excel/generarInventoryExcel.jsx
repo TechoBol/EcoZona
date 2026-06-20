@@ -4,7 +4,7 @@ import { saveAs } from "file-saver";
 export const generarInventoryExcel = async (item, location, getStock) => {
   const safeProducts = Array.isArray(item) ? item : [];
   const wb = new ExcelJS.Workbook();
-  wb.creator = "EcoZona";
+  wb.creator = "ECOZONA";
   wb.created = new Date();
 
   const ws = wb.addWorksheet("Inventario");

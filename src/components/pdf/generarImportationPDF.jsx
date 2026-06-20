@@ -218,7 +218,7 @@ export const exportImportationPDF = (importation) => {
   doc.setTextColor(...hexToRgb(textSecondary));
 
   doc.text(
-    "EcoZona",
+    "ECOZONA",
     14,
     285
   );

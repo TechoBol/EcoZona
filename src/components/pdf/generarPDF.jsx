@@ -2,11 +2,52 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const numeroALetras = (num) => {
-  const unidades = ["", "uno", "dos", "tres", "cuatro", "cinco", "seis", "siete", "ocho", "nueve",
-    "diez", "once", "doce", "trece", "catorce", "quince", "dieciséis", "diecisiete", "dieciocho", "diecinueve"];
-  const decenas = ["", "", "veinte", "treinta", "cuarenta", "cincuenta", "sesenta", "setenta", "ochenta", "noventa"];
-  const centenas = ["", "cien", "doscientos", "trescientos", "cuatrocientos", "quinientos",
-    "seiscientos", "setecientos", "ochocientos", "novecientos"];
+  const unidades = [
+    "",
+    "uno",
+    "dos",
+    "tres",
+    "cuatro",
+    "cinco",
+    "seis",
+    "siete",
+    "ocho",
+    "nueve",
+    "diez",
+    "once",
+    "doce",
+    "trece",
+    "catorce",
+    "quince",
+    "dieciséis",
+    "diecisiete",
+    "dieciocho",
+    "diecinueve",
+  ];
+  const decenas = [
+    "",
+    "",
+    "veinte",
+    "treinta",
+    "cuarenta",
+    "cincuenta",
+    "sesenta",
+    "setenta",
+    "ochenta",
+    "noventa",
+  ];
+  const centenas = [
+    "",
+    "cien",
+    "doscientos",
+    "trescientos",
+    "cuatrocientos",
+    "quinientos",
+    "seiscientos",
+    "setecientos",
+    "ochocientos",
+    "novecientos",
+  ];
 
   if (num === 0) return "cero bolivianos";
 
@@ -42,30 +83,24 @@ const numeroALetras = (num) => {
       const miles = Math.floor(n / 1000);
       const resto = n % 1000;
 
-      const prefijo = miles === 1
-        ? "mil"
-        : `${convertirGrupo(miles)} mil`;
+      const prefijo = miles === 1 ? "mil" : `${convertirGrupo(miles)} mil`;
 
-      return resto === 0
-        ? prefijo
-        : `${prefijo} ${convertirGrupo(resto)}`;
+      return resto === 0 ? prefijo : `${prefijo} ${convertirGrupo(resto)}`;
     }
 
     const millones = Math.floor(n / 1_000_000);
     const resto = n % 1_000_000;
 
-    const prefijo = millones === 1
-      ? "un millón"
-      : `${convertirGrupo(millones)} millones`;
+    const prefijo =
+      millones === 1 ? "un millón" : `${convertirGrupo(millones)} millones`;
 
-    return resto === 0
-      ? prefijo
-      : `${prefijo} ${convertir(resto)}`;
+    return resto === 0 ? prefijo : `${prefijo} ${convertir(resto)}`;
   };
 
-  const sufijo = decimales > 0
-    ? ` con ${String(decimales).padStart(2, "0")}/100 bolivianos`
-    : " bolivianos";
+  const sufijo =
+    decimales > 0
+      ? ` con ${String(decimales).padStart(2, "0")}/100 bolivianos`
+      : " bolivianos";
 
   return `${convertir(entero)}${sufijo}`;
 };
@@ -79,7 +114,6 @@ export const generarPDF = (
   total,
   cancellationData = null,
 ) => {
-
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
@@ -106,15 +140,32 @@ export const generarPDF = (
     doc.text(value, x + labelWidth, cy);
   };
 
-  campo("Nro. Recibo", `${venta.code}`, col1, y, 28);
-  campo("Fecha", new Date(venta.date).toLocaleString("es-BO"), col1, y + 6, 28);
-  campo("Cliente", venta.clientName || "Consumidor final", col1, y + 12, 28);
+  campo("Nro. Recibo", `${venta.code}`, col1, y, 30);
+  campo("Fecha", new Date(venta.date).toLocaleString("es-BO"), col1, y + 6, 30);
 
-  campo("Cajero", cajero || "—", col2, y, 22);
-  campo("Forma de pago", venta.typeSale === "Qr" ? "QR" : "Efectivo", col2, y + 6, 38);
-  campo("Cód. transacción", venta.transactionNumber || "—", col2, y + 12, 42);
+  campo("Cliente", venta.customerName || "Consumidor final", col1, y + 12, 30);
 
-  doc.line(margin, y + 17, pageWidth - margin, y + 17);
+  campo("Teléfono", venta.customerPhone || "—", col1, y + 18, 30);
+
+  campo("CI/NIT", venta.customerDocument || "—", col1, y + 24, 30);
+
+  campo("Cajero", cajero || "—", col2, y, 35);
+
+  campo(
+    "Forma de pago",
+    venta.typeSale === "Qr" ? "QR" : "Efectivo",
+    col2,
+    y + 6,
+    35,
+  );
+
+  campo("Transacción", venta.transactionNumber || "—", col2, y + 12, 35);
+
+  campo("Sucursal", venta.location?.name || "—", col2, y + 18, 35);
+
+  campo("Tipo", venta.type || "Privado", col2, y + 24, 35);
+
+  doc.line(margin, y + 30, pageWidth - margin, y + 30);
 
   // ── TABLA ──
   const tableData = (cartItems || []).map((item) => [
@@ -126,7 +177,7 @@ export const generarPDF = (
   ]);
 
   autoTable(doc, {
-    startY: y + 21,
+    startY: y + 35,
     head: [["Codigo", "Producto", "Cant.", "Precio unit.", "Subtotal"]],
     body: tableData,
     styles: { fontSize: 9 },
@@ -146,10 +197,30 @@ export const generarPDF = (
   // ── LETRAS ──
   doc.setFont("helvetica", "italic");
   doc.text(`Son: ${numeroALetras(total)}`, margin, finalY + 32);
+  let extraY = finalY + 42;
 
+  if (venta.customerAddress) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("Dirección:", margin, extraY);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(venta.customerAddress, margin + 20, extraY);
+
+    extraY += 8;
+  }
+
+  if (venta.customerNote) {
+    doc.setFont("helvetica", "bold");
+    doc.text("Observación:", margin, extraY);
+
+    doc.setFont("helvetica", "normal");
+    doc.text(venta.customerNote, margin + 25, extraY);
+
+    extraY += 8;
+  }
   // ── SELLO DE ANULACIÓN ──
   if (cancellationData) {
-
     // Marca de agua diagonal
     doc.saveGraphicsState();
     doc.setGState(new doc.GState({ opacity: 0.15 }));
@@ -167,18 +238,35 @@ export const generarPDF = (
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
 
-    const fechaAnulacion = new Date(cancellationData.cancelledAt)
-      .toLocaleString("es-BO");
+    const fechaAnulacion = new Date(
+      cancellationData.cancelledAt,
+    ).toLocaleString("es-BO");
 
     const boxY = pageHeight - 30;
 
     doc.line(margin, boxY - 4, pageWidth - margin, boxY - 4);
     doc.text("VENTA ANULADA", margin, boxY);
     doc.setFont("helvetica", "normal");
-    doc.text(`Motivo: ${cancellationData.cancelReason || "—"}`, margin, boxY + 6);
-    doc.text(`Anulado por: ${cancellationData.cancelledBy || "—"}`, margin, boxY + 12);
+    doc.text(
+      `Motivo: ${cancellationData.cancelReason || "—"}`,
+      margin,
+      boxY + 6,
+    );
+    doc.text(
+      `Anulado por: ${cancellationData.cancelledBy || "—"}`,
+      margin,
+      boxY + 12,
+    );
     doc.text(`Fecha anulación: ${fechaAnulacion}`, margin, boxY + 18);
   }
+  doc.setDrawColor(220);
+  doc.line(margin, pageHeight - 20, pageWidth - margin, pageHeight - 20);
 
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "normal");
+
+  doc.text("Gracias por su compra", pageWidth / 2, pageHeight - 12, {
+    align: "center",
+  });
   return doc.output("blob");
 };

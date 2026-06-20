@@ -25,9 +25,10 @@ import {
   TitleText,
   BottomActions,
   AddToCartButton,
+  DetailButton,
 } from "../components/ui/Inventory";
 
-import { ScanLine } from "lucide-react";
+import { ScanLine, MoreVertical, } from "lucide-react";
 
 import { usePublicInventoryStore } from "../components/store/publicInventoryStore";
 
@@ -42,6 +43,7 @@ import { useCartStore } from "../components/store/cartStore";
 function PublicInventory() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const cartItems = useCartStore((state) => state.cartItems);
   const setPublicToken = usePublicInventoryStore(
     (state) => state.setPublicToken,
   );
@@ -190,6 +192,18 @@ function PublicInventory() {
     console.log(selectedProducts);
     navigate("/cart/" + token);
   };
+
+  ///////////////////////////////////////
+  // LEER EL CONTADOR DESDE CARTSTORE PARA MOSTRAR CANT PRODUCTOS CORRECTOS
+  ///////////////////////////////////////
+  const totalCartItems = useCartStore((state) =>
+    state.cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0)
+  );
+
+  const newSelections = selectedProducts.filter(
+    (sp) => !cartItems.some((ci) => ci.id === sp.id)
+  ).length;
+
   ///////////////////////////////////////
   // RENDER
   ///////////////////////////////////////
@@ -292,6 +306,15 @@ function PublicInventory() {
                     <Price>Bs {product.finalPrice}</Price>
                   </ProductFooter>
                 </ProductInfo>
+                {/*  BOTÓN DETALLE */}
+                <DetailButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/product/${product.id}`, { state: { token } });
+                  }}
+                >
+                  <MoreVertical size={16} />
+                </DetailButton>
               </Card>
             );
           })}
@@ -299,7 +322,7 @@ function PublicInventory() {
       </ScrollArea>
       <BottomActions>
         <AddToCartButton onClick={handleGoToCart}>
-          Ir al carrito ({selectedProducts.length})
+          Ir al carrito ({totalCartItems + newSelections})
         </AddToCartButton>
       </BottomActions>
       {/* SCANNER */}
