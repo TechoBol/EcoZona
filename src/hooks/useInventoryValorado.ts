@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getInventoryValoradoService } from "../services/productService";
 import { generarInventarioValoradoPDF } from "../components/pdf/generarInventarioValoradoPDF.jsx";
 import { generarInventarioValoradoExcel } from "../components/excel/generarInventoryValoradoExcel.jsx"
+
 export const useInventoryValorado = () => {
   const { token } = useLoginStore();
 

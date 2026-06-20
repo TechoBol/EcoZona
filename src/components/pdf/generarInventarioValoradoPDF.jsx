@@ -1,13 +1,19 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+const formatNumber = (value) =>
+  Number(value || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
 export const generarInventarioValoradoPDF = ({
   data = [],
   sucursal = "TODAS",
   linea = "TODAS",
   marca = "TODAS",
   producto = "TODOS",
-  hasta
+  hasta,
 }) => {
   const doc = new jsPDF({
     orientation: "landscape",
@@ -59,9 +65,9 @@ export const generarInventarioValoradoPDF = ({
       item.marca || "",
       "Piezas",
       item.descripcion || "",
-      item.cantidad || 0,
-      Number(item.costoUnitario || 0).toFixed(2),
-      Number(item.valor || 0).toFixed(2),
+      formatNumber(item.cantidad),
+      formatNumber(item.costoUnitario),
+      formatNumber(item.valor),
     ];
   });
 
@@ -79,7 +85,7 @@ export const generarInventarioValoradoPDF = ({
       },
     },
 
-    Number(totalValor).toFixed(2),
+    formatNumber(totalValor),
   ]);
 
   ////////////////////////////////////////////////////
@@ -133,9 +139,9 @@ export const generarInventarioValoradoPDF = ({
       2: { cellWidth: 40 },
       3: { cellWidth: 18 },
       4: { cellWidth: 90 },
-      5: { cellWidth: 17 },
-      6: { cellWidth: 24 },
-      7: { cellWidth: 24 },
+      5: { cellWidth: 17, halign: "center" },
+      6: { cellWidth: 24, halign: "right" },
+      7: { cellWidth: 24, halign: "right" },
     },
   });
 

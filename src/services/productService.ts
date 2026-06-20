@@ -91,3 +91,26 @@ export const getInventoryValoradoService = async (
 
   return resData;
 };
+export const updateMargenService = async (id: any, data: any, token: any) => {
+  const res = await fetch(
+    `${import.meta.env.VITE_API_DOMAIN}/product/update-margen/${id}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "x-access-token": token,
+      },
+      body: JSON.stringify(data),
+    },
+  );
+
+  const resData = await res.json();
+  if (res.status === 401 || res.status === 403) {
+    cerrarSesion();
+  }
+  if (!res.ok) {
+    throw new Error(resData.message || "No se pudo actualizar el producto");
+  }
+
+  return resData;
+};
