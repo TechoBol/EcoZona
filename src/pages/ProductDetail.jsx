@@ -55,7 +55,7 @@ const ProductDetail = () => {
     if (!product?.imageUrl) return;
 
     const loadImage = async () => {
-      const isS3Key = product.imageUrl.startsWith("SUPERSTOCK/");
+      const isS3Key = product.imageUrl.startsWith("ECOZONA/");
 
       if (!isS3Key) {
         setImageUrl(product.imageUrl);
