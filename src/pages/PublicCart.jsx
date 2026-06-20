@@ -43,18 +43,6 @@ const PublicCart = () => {
   const total = Math.max(0, subtotal - discountValue);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleIncrease = (item) => {
-    const blocked = increaseQty(item.id);
-    if (blocked) {
-      const stock = item.inventories?.[0]?.quantity ?? item.stock;
-      notificationToast(
-        stock != null
-          ? `Solo hay ${stock} unidades disponibles`
-          : "No hay más stock disponible"
-      );
-    }
-  };
-
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
       Swal.fire({
