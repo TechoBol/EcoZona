@@ -1,7 +1,15 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-export const generarVentasPDF = (rows = []) => {
+const formatNumber = (value) =>
+  Number(value || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+
+const formatCurrency = (value) => `Bs ${formatNumber(value)}`;
+
+export const generarVentasPDF = (rows = [], canViewUtilities = false) => {
   const doc = new jsPDF({
     orientation: "landscape",
   });
@@ -68,8 +76,16 @@ export const generarVentasPDF = (rows = []) => {
     if (!grouped[line][brand][product]) {
       grouped[line][brand][product] = {
         barcode,
+
         quantity: 0,
         total: 0,
+
+        price: Number(item.price || 0),
+
+        finalPrice: Number(
+          item.details?.[item.details.length - 1]?.finalPrice || 0,
+        ),
+
         branches: {},
       };
     }
@@ -79,8 +95,10 @@ export const generarVentasPDF = (rows = []) => {
     grouped[line][brand][product].total += Number(item.total || 0);
 
     (item.branches || []).forEach((branch) => {
-      grouped[line][brand][product].branches[branch.name] =
-        (grouped[line][brand][product].branches[branch.name] || 0) +
+      const branchName = branch.name.toUpperCase();
+
+      grouped[line][brand][product].branches[branchName] =
+        (grouped[line][brand][product].branches[branchName] || 0) +
         Number(branch.quantity || 0);
     });
   });
@@ -108,10 +126,10 @@ export const generarVentasPDF = (rows = []) => {
     startY: 32,
     head: [["RESUMEN GENERAL", "IMPORTANTE"]],
     body: [
-      ["CANTIDAD VENDIDA", totalCantidad],
-      ["SUBTOTAL", `Bs ${totalSubtotal.toFixed(2)}`],
-      ["DESCUENTOS", `Bs ${totalDescuento.toFixed(2)}`],
-      ["TOTAL", `Bs ${totalNeto.toFixed(2)}`],
+      ["CANTIDAD VENDIDA", formatNumber(totalCantidad)],
+      ["SUBTOTAL", formatCurrency(totalSubtotal)],
+      ["DESCUENTOS", formatCurrency(totalDescuento)],
+      ["TOTAL", formatCurrency(totalNeto)],
     ],
     headStyles: {
       fillColor: [220, 38, 38],
@@ -131,22 +149,37 @@ export const generarVentasPDF = (rows = []) => {
   let grandBranches = {};
   let grandQuantity = 0;
   let grandTotal = 0;
-
+  let grandCostTotal = 0;
+let grandUtilityTotal = 0;
   Object.entries(grouped).forEach(([line, brands]) => {
     let lineBranches = {};
     let lineQuantity = 0;
     let lineTotal = 0;
-
+    let lineCostTotal = 0;
+    let lineUtilityTotal = 0;
     let firstLineRow = true;
 
     Object.entries(brands).forEach(([brand, products]) => {
       let brandBranches = {};
       let brandQuantity = 0;
       let brandTotal = 0;
+      let brandCostTotal = 0;
+      let brandUtilityTotal = 0;
 
       let firstBrandRow = true;
 
       Object.entries(products).forEach(([product, data]) => {
+        const cost = Number(data.price || 0);
+
+        const totalCost = cost * data.quantity;
+
+        const utilityTotal = data.total - totalCost;
+
+        const utilityUnit =
+          data.quantity > 0 ? utilityTotal / data.quantity : 0;
+
+        const utilityPercent =
+          cost > 0 ? ((data.finalPrice - cost) / cost) * 100 : 0;
         body.push([
           firstLineRow ? line : "",
           firstBrandRow ? brand : "",
@@ -156,7 +189,18 @@ export const generarVentasPDF = (rows = []) => {
           ...branches.map((branch) => data.branches[branch] || 0),
 
           data.quantity,
-          `Bs ${data.total.toFixed(2)}`,
+
+          formatCurrency(data.total),
+
+          ...(canViewUtilities
+            ? [
+                formatCurrency(cost),
+                formatCurrency(totalCost),
+                formatCurrency(utilityUnit),
+                `${formatNumber(utilityPercent)}%`,
+                formatCurrency(utilityTotal),
+              ]
+            : []),
         ]);
 
         branches.forEach((branch) => {
@@ -177,7 +221,14 @@ export const generarVentasPDF = (rows = []) => {
 
         grandQuantity += data.quantity;
         grandTotal += data.total;
-
+        brandCostTotal += totalCost;
+        brandUtilityTotal += utilityTotal;
+        
+        lineCostTotal += totalCost;
+        lineUtilityTotal += utilityTotal;
+        
+        grandCostTotal += totalCost;
+        grandUtilityTotal += utilityTotal;
         firstLineRow = false;
         firstBrandRow = false;
       });
@@ -188,7 +239,6 @@ export const generarVentasPDF = (rows = []) => {
 
       body.push([
         "",
-
         {
           content: `SUBTOTAL ${brand}`,
           colSpan: 3,
@@ -197,11 +247,21 @@ export const generarVentasPDF = (rows = []) => {
             fontStyle: "bold",
           },
         },
-
+      
         ...branches.map((branch) => brandBranches[branch] || 0),
-
+      
         brandQuantity,
-        `Bs ${brandTotal.toFixed(2)}`,
+        formatCurrency(brandTotal),
+      
+        ...(canViewUtilities
+          ? [
+              "",
+              formatCurrency(brandCostTotal),
+              "",
+              "",
+              formatCurrency(brandUtilityTotal),
+            ]
+          : []),
       ]);
     });
 
@@ -223,7 +283,16 @@ export const generarVentasPDF = (rows = []) => {
 
       lineQuantity,
 
-      `Bs ${lineTotal.toFixed(2)}`,
+      formatCurrency(lineTotal),
+      ...(canViewUtilities
+        ? [
+            "",
+            formatCurrency(lineCostTotal),
+            "",
+            "",
+            formatCurrency(lineUtilityTotal),
+          ]
+        : []),
     ]);
   });
 
@@ -240,12 +309,21 @@ export const generarVentasPDF = (rows = []) => {
         fontStyle: "bold",
       },
     },
-
+  
     ...branches.map((branch) => grandBranches[branch] || 0),
-
+  
     grandQuantity,
-
-    `Bs ${grandTotal.toFixed(2)}`,
+    formatCurrency(grandTotal),
+  
+    ...(canViewUtilities
+      ? [
+          "",
+          formatCurrency(grandCostTotal),
+          "",
+          "",
+          formatCurrency(grandUtilityTotal),
+        ]
+      : []),
   ]);
 
   ////////////////////////////////////////////////////
@@ -273,6 +351,29 @@ export const generarVentasPDF = (rows = []) => {
   columnStyles[branches.length + 5] = {
     cellWidth: 20, // Total Bs
   };
+  const utilityStartIndex = branches.length + 6;
+
+  if (canViewUtilities) {
+    columnStyles[utilityStartIndex] = {
+      cellWidth: 22,
+    };
+
+    columnStyles[utilityStartIndex + 1] = {
+      cellWidth: 24,
+    };
+
+    columnStyles[utilityStartIndex + 2] = {
+      cellWidth: 22,
+    };
+
+    columnStyles[utilityStartIndex + 3] = {
+      cellWidth: 18,
+    };
+
+    columnStyles[utilityStartIndex + 4] = {
+      cellWidth: 24,
+    };
+  }
   const head = [
     "MARCA",
     "LÍNEA",
@@ -281,6 +382,9 @@ export const generarVentasPDF = (rows = []) => {
     ...branches,
     "TOTAL CANT.",
     "TOTAL BS.",
+    ...(canViewUtilities
+      ? ["COSTO UNIT.", "COSTO TOTAL", "UTILIDAD", "%", "UTILIDAD TOTAL"]
+      : []),
   ];
 
   autoTable(doc, {
@@ -329,11 +433,7 @@ export const generarVentasPDF = (rows = []) => {
   const topProducts = [...rows]
     .sort((a, b) => Number(b.total || 0) - Number(a.total || 0))
     .slice(0, 20)
-    .map((item) => [
-      item.product,
-      item.quantity,
-      `Bs ${Number(item.total || 0).toFixed(2)}`,
-    ]);
+    .map((item) => [item.product, item.quantity, formatCurrency(item.total)]);
 
   doc.addPage();
 

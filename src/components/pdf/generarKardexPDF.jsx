@@ -91,9 +91,9 @@ export const generarKardexPDF = ({
     // 🔥 TABLA
     // =====================================================
     const n = (value) => {
-      return Number(value || 0).toLocaleString("es-ES", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+      return Number(value || 0).toLocaleString("en-US", {
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
       });
     };
     autoTable(doc, {

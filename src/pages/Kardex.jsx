@@ -74,13 +74,14 @@ export default function Kardex() {
         const quantity = Number(item.quantity || 0);
         const price = Number(item.price || 0);
         const finalPrice = getLastFinalPrice(item);
-
+    
         const totalCost = quantity * price;
-
-        const utilityTotal = Number(item.subtotal || 0) - totalCost;
-
-        const utilityUnit = quantity > 0 ? utilityTotal / quantity : 0;
-
+    
+        const utilityTotal = Number(item.total || 0) - totalCost;
+    
+        const utilityUnit =
+          quantity > 0 ? utilityTotal / quantity : 0;
+    
         return {
           id: item.id,
           name: item.product,
@@ -705,14 +706,6 @@ export default function Kardex() {
     return columns;
   }, [groupBy, firstColumnTitle, canManageKardexUtil]);
 
-  console.log({
-    cost: totalCostGeneral,
-    utility: totalUtility,
-    subtotal: totalGeneral,
-    discount: totalDiscount,
-    total: totalNeto,
-  });
-
   return (
     <Wrapper>
       <Header>
@@ -726,12 +719,16 @@ export default function Kardex() {
             Filtros
           </AddButton>
 
-          <AddButton onClick={() => generarVentasPDF(rawRows)}>
+          <AddButton
+            onClick={() => generarVentasPDF(rawRows, canManageKardexUtil)}
+          >
             <FileText size={20} />
             PDF
           </AddButton>
 
-          <AddButton onClick={() => generarVentasExcel(rawRows)}>
+          <AddButton
+            onClick={() => generarVentasExcel(rawRows, canManageKardexUtil)}
+          >
             <FileSpreadsheet size={20} />
             EXCEL
           </AddButton>
