@@ -1,6 +1,6 @@
 import XLSX from "xlsx-js-style";
 
-export const generarVentasExcel = (rows = []) => {
+export const generarVentasExcel = (rows = [], canViewUtilities = false) => {
   const branches = [
     ...new Set(
       rows.flatMap((item) =>
@@ -29,6 +29,13 @@ export const generarVentasExcel = (rows = []) => {
         barcode,
         quantity: 0,
         total: 0,
+
+        price: Number(item.price || 0),
+
+        finalPrice: Number(
+          item.details?.[item.details.length - 1]?.finalPrice || 0,
+        ),
+
         branches: {},
       };
     }
@@ -38,8 +45,10 @@ export const generarVentasExcel = (rows = []) => {
     grouped[line][brand][product].total += Number(item.total || 0);
 
     (item.branches || []).forEach((branch) => {
-      grouped[line][brand][product].branches[branch.name] =
-        (grouped[line][brand][product].branches[branch.name] || 0) +
+      const branchName = branch.name.toUpperCase();
+
+      grouped[line][brand][product].branches[branchName] =
+        (grouped[line][brand][product].branches[branchName] || 0) +
         Number(branch.quantity || 0);
     });
   });
@@ -54,10 +63,16 @@ export const generarVentasExcel = (rows = []) => {
   let grandQuantity = 0;
   let grandTotal = 0;
 
+  let grandCostTotal = 0;
+  let grandUtilityTotal = 0;
+
   Object.entries(grouped).forEach(([line, brands]) => {
     let lineBranches = {};
     let lineQuantity = 0;
     let lineTotal = 0;
+
+    let lineCostTotal = 0;
+    let lineUtilityTotal = 0;
 
     let firstLineRow = true;
 
@@ -66,9 +81,27 @@ export const generarVentasExcel = (rows = []) => {
       let brandQuantity = 0;
       let brandTotal = 0;
 
+      let brandCostTotal = 0;
+      let brandUtilityTotal = 0;
+
       let firstBrandRow = true;
 
       Object.entries(products).forEach(([product, data]) => {
+        const cost = Number(data.price || 0);
+
+        const totalCost = cost * data.quantity;
+
+        const utilityTotal = data.total - totalCost;
+
+        const utilityUnit =
+          data.quantity > 0 ? utilityTotal / data.quantity : 0;
+
+        const salePriceUnit =
+          data.quantity > 0 ? data.total / data.quantity : 0;
+
+        const utilityPercent =
+          cost > 0 ? ((salePriceUnit - cost) / cost) * 100 : 0;
+          
         const row = {
           MARCA: firstLineRow ? line : "",
           LÍNEA: firstBrandRow ? brand : "",
@@ -91,7 +124,13 @@ export const generarVentasExcel = (rows = []) => {
 
         row["Total Cantidad"] = data.quantity;
         row["Total Bs"] = Number(data.total.toFixed(2));
-
+        if (canViewUtilities) {
+          row["Costo Unit."] = Number(cost);
+          row["Costo Total"] = Number(totalCost.toFixed(2));
+          row["Utilidad"] = Number(utilityUnit.toFixed(2));
+          row["%"] = `${utilityPercent.toFixed(2)}%`;
+          row["Utilidad Total"] = Number(utilityTotal.toFixed(2));
+        }
         detalle.push(row);
 
         brandQuantity += data.quantity;
@@ -102,6 +141,15 @@ export const generarVentasExcel = (rows = []) => {
 
         grandQuantity += data.quantity;
         grandTotal += data.total;
+
+        brandCostTotal += totalCost;
+        brandUtilityTotal += utilityTotal;
+
+        lineCostTotal += totalCost;
+        lineUtilityTotal += utilityTotal;
+
+        grandCostTotal += totalCost;
+        grandUtilityTotal += utilityTotal;
 
         firstLineRow = false;
         firstBrandRow = false;
@@ -120,7 +168,13 @@ export const generarVentasExcel = (rows = []) => {
 
       subtotalRow["Total Cantidad"] = brandQuantity;
       subtotalRow["Total Bs"] = Number(brandTotal.toFixed(2));
-
+      if (canViewUtilities) {
+        subtotalRow["Costo Unit."] = "";
+        subtotalRow["Costo Total"] = Number(brandCostTotal.toFixed(2));
+        subtotalRow["Utilidad"] = "";
+        subtotalRow["%"] = "";
+        subtotalRow["Utilidad Total"] = Number(brandUtilityTotal.toFixed(2));
+      }
       detalle.push(subtotalRow);
     });
 
@@ -137,7 +191,13 @@ export const generarVentasExcel = (rows = []) => {
 
     totalLineRow["Total Cantidad"] = lineQuantity;
     totalLineRow["Total Bs"] = Number(lineTotal.toFixed(2));
-
+    if (canViewUtilities) {
+      totalLineRow["Costo Unit."] = "";
+      totalLineRow["Costo Total"] = Number(lineCostTotal.toFixed(2));
+      totalLineRow["Utilidad"] = "";
+      totalLineRow["%"] = "";
+      totalLineRow["Utilidad Total"] = Number(lineUtilityTotal.toFixed(2));
+    }
     detalle.push(totalLineRow);
   });
 
@@ -154,7 +214,13 @@ export const generarVentasExcel = (rows = []) => {
 
   totalGeneralRow["Total Cantidad"] = grandQuantity;
   totalGeneralRow["Total Bs"] = Number(grandTotal.toFixed(2));
-
+  if (canViewUtilities) {
+    totalGeneralRow["Costo Unit."] = "";
+    totalGeneralRow["Costo Total"] = Number(grandCostTotal.toFixed(2));
+    totalGeneralRow["Utilidad"] = "";
+    totalGeneralRow["%"] = "";
+    totalGeneralRow["Utilidad Total"] = Number(grandUtilityTotal.toFixed(2));
+  }
   detalle.push(totalGeneralRow);
 
   ////////////////////////////////////////////////////
@@ -170,13 +236,21 @@ export const generarVentasExcel = (rows = []) => {
   ////////////////////////////////////////////////////
 
   ws["!cols"] = [
-    { wch: 25 }, // Marca
-    { wch: 30 }, // Línea
-    { wch: 20 }, // Barcode
-    { wch: 50 }, // Producto
+    { wch: 25 },
+    { wch: 30 },
+    { wch: 20 },
+    { wch: 50 },
+
     ...branches.map(() => ({ wch: 15 })),
-    { wch: 18 },
-    { wch: 18 },
+
+    { wch: 18 }, // Total Cantidad
+    { wch: 18 }, // Total Bs
+
+    { wch: 15 }, // Costo Unit
+    { wch: 18 }, // Costo Total
+    { wch: 18 }, // Utilidad
+    { wch: 12 }, // %
+    { wch: 18 }, // Utilidad Total
   ];
 
   ////////////////////////////////////////////////////
