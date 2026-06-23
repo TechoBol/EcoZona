@@ -10,6 +10,7 @@ import {
   Title,
   Form,
   Input,
+  TextArea,
   Button,
   ContainerInput,
   ErrorText,
@@ -265,15 +266,6 @@ function ProductForm() {
               </ContainerInput>
 
               <ContainerInput>
-                <Input
-                  placeholder="Descripción"
-                  {...form.getInputProps("description")}
-                />
-              </ContainerInput>
-            </Grid2>
-
-            <Grid2>
-              <ContainerInput>
                 <BarcodeWrapper>
                   <Input
                     placeholder="Código de barras"
@@ -288,6 +280,14 @@ function ProductForm() {
                 )}
               </ContainerInput>
             </Grid2>
+
+            <ContainerInput>
+              <TextArea
+                placeholder="Descripción"
+                rows={4}
+                {...form.getInputProps("description")}
+              />
+            </ContainerInput>
           </Section>
 
           {/* COSTOS E INVENTARIO */}

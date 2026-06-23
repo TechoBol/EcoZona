@@ -197,6 +197,29 @@ export const Input = styled.input`
   }
 `;
 
+export const TextArea = styled.textarea`
+  min-height: 96px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid
+    ${({ hasError }) =>
+      hasError ? theme.colors.error : "rgba(0,0,0,0.15)"};
+  padding: 14px 16px;
+  font-size: 14px;
+  outline: none;
+  background: ${theme.colors.background};
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 3px rgba(61, 68, 201, 0.12);
+  }
+`;
+
 export const Select = styled.select`
   height: 52px;
   width: 100%;
