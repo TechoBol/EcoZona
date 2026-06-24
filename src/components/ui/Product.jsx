@@ -141,7 +141,7 @@ export const Section = styled.div`
 export const SectionTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: ${theme.colors.textSecondary};
+  color: #374151;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -175,6 +175,15 @@ export const ContainerInput = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
+`;
+
+export const Label = styled.label`
+  font-size: 14px;
+  font-weight: 600;
+  color: #5B6472;
+  margin-bottom: 6px;
+  display: block;
+  letter-spacing: 0.02em;
 `;
 
 export const Input = styled.input`

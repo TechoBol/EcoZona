@@ -13,6 +13,7 @@ import {
   TextArea,
   Button,
   ContainerInput,
+  Label,
   ErrorText,
   UploadBox,
   HiddenInput,
@@ -58,7 +59,7 @@ function ProductForm() {
 
   const [scanning, setScanning] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [inventoryEditEnabled, setInventoryEditEnabled] = useState(false);
+  const [inventoryEditEnabled, setInventoryEditEnabled] = useState(true);
 
   const beepRef = useRef(null);
 
@@ -99,6 +100,7 @@ function ProductForm() {
       name: product?.name ?? "",
       description: product?.description ?? "",
       barcode: product?.barcode ?? "",
+      productCode: product?.productCode ?? "",
       imageFile: null,
       price: product?.price ?? "",
       finalPrice: product?.finalPrice ?? "",
@@ -111,7 +113,9 @@ function ProductForm() {
 
     validate: {
       name: (v) => (!v.trim() ? "Ingresa el nombre" : null),
-      barcode: (v) => (!v.trim() ? "Ingresa el código" : null),
+      productCode: (v) => (!v.trim() ? "Ingresa el código del producto" : null),
+      lineId: (v) => !v ? "Selecciona una marca" : null,
+      brandName: (v) => !v ? "Selecciona una línea" : null,
       price: (v) =>
         isEdit ? null : !v || Number(v) <= 0 ? "Ingresa un precio válido" : null,
       finalPrice: (v, values) =>
@@ -142,6 +146,7 @@ function ProductForm() {
       form.values.name !== (product?.name ?? "") ||
       form.values.description !== (product?.description ?? "") ||
       form.values.barcode !== (product?.barcode ?? "") ||
+      form.values.productCode !== (product?.productCode ?? "") ||
       form.values.lineId !== (product?.lineId ?? "") ||
       form.values.brandName !== (product?.brandName ?? "") ||
       Number(form.values.finalPrice) !== Number(product?.finalPrice) ||
@@ -158,6 +163,7 @@ function ProductForm() {
     form.values.name,
     form.values.description,
     form.values.barcode,
+    form.values.productCode,
     form.values.lineId,
     form.values.brandName,
     form.values.finalPrice,
@@ -174,7 +180,7 @@ function ProductForm() {
       let imageKey = product?.imageUrl || null;
 
       if (values.imageFile) {
-        imageKey = await subirArchivo(values.imageFile, values.barcode);
+        imageKey = await subirArchivo(values.imageFile, values.productCode);
       }
 
       if (imageDeleted && !values.imageFile) {
@@ -184,7 +190,8 @@ function ProductForm() {
       const payload = {
         name: values.name.toUpperCase(),
         description: values.description,
-        barcode: values.barcode,
+        barcode: values.barcode?.trim() || values.productCode?.trim(),
+        productCode: values.productCode?.trim() || null,
         price: Number(values.price),
         finalPrice: Number(values.finalPrice),
         stock: Number(values.stock),
@@ -241,11 +248,7 @@ function ProductForm() {
           <ArrowLeft size={20} />
         </BackButton>
         <Title>
-          {isEdit
-            ? inventoryEditEnabled
-              ? "Añadir Nuevo Inventario"
-              : "Editar Producto"
-            : "Crear Producto"}
+          {isEdit ? "Editar Producto" : "Crear Producto"}
         </Title>
       </Header>
 
@@ -256,32 +259,45 @@ function ProductForm() {
           <Section>
             <SectionTitle>Información general</SectionTitle>
 
+            <ContainerInput>
+              <Label>Nombre del producto</Label>
+              <Input
+                placeholder="Nombre del producto"
+                {...form.getInputProps("name")}
+              />
+              {form.errors.name && <ErrorText>{form.errors.name}</ErrorText>}
+            </ContainerInput>
+
             <Grid2>
               <ContainerInput>
+                <Label>Código del producto</Label>
                 <Input
-                  placeholder="Nombre del producto"
-                  {...form.getInputProps("name")}
+                  placeholder="Código del producto"
+                  disabled={isEdit}
+                  {...form.getInputProps("productCode")}
                 />
-                {form.errors.name && <ErrorText>{form.errors.name}</ErrorText>}
+                {form.errors.productCode && (
+                  <ErrorText>{form.errors.productCode}</ErrorText>
+                )}
               </ContainerInput>
 
               <ContainerInput>
+                <Label>Código de barras</Label>
                 <BarcodeWrapper>
                   <Input
                     placeholder="Código de barras"
+                    disabled={isEdit}
                     {...form.getInputProps("barcode")}
                   />
-                  <ScanButton type="button" onClick={() => setScanning(true)}>
+                  <ScanButton type="button" disabled={isEdit} onClick={() => setScanning(true)}>
                     <ScanLine size={18} />
                   </ScanButton>
                 </BarcodeWrapper>
-                {form.errors.barcode && (
-                  <ErrorText>{form.errors.barcode}</ErrorText>
-                )}
               </ContainerInput>
             </Grid2>
 
             <ContainerInput>
+              <Label>Descripción</Label>
               <TextArea
                 placeholder="Descripción"
                 rows={4}
@@ -303,25 +319,15 @@ function ProductForm() {
             </SectionTitle>
 
             <Grid3>
-              {/* Precio compra — solo visible en creación */}
-              {!isEdit && (
+              {/* Precio compra — solo visible en creación - cambiar a !isEdit y arriba de true a false  inventoryEditEnabled*/}
+              
+              { (
                 <ContainerInput>
-                  <label
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 500,
-                      color: "var(--color-text-secondary)",
-                      marginBottom: 4,
-                      display: "block",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    Costo Unit.
-                  </label>
+                  <Label>Costo Unit.</Label>
                   <Input
                     type="number"
                     placeholder="0.00"
+                    disabled={isEdit}
                     {...form.getInputProps("price")}
                   />
                   {form.errors.price && (
@@ -332,22 +338,11 @@ function ProductForm() {
 
               {/* Precio venta — siempre editable */}
               <ContainerInput>
-                <label
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: "var(--color-text-secondary)",
-                    marginBottom: 4,
-                    display: "block",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  Precio venta
-                </label>
+                <Label>Precio venta</Label>
                 <Input
                   type="number"
                   placeholder="0.00"
+                  disabled={isEdit}
                   {...form.getInputProps("finalPrice")}
                 />
                 {form.errors.finalPrice && (
@@ -363,24 +358,12 @@ function ProductForm() {
                     : {}
                 }
               >
-                <label
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    color: "var(--color-text-secondary)",
-                    marginBottom: 4,
-                    display: "block",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                  }}
-                >
-                  {isEdit && inventoryEditEnabled ? "Nuevo stock" : "Stock"}
-                </label>
+                <Label>Stock</Label>
                 <Input
                   type="number"
                   placeholder="0"
+                  disabled={isEdit}
                   {...form.getInputProps("stock")}
-                  disabled={isEdit && !inventoryEditEnabled}
                 />
                 {isEdit && inventoryEditEnabled && (
                   <span
@@ -414,6 +397,7 @@ function ProductForm() {
 
             <Grid2>
               <ContainerInput>
+                <Label>Marca</Label>
                 <Select {...form.getInputProps("lineId")}>
                   <option value="">Selecciona una marca</option>
                   {lines?.map((line) => (
@@ -422,9 +406,13 @@ function ProductForm() {
                     </option>
                   ))}
                 </Select>
+                {form.errors.lineId && (
+                  <ErrorText>{form.errors.lineId}</ErrorText>
+                )}
               </ContainerInput>
 
               <ContainerInput>
+                <Label>Línea</Label>
                 <Select
                   {...form.getInputProps("brandName")}
                   disabled={!form.values.lineId}
@@ -436,6 +424,9 @@ function ProductForm() {
                     </option>
                   ))}
                 </Select>
+                {form.errors.brandName && (
+                  <ErrorText>{form.errors.brandName}</ErrorText>
+                )}
               </ContainerInput>
             </Grid2>
           </Section>
