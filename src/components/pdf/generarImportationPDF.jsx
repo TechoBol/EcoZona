@@ -144,7 +144,7 @@ export const exportImportationPDF = (importation) => {
     startY: tableStartY,
     head: [["Código", "Producto", "Cantidad", "Costo Unit.", "Subtotal"]],
     body: importation.items.map((item) => [
-      item.product.barcode,
+      item.product.productCode,
       item.product.name,
       `${item.quantity} unid.`,
       `Bs. ${Number(item.unitCost).toFixed(2)}`,

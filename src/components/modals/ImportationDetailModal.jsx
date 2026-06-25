@@ -260,7 +260,7 @@ export default function ImportationDetailModal({
                                             {importation.items.map((item) => (
                                                 <tr key={item.id}>
                                                     <td style={{ color: "#888", fontSize: 12 }}>
-                                                        {item.product.barcode}
+                                                        {item.product.productCode}
                                                     </td>
                                                     <td>{item.product.name}</td>
                                                     <td>{item.quantity} unid.</td>

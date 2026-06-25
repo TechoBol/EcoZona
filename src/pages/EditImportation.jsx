@@ -50,7 +50,7 @@ const EditImportation = () => {
                 setRows(
                     data.items.map((item) => ({
                         id: item.product.id,
-                        barcode: item.product.barcode,
+                        productCode: item.product.productCode,
                         name: item.product.name,
                         unitCost: String(item.unitCost),
                         quantity: String(item.quantity),
@@ -79,7 +79,7 @@ const EditImportation = () => {
         if (!rows.some((r) => r.id === product.id)) {
             setRows((prev) => [...prev, {
                 id: product.id,
-                barcode: product.barcode,
+                productCode: product.productCode,
                 name: product.name,
                 unitCost: "0",
                 quantity: "0",
@@ -105,7 +105,7 @@ const EditImportation = () => {
         await updateManualImportation(
             Number(id),
             valid.map((r) => ({
-                barcode: r.barcode,
+                productCode: r.productCode,
                 unitCost: Number(r.unitCost),
                 quantity: Number(r.quantity),
             }))
@@ -166,7 +166,7 @@ const EditImportation = () => {
                                     ? <DropdownHint>Buscando...</DropdownHint>
                                     : searchResults.map((p) => (
                                         <DropdownItem key={p.id} onClick={() => handleSelect(p)}>
-                                            <DropdownBarcode>{p.barcode}</DropdownBarcode>
+                                            <DropdownBarcode>{p.productCode}</DropdownBarcode>
                                             <DropdownName>{p.name}</DropdownName>
                                         </DropdownItem>
                                     ))}
@@ -192,7 +192,7 @@ const EditImportation = () => {
                                 {rows.map((row) => (
                                     <tr key={row.id}>
                                         <td style={{ width: "110px", fontSize: 12, color: "#9ca3af" }}>
-                                            {row.barcode}
+                                            {row.productCode}
                                         </td>
                                         <td style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                             {row.name}

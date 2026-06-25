@@ -207,7 +207,7 @@ const Importation = () => {
     const handleSelect = (product) => {
         if (!rows.some((r) => r.id === product.id)) {
             setRows((prev) => [...prev, {
-                id: product.id, barcode: product.barcode,
+                id: product.id, productCode: product.productCode,
                 name: product.name, unitCost: "0", quantity: "0",
             }]);
         }
@@ -237,7 +237,7 @@ const Importation = () => {
             const valid = rows.filter((r) => r.unitCost !== "" && r.quantity !== "");
             if (!valid.length) return;
             await createManualImportation(code.trim(), valid.map((r) => ({
-                barcode: r.barcode,
+                productCode: r.productCode,
                 unitCost: Number(r.unitCost),
                 quantity: Number(r.quantity),
             })), locationId);
@@ -309,7 +309,7 @@ const Importation = () => {
                                         ? <DropdownHint>Buscando...</DropdownHint>
                                         : searchResults.map((p) => (
                                             <DropdownItem key={p.id} onClick={() => handleSelect(p)}>
-                                                <DropdownBarcode>{p.barcode}</DropdownBarcode>
+                                                <DropdownBarcode>{p.productCode}</DropdownBarcode>
                                                 <DropdownName>{p.name}</DropdownName>
                                             </DropdownItem>
                                         ))}
@@ -338,7 +338,7 @@ const Importation = () => {
                                     {rows.map((row) => (
                                         <tr key={row.id}>
                                             <td style={{ width: "180px", fontSize: 12, color: "#9ca3af" }}>
-                                                {row.barcode}
+                                                {row.productCode}
                                             </td>
                                             <td style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                                 {row.name}
