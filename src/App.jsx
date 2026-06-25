@@ -23,6 +23,7 @@ import InventoryValorado from "./pages/InventoryValorado";
 import MarginProfit from "./pages/MarginProfit";
 import ProductDetail from "./pages/ProductDetail";
 import AddedToCart from "./pages/AddedToCart";
+import EditImportation from "./pages/EditImportation";
 
 function App() {
   const { isLoggedIn } = useLoginStore();
@@ -59,6 +60,7 @@ function App() {
             <Route path="/margin-profit" element={<MarginProfit />} />
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/added-to-cart" element={<AddedToCart />} />
+            <Route path="/edit-importation/:id" element={<EditImportation />} />
           </>
         )}
 

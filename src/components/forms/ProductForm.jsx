@@ -199,7 +199,7 @@ function ProductForm() {
         imageUrl: imageKey,
         lineId: Number(values.lineId),
         brandName: values.brandName,
-        inventoryEdited: isEdit ? inventoryEditEnabled : false,
+        inventoryEdited: false,
       };
 
       let result;
