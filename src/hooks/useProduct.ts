@@ -26,8 +26,8 @@ export const useProduct = () => {
     return compressedFile;
   };
 
-  const subirArchivo = async (file: File, barcode: string) => {
-    const fileName = `${barcode}`;
+  const subirArchivo = async (file: File, productCode: string) => {
+    const fileName = productCode?.trim();
 
     // OPTIMIZAR IMAGEN ANTES DE SUBIR
     const optimizedFile = await optimizeImage(file);

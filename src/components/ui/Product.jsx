@@ -141,7 +141,7 @@ export const Section = styled.div`
 export const SectionTitle = styled.h3`
   font-size: 15px;
   font-weight: 700;
-  color: ${theme.colors.textSecondary};
+  color: #374151;
   margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -177,6 +177,15 @@ export const ContainerInput = styled.div`
   flex-direction: column;
 `;
 
+export const Label = styled.label`
+  font-size: 14px;
+  font-weight: 600;
+  color: #5B6472;
+  margin-bottom: 6px;
+  display: block;
+  letter-spacing: 0.02em;
+`;
+
 export const Input = styled.input`
   height: 52px;
   width: 100%;
@@ -190,6 +199,29 @@ export const Input = styled.input`
   background: ${theme.colors.background};
   transition: all 0.2s ease;
   box-sizing: border-box;
+
+  &:focus {
+    border-color: ${theme.colors.primary};
+    box-shadow: 0 0 0 3px rgba(61, 68, 201, 0.12);
+  }
+`;
+
+export const TextArea = styled.textarea`
+  min-height: 96px;
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid
+    ${({ hasError }) =>
+      hasError ? theme.colors.error : "rgba(0,0,0,0.15)"};
+  padding: 14px 16px;
+  font-size: 14px;
+  outline: none;
+  background: ${theme.colors.background};
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.4;
 
   &:focus {
     border-color: ${theme.colors.primary};
